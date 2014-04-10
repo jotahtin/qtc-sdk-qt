@@ -1,6 +1,7 @@
 qtc-sdk-qt
 ==========
 
+<<<<<<< HEAD
 # Qt Cloud Services SDK for Qt
 
 This is Qt Cloud Services SDK for Qt. What is Qt Cloud Services? See below:
@@ -33,3 +34,6 @@ See the product specific SDK API References:
 * [Enginio Data Storage](https://github.com/jotahtin/qtc-sdk-qt/wiki/Enginio-Data-Storage-SDK-API)
 * [Managed WebSocket](https://github.com/jotahtin/qtc-sdk-qt/wiki/Managed-WebSocket-SDK-API)
 
+=======
+Qt Cloud Services SDK for Qt
+>>>>>>> Initial commit
