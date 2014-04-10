@@ -33,3 +33,6 @@ See the product specific SDK API References:
 * [Enginio Data Storage](https://github.com/jotahtin/qtc-sdk-qt/wiki/Enginio-Data-Storage-SDK-API)
 * [Managed WebSocket](https://github.com/jotahtin/qtc-sdk-qt/wiki/Managed-WebSocket-SDK-API)
 
+=======
+Qt Cloud Services SDK for Qt
+
