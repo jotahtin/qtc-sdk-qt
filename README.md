@@ -36,4 +36,4 @@ See the product specific SDK API References:
 
 =======
 Qt Cloud Services SDK for Qt
-=======
+
