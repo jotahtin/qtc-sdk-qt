@@ -39,65 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef ENGINIOMODEL_H
-#define ENGINIOMODEL_H
+#ifndef QCLOUDSERVICES_QENGINIOUSER_H
+#define QCLOUDSERVICES_QENGINIOUSER_H
 
-#include <QtCore/qjsonobject.h>
-#include <QtCore/qscopedpointer.h>
-
-#include <QtCloudServices/qenginioconnection.h>
-#include <QtCloudServices/enginiobasemodel.h>
+#include <QtCloudServices/qtcloudservices.h>
+#include <QtCloudServices/qenginioobject.h>
 
 QT_BEGIN_NAMESPACE
 
-#if 0
-
-class EnginioModelPrivate;
-class QTCLOUDSERVICES_EXPORT EnginioModel
-#ifdef Q_QDOC
-    : public QAbstractListModel
-#else
-    : public EnginioBaseModel
-#endif
-{
+class QEnginioUserPrivate;
+class QTCLOUDSERVICES_EXPORT QEnginioUser : public QEnginioObject {
     Q_OBJECT
-    Q_ENUMS(QtCloudServices::Operation) // TODO remove me QTBUG-33577
-    Q_PROPERTY(QtCloudServices::Operation operation READ operation WRITE setOperation NOTIFY operationChanged)
-    Q_PROPERTY(QEnginioConnection *client READ client WRITE setClient NOTIFY clientChanged)
-    Q_PROPERTY(QJsonObject query READ query WRITE setQuery NOTIFY queryChanged)
-
 public:
-    explicit EnginioModel(QObject *parent = 0);
-    ~EnginioModel();
+    QEnginioUser(QObject *aParent = 0);
+    QEnginioUser(const QEnginioUser &aOther);
 
-    QEnginioConnection *client() const Q_REQUIRED_RESULT;
-    void setClient(const QEnginioConnection *client);
+    QEnginioUser& operator=(const QEnginioUser &aOther);
 
-    QJsonObject query() Q_REQUIRED_RESULT;
-    void setQuery(const QJsonObject &query);
-
-    QtCloudServices::Operation operation() const Q_REQUIRED_RESULT;
-    void setOperation(QtCloudServices::Operation operation);
-
-    Q_INVOKABLE QEnginioOperation append(const QJsonObject &value);
-    Q_INVOKABLE QEnginioOperation remove(int row);
-    Q_INVOKABLE QEnginioOperation setData(int row, const QVariant &value, const QString &role);
-    using EnginioBaseModel::setData;
-
+    const QString username() const Q_REQUIRED_RESULT;
+    const QString email() const Q_REQUIRED_RESULT;
+    const QString firstName() const Q_REQUIRED_RESULT;
+    const QString lastName() const Q_REQUIRED_RESULT;
 Q_SIGNALS:
-    void queryChanged(const QJsonObject &query);
-    void clientChanged(QEnginioConnection *client);
-    void operationChanged(QtCloudServices::Operation operation);
-
-private:
-    Q_DISABLE_COPY(EnginioModel)
-    QTC_DECLARE_PRIVATE(EnginioModel)
-    friend class EnginioBaseModelPrivate;
+    void objectChanged();
+protected:
+    QTC_DECLARE_PRIVATE(QEnginioUser)
 };
-
-#endif
 
 QT_END_NAMESPACE
 
-#endif // ENGINIOMODEL_H
-
+#endif /* QCLOUDSERVICES_QENGINIOUSER_H */

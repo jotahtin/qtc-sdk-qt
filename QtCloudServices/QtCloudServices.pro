@@ -18,7 +18,6 @@ SOURCES += \
     enginiobackendconnection.cpp \
     enginiodummyreply.cpp \
     enginiofakereply.cpp \
-    enginiomodel.cpp \
     qcloudservicesobject.cpp \
     qenginiocollection.cpp \
     qenginioconnection.cpp \
@@ -26,7 +25,10 @@ SOURCES += \
     qenginiooperation.cpp \
     qenginioquery.cpp \
     qenginiorequest.cpp \
-    qcloudservicesconstants.cpp
+    qcloudservicesconstants.cpp \
+    qenginiomodel.cpp \
+    qenginioobject.cpp \
+    qenginiouser.cpp
 
 HEADERS += qtcloudservices.h\
         qtcloudservices_global.h \
@@ -54,7 +56,13 @@ HEADERS += qtcloudservices.h\
     private/qenginiooperation_p.h \
     private/qenginioquery_p.h \
     private/qenginiorequest_p.h \
-    stdafx.h
+    stdafx.h \
+    private/qenginiomodel_p.h \
+    private/qenginioobject_p.h \
+    private/qenginiouser_p.h \
+    qenginiomodel.h \
+    qenginioobject.h \
+    qenginiouser.h
 
 unix {
     target.path = /usr/lib

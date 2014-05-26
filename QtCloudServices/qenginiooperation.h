@@ -44,6 +44,8 @@
 
 #include <functional>
 
+#include <QList>
+
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
@@ -54,6 +56,7 @@
 
 #include <QtCloudServices/qtcloudservices.h>
 #include <QtCloudServices/qcloudservicesobject.h>
+#include <QtCloudServices/qenginioobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -101,8 +104,11 @@ public:
     explicit QEnginioOperation(QEnginioConnectionPrivate *parent, QNetworkReply *reply);
     virtual ~QEnginioOperation();
     */
-
     QJsonObject result() const Q_REQUIRED_RESULT; // data
+
+    int resultObjectCount() const Q_REQUIRED_RESULT;
+    QEnginioObject resultObject() const Q_REQUIRED_RESULT;
+    QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
 
     QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
     QNetworkReply::NetworkError networkError() const Q_REQUIRED_RESULT;

@@ -152,9 +152,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_qenginiooperation_p.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\QtCloudServices\enginiomodel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_qenginiorequest.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -176,6 +173,51 @@
     <ClCompile Include="..\..\..\..\QtCloudServices\qcloudservicesconstants.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\QtCloudServices\qenginiomodel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodel_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodel_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\QtCloudServices\qenginioobject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\QtCloudServices\qenginiouser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiouser.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiouser_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiouser_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiouser.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -192,9 +234,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\QtCloudServices\QEnginioCollection" />
     <ClInclude Include="..\..\..\..\QtCloudServices\QEnginioDataStorage" />
-    <ClInclude Include="..\..\..\..\QtCloudServices\private\enginiobasemodel_p.h">
-      <Filter>Header Files\private</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\QtCloudServices\private\qcloudservicesconstants_p.h">
       <Filter>Header Files\private</Filter>
     </ClInclude>
@@ -253,6 +292,24 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\..\QtCloudServices\qenginioquery.h">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\qenginiomodel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\private\qenginiomodel_p.h">
+      <Filter>Header Files\private</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\qenginioobject.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\qenginiouser.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\private\qenginioobject_p.h">
+      <Filter>Header Files\private</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\private\qenginiouser_p.h">
+      <Filter>Header Files\private</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

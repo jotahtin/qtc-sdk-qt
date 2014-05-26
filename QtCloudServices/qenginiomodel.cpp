@@ -41,15 +41,15 @@
 
 #include "stdafx.h"
 
-#include <QtCloudServices/enginiomodel.h>
+#include <QtCloudServices/qenginiomodel.h>
 #include <QtCloudServices/QEnginioOperation.h>
-#include <QtCloudServices/enginiobasemodel.h>
 
 #include <QtCloudServices/private/qenginioconnection_p.h>
+#include <QtCloudServices/private/qenginiomodel_p.h>
+
 #include <QtCloudServices/private/enginiofakereply_p.h>
 #include <QtCloudServices/private/enginiodummyreply_p.h>
 #include <QtCloudServices/private/enginiobackendconnection_p.h>
-#include <QtCloudServices/private/enginiobasemodel_p.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qvector.h>
@@ -57,6 +57,97 @@
 #include <QtCore/qjsonarray.h>
 
 QT_BEGIN_NAMESPACE
+
+/*
+** Private Implementation
+*/
+
+QEnginioModelPrivate::QEnginioModelPrivate() //EnginioBaseModel *q_ptr)
+    :
+/*
+: _enginio(0)
+, _operation()
+, q(q_ptr)
+, _replyConnectionConntext(new QObject())
+, _latestRequestedOffset(0)
+*/
+    iCanFetchMore(false)
+/*
+    , _rolesCounter(QtCloudServices::SyncedRole)
+    */
+{
+}
+
+QEnginioModelPrivate::~QEnginioModelPrivate()
+{
+    /*
+    foreach (const QMetaObject::Connection & connection, _clientConnections)
+    QObject::disconnect(connection);
+
+    delete _replyConnectionConntext;
+    */
+}
+
+int QEnginioModelPrivate::rowCount() const
+{
+    return iData.count();
+}
+QVariant QEnginioModelPrivate::data(unsigned row, int role) const
+{
+    if (role == QtCloudServices::SyncedRole) {
+        Q_ASSERT(false);
+        //return _attachedData.isSynced(row);
+    }
+
+    const QJsonObject object = iData.at(row).toObject();
+
+    if (!object.isEmpty()) {
+        const QString roleName = iRoles.value(role);
+
+        if (!roleName.isEmpty()) {
+            return object[roleName];
+        } else if (role == Qt::DisplayRole) {
+            return iData.at(row);
+        }
+    }
+
+    return QVariant();
+}
+
+bool QEnginioModelPrivate::canFetchMore() const
+{
+    return iCanFetchMore;
+}
+
+void QEnginioModelPrivate::fetchMore(int row)
+{
+#if 0
+    int currentOffset = _data.count();
+
+    if (!_canFetchMore || currentOffset < _latestRequestedOffset) {
+        return;    // we do not want to spam the server, lets wait for the last fetch
+    }
+
+    QJsonObject query(queryAsJson());
+
+    int limit = query[QtCloudServicesConstants::limit].toDouble();
+    limit = qMax(row - currentOffset, limit); // check if default limit is not too small
+
+    query[QtCloudServicesConstants::offset] = currentOffset;
+    query[QtCloudServicesConstants::limit] = limit;
+
+    qDebug() << Q_FUNC_INFO << query;
+    _latestRequestedOffset += limit;
+    ObjectAdaptor<QJsonObject> aQuery(query);
+    QNetworkReply *nreply = _enginio->query(aQuery, static_cast<QtCloudServices::Operation>(_operation));
+    QEnginioOperation ereply = _enginio->createReply(nreply);
+    QObject::connect(ereply, &QEnginioOperation::dataChanged, ereply, &QEnginioOperation::deleteLater);
+    FinishedIncrementalUpdateRequest finishedRequest = { this, query, ereply };
+    QObject::connect(ereply, &QEnginioOperation::dataChanged, _replyConnectionConntext, finishedRequest);
+#endif
+}
+
+
 
 #if 0
 
@@ -158,13 +249,6 @@ const int EnginioBaseModelPrivate::IncrementalModelUpdate = -2;
   But while the full object is accessible, attempts to alter the object's data will fail.
 */
 
-EnginioBaseModelPrivate::~EnginioBaseModelPrivate()
-{
-    foreach (const QMetaObject::Connection & connection, _clientConnections)
-    QObject::disconnect(connection);
-
-    delete _replyConnectionConntext;
-}
 
 void EnginioBaseModelPrivate::receivedNotification(QJsonObject data)
 {
@@ -389,41 +473,6 @@ public:
     }
 };
 
-/*!
-    Constructs a new model with \a parent as QObject parent.
-*/
-EnginioModel::EnginioModel(QObject *parent)
-    : EnginioBaseModel(*new EnginioModelPrivate(this), parent)
-{
-    QTC_D(EnginioModel);
-    d->init();
-}
-
-/*!
-    Destroys the model.
-*/
-EnginioModel::~EnginioModel()
-{}
-
-/*!
-    \internal
-    Constructs a new model with \a parent as QObject parent.
-*/
-EnginioBaseModel::EnginioBaseModel(EnginioBaseModelPrivate &dd, QObject *parent)
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    : QAbstractListModel(dd, parent)
-#else
-    : QAbstractListModel(parent), iPIMPL(&dd)
-#endif
-{
-    qRegisterMetaType<QtCloudServices::Role>();
-}
-
-/*!
-    Destroys the model.
-*/
-EnginioBaseModel::~EnginioBaseModel()
-{}
 
 /*!
   \enum QtCloudServices::Role
@@ -594,59 +643,6 @@ QEnginioOperation *EnginioModel::setData(int row, const QVariant &value, const Q
     return d->setValue(row, role, value);
 }
 
-
-Qt::ItemFlags EnginioBaseModel::flags(const QModelIndex &index) const
-{
-    return QAbstractListModel::flags(index) | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
-}
-
-/*!
-    \overload
-    Use this function to access the model data at \a index.
-    With the \l roleNames() function the mapping of JSON property names to data roles used as \a role is available.
-    The data returned will be JSON (for example a string for simple objects, or a JSON Object).
-*/
-QVariant EnginioBaseModel::data(const QModelIndex &index, int role) const
-{
-    QTC_D(const EnginioBaseModel);
-
-    if (!index.isValid() || index.row() < 0 || index.row() >= d->rowCount()) {
-        return QVariant();
-    }
-
-    return d->data(index.row(), role);
-}
-
-/*!
-    \overload
-    \internal
-*/
-int EnginioBaseModel::rowCount(const QModelIndex &parent) const
-{
-    QTC_D(const EnginioBaseModel);
-    Q_UNUSED(parent);
-    return d->rowCount();
-}
-
-/*!
-    \overload
-    \internal
-*/
-bool EnginioBaseModel::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-#if 0
-    QTC_D(EnginioBaseModel);
-
-    if (unsigned(index.row()) >= unsigned(d->rowCount())) {
-        return false;
-    }
-
-    QEnginioOperation *reply = d->setData(index.row(), value, role);
-    QObject::connect(reply, &QEnginioOperation::dataChanged, reply, &QEnginioOperation::deleteLater);
-#endif
-    return true;
-}
-
 /*!
     \overload
     Returns the mapping of the model's roles to names. Use this function to map
@@ -678,28 +674,125 @@ void EnginioBaseModel::disableNotifications()
     d->disableNotifications();
 }
 
-/*!
-    \overload
-    \internal
+#endif
+
+/*
+** Public Implementation
 */
-void EnginioBaseModel::fetchMore(const QModelIndex &parent)
+
+
+/*!
+Constructs a new model with \a parent as QObject parent.
+*/
+QEnginioModel::QEnginioModel(QObject *aParent)
+#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+    : QAbstractListModel(*new QEnginioModelPrivate(this), aParent)
+#else
+    : QAbstractListModel(aParent), iPIMPL(new QEnginioModelPrivate())
+#endif
 {
-    QTC_D(EnginioBaseModel);
+#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+    iPIMPL->iInterface = this;
+#endif
+    QTC_D(QEnginioModel);
+    // d->init();
+
+    qRegisterMetaType<QtCloudServices::Role>();
+}
+
+/*!
+Destroys the model.
+*/
+QEnginioModel::~QEnginioModel()
+{
+#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+
+    if (iPIMPL) {
+        delete iPIMPL;
+    }
+
+#endif
+}
+
+Qt::ItemFlags QEnginioModel::flags(const QModelIndex &aIndex) const
+{
+    return QAbstractListModel::flags(aIndex) | Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+}
+
+/*!
+\overload
+Use this function to access the model data at \a index.
+With the \l roleNames() function the mapping of JSON property names to data roles used as \a role is available.
+The data returned will be JSON (for example a string for simple objects, or a JSON Object).
+*/
+QVariant QEnginioModel::data(const QModelIndex &index, int role) const
+{
+    QTC_D(const QEnginioModel);
+
+    if (!index.isValid() || index.row() < 0 || index.row() >= d->rowCount()) {
+        return QVariant();
+    }
+
+    return d->data(index.row(), role);
+}
+
+/*!
+\overload
+\internal
+*/
+int QEnginioModel::rowCount(const QModelIndex &parent) const
+{
+    QTC_D(const QEnginioModel);
+    Q_UNUSED(parent);
+    return d->rowCount();
+}
+
+/*!
+\overload
+\internal
+*/
+bool QEnginioModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    QTC_D(QEnginioModel);
+
+    if (unsigned(index.row()) >= unsigned(d->rowCount())) {
+        return false;
+    }
+
+#if 0
+    QEnginioOperation *reply = d->setData(index.row(), value, role);
+    QObject::connect(reply, &QEnginioOperation::dataChanged, reply, &QEnginioOperation::deleteLater);
+#endif
+    return true;
+}
+
+/*!
+\overload
+\internal
+*/
+void QEnginioModel::fetchMore(const QModelIndex &parent)
+{
+    QTC_D(QEnginioModel);
     d->fetchMore(parent.row());
 }
 
 /*!
-    \overload
-    \internal
+\overload
+\internal
 */
-bool EnginioBaseModel::canFetchMore(const QModelIndex &parent) const
+bool QEnginioModel::canFetchMore(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    QTC_D(const EnginioBaseModel);
+    QTC_D(const QEnginioModel);
     return d->canFetchMore();
 }
 
-#endif
+void QEnginioModel::setCollection(const QEnginioCollection &aCollection,
+                                  const QEnginioQuery &aQuery)
+{
+
+}
+
 
 QT_END_NAMESPACE
 

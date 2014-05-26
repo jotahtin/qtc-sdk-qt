@@ -108,6 +108,8 @@ Q_SIGNALS:
     void usernameChanged(const QString &aUsername);
     void passwordChanged(const QString &aPassword);
 
+    //
+    void operationError(const QEnginioOperation &aOperation);
 
     // What are these
 Q_SIGNALS:

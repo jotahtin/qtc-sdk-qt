@@ -48,21 +48,21 @@
 #include <Enginio/enginioreply.h>
 
 TodosModel::TodosModel(QObject *parent)
-    : EnginioModel(parent)
+    : QEnginioModel(parent)
 {}
 
 QVariant TodosModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && section == 0 && role == Qt::DisplayRole)
         return QStringLiteral("Todo List");
-    return EnginioModel::headerData(section, orientation, role);
+    return QEnginioModel::headerData(section, orientation, role);
 }
 
 //![data]
 QVariant TodosModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::FontRole) {
-        bool completed = EnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
+        bool completed = QEnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
         QFont font;
         font.setPointSize(20);
         font.setStrikeOut(completed);
@@ -70,21 +70,21 @@ QVariant TodosModel::data(const QModelIndex &index, int role) const
     }
 
     if (role == Qt::TextColorRole) {
-        bool completed = EnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
+        bool completed = QEnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
         return completed ? QColor("#999") : QColor("#333");
     }
 
     if (role == CompletedRole)
-        return EnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
+        return QEnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
 
     // fallback to base class
-    return EnginioModel::data(index, role);
+    return QEnginioModel::data(index, role);
 }
 //![data]
 //![roleNames]
 QHash<int, QByteArray> TodosModel::roleNames() const
 {
-    QHash<int, QByteArray> roles = EnginioModel::roleNames();
+    QHash<int, QByteArray> roles = QEnginioModel::roleNames();
     roles.insert(TitleRole, "title");
     roles.insert(Qt::DisplayRole, "title");
     roles.insert(Qt::EditRole, "title");

@@ -43,13 +43,15 @@
 #include "backendhelper.h"
 #include "ui_helperdialog.h"
 
+const QString backendAddressKey = QStringLiteral("backendAddress");
 const QString backendIdKey = QStringLiteral("backendId");
 const QString showAgainKey = QStringLiteral("showAgain");
 
-QByteArray backendId(const QString &exampleName)
-{
+static QString gBackendAddress;
+static QString gBackendId;
 
-    QString fileName = QStringLiteral("EnginioExamples.conf");
+static void backendResolve(const QString &exampleName) {
+    QString fileName = QStringLiteral("QtCloudServicesExamples.conf");
     for (int i = 0; i < 4; ++i) {
         if (QFile::exists(fileName))
             break;
@@ -60,23 +62,27 @@ QByteArray backendId(const QString &exampleName)
 
     QScopedPointer<QSettings> settings(settingsFile.exists()
         ? new QSettings(settingsFile.absoluteFilePath(), QSettings::IniFormat)
-        : new QSettings("com.digia", "EnginioExamples"));
+        : new QSettings("com.digia", "QtCloudServicesExamples"));
 
     settings->beginGroup(exampleName);
-    QByteArray id = settings->value(backendIdKey).toByteArray();
+    gBackendId = settings->value(backendIdKey).toString();
     bool askAgain = settings->value(showAgainKey, true).toBool();
 
-    if (askAgain || id.isEmpty()) {
+    if (askAgain || gBackendId.isEmpty() || gBackendAddress.isEmpty()) {
         Ui::Dialog dialog;
         QDialog d;
         dialog.setupUi(&d);
         dialog.exampleName->setText(exampleName);
-        dialog.backendId->setText(id);
+
+        dialog.backendAddress->setText("https://api.engin.io");
+        dialog.backendId->setText(gBackendId);
 
         if (d.exec() == QDialog::Accepted) {
-            id = dialog.backendId->text().toLocal8Bit();
+            gBackendAddress = dialog.backendAddress->text();
+            gBackendId = dialog.backendId->text();
             askAgain = !dialog.askAgain->isChecked();
-            settings->setValue(backendIdKey, id);
+            settings->setValue(backendAddressKey, gBackendAddress);
+            settings->setValue(backendIdKey, gBackendId);
             settings->setValue(showAgainKey, askAgain);
         }
     }
@@ -84,6 +90,17 @@ QByteArray backendId(const QString &exampleName)
     settings->endGroup();
     settings->sync();
 
-    return id;
+}
+
+QString backendAddress(const QString &exampleName)
+{
+    backendResolve(exampleName);
+    return gBackendAddress;
+}
+
+QString backendId(const QString &exampleName)
+{
+    backendResolve(exampleName);
+    return gBackendId;
 }
 

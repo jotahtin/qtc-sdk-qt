@@ -39,51 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef ENGINIOMODELBASE_H
-#define ENGINIOMODELBASE_H
+#ifndef QCLOUDSERVICES_QENGINIOUSER_P_H
+#define QCLOUDSERVICES_QENGINIOUSER_P_H
 
-#include <QtCore/qabstractitemmodel.h>
-#include <QtCore/qscopedpointer.h>
-
-#include <QtCloudServices/qenginioconnection.h>
+#include "QtCloudServices/qenginiouser.h"
+#include "QtCloudServices/private/qenginioobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-#if 0
-
-class EnginioBaseModelPrivate;
-class QTCLOUDSERVICES_EXPORT EnginioBaseModel : public QAbstractListModel {
+/*
+** QEnginioUserObject
+*/
+class QEnginioUserObject : public QEnginioObjectObject {
     Q_OBJECT
-
-protected:
-    explicit EnginioBaseModel(EnginioBaseModelPrivate &dd, QObject *parent);
+    friend class QEnginioCollectionObject;
 public:
-    ~EnginioBaseModel();
+    QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection);
+    ~QEnginioUserObject();
 
-    virtual Qt::ItemFlags flags(const QModelIndex &index) const Q_DECL_OVERRIDE;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
-
-    virtual void fetchMore(const QModelIndex &parent) Q_DECL_OVERRIDE;
-    virtual bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;
-
-    virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
-
-    void disableNotifications();
-
+    const QString username() const Q_REQUIRED_RESULT;
+    const QString email() const Q_REQUIRED_RESULT;
+    const QString firstName() const Q_REQUIRED_RESULT;
+    const QString lastName() const Q_REQUIRED_RESULT;
 private:
-    Q_DISABLE_COPY(EnginioBaseModel)
-    QTC_DECLARE_PRIVATE(EnginioBaseModel)
-    friend class EnginioModelPrivate;
-protected:
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    EnginioBaseModelPrivate *iPIMPL;
-#endif
+    Q_DISABLE_COPY(QEnginioUserObject)
+public:
+    static QSharedPointer<QEnginioUserObject> get(QSharedPointer<QEnginioCollectionObject> aCollection);
+private:
+    QString iUsername;
+    QString iEMail;
+    QString iFirstName;
+    QString iLastName;
 };
 
-#endif
+/*
+** QEnginioUserPrivate
+*/
+class QEnginioUserPrivate : public QEnginioObjectPrivate {
+    QTC_DECLARE_PUBLIC(QEnginioUser)
+public:
+    QEnginioUserPrivate();
+
+    const QString username() const Q_REQUIRED_RESULT;
+    const QString email() const Q_REQUIRED_RESULT;
+    const QString firstName() const Q_REQUIRED_RESULT;
+    const QString lastName() const Q_REQUIRED_RESULT;
+public:
+    QSharedPointer<QEnginioUserObject> enginioUserObject() const;
+    void setEnginioUserObject(QSharedPointer<QEnginioUserObject> aObject);
+private:
+    QSharedPointer<QEnginioUserObject> iObject;
+};
 
 QT_END_NAMESPACE
 
-#endif // ENGINIOMODELBASE_H
+#endif /* QCLOUDSERVICES_QENGINIOUSER_P_H */

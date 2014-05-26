@@ -38,51 +38,29 @@
 **
 ****************************************************************************/
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef TODOSMODEL_H
+#define TODOSMODEL_H
 
-#include <QMainWindow>
-#include <QTreeView>
+#include <QtCloudServices/qenginiomodel.h>
 
-QT_BEGIN_NAMESPACE
-class QPushButton;
-class EnginioClient;
-class EnginioReply;
-QT_END_NAMESPACE
-QT_USE_NAMESPACE
-
-class TodosModel;
-class MainWindow : public QMainWindow
+//![definition]
+class TodosModel : public QEnginioModel
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
-    virtual QSize sizeHint() const;
+    enum Role
+    {
+        TitleRole = QtCloudServices::CustomPropertyRole,
+        CompletedRole
+    };
+//![definition]
 
-private slots:
-    void error(EnginioReply *error);
+    explicit TodosModel(QObject *parent = 0);
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
-    void removeItem();
-    void appendItem();
-    void toggleCompleted();
-    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-
-private:
-    void queryTodos();
-
-    // The Enginio client object used in all enginio operations
-    EnginioClient *m_client;
-
-    // Enginio object model containing todos objects
-    TodosModel *m_model;
-
-    // The list view showing contents of m_model
-    QTreeView *m_view;
-
-    QPushButton *m_addNewButton;
-    QPushButton *m_removeButton;
-    QPushButton *m_toggleButton;
+    virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
 };
 
-#endif // MAINWINDOW_H
+#endif // TODOSMODEL_H

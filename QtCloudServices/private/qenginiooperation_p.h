@@ -70,8 +70,14 @@ public:
     QString requestId() const Q_REQUIRED_RESULT;
     QString errorString() const Q_REQUIRED_RESULT;
     QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
-    QJsonObject data() const Q_REQUIRED_RESULT;
-    QByteArray pData() const Q_REQUIRED_RESULT;
+
+    QJsonObject result() const Q_REQUIRED_RESULT;
+    QByteArray resultBytes() const Q_REQUIRED_RESULT; // pData
+
+    int resultObjectCount() const Q_REQUIRED_RESULT;
+    QEnginioObject resultObject() const Q_REQUIRED_RESULT;
+    QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
+
 
     void dumpDebugInfo() const;
 protected:
@@ -86,6 +92,8 @@ private:
     QNetworkReply *iNetworkReply; //  _nreply;
     bool iDelay; //  _delay;
     mutable QByteArray iData; //  _data;
+
+    QList<QEnginioObject> iResultObjects;
 };
 
 
@@ -107,7 +115,12 @@ public:
     QString requestId() const Q_REQUIRED_RESULT;
     QString errorString() const Q_REQUIRED_RESULT;
     QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
+
     QJsonObject result() const Q_REQUIRED_RESULT;
+
+    int resultObjectCount() const Q_REQUIRED_RESULT;
+    QEnginioObject resultObject() const Q_REQUIRED_RESULT;
+    QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
 
 #if 0
     static QEnginioOperationPrivate *get(QEnginioOperation *p)

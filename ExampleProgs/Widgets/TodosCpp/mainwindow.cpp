@@ -60,26 +60,23 @@
 #include "todosmodel.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent),
+      iEnginioDataStorage(backendAddress("todo"),backendId("todo"))
 {
     setWindowTitle(QStringLiteral("Enginio TODO example"));
 
-    QByteArray EnginioBackendId = backendId("todo");
-
-    //![client]
-    m_client = new EnginioClient(this);
-    m_client->setBackendId(EnginioBackendId);
-    //![client]
-
-    QObject::connect(m_client, &EnginioClient::error, this, &MainWindow::error);
+    // QObject::connect(m_client, &QEnginioDataStorage::error, this, &MainWindow::error);
 
     //![model]
     m_model = new TodosModel(this);
+    m_model->setCollection(iEnginioDataStorage.collection("todos"));
+    /*
     m_model->setClient(m_client);
 
     QJsonObject query;
     query["objectType"] = QString::fromUtf8("objects.todos");
     m_model->setQuery(query);
+    */
     //![model]
 
     QToolBar *toolBar = new QToolBar(this);
@@ -122,17 +119,20 @@ QSize MainWindow::sizeHint() const
     return QSize(400, 600);
 }
 
-void MainWindow::error(EnginioReply *error)
+void MainWindow::operationError(const QEnginioOperation &aOperation)
+// void MainWindow::error(EnginioReply *error)
 {
-    qWarning() << Q_FUNC_INFO << error;
+    // qWarning() << Q_FUNC_INFO << error;
 }
 
 //![removeItem]
 void MainWindow::removeItem()
 {
     QModelIndex index = m_view->currentIndex();
-    EnginioReply *reply = m_model->remove(index.row());
-    QObject::connect(reply, &EnginioReply::finished, reply, &EnginioReply::deleteLater);
+
+
+    // EnginioReply *reply = m_model->remove(index.row());
+    // QObject::connect(reply, &EnginioReply::finished, reply, &EnginioReply::deleteLater);
 }
 //![removeItem]
 
@@ -147,8 +147,8 @@ void MainWindow::appendItem()
         QJsonObject object;
         object["title"] = text;
         object["completed"] = false; // By default a new To Do is not completed
-        EnginioReply *reply = m_model->append(object);
-        QObject::connect(reply, &EnginioReply::finished, reply, &EnginioReply::deleteLater);
+        // EnginioReply *reply = m_model->append(object);
+        // QObject::connect(reply, &EnginioReply::finished, reply, &EnginioReply::deleteLater);
     }
 }
 //![appendItem]

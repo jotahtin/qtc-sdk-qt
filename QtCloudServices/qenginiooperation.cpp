@@ -143,7 +143,7 @@ QString QEnginioOperationObject::requestId() const
 QString QEnginioOperationObject::errorString() const
 {
     if (errorType() == QtCloudServices::BackendError) {
-        return QString::fromUtf8(pData());
+        return QString::fromUtf8(resultBytes());
     }
 
     return iNetworkReply->errorString();
@@ -155,19 +155,19 @@ QtCloudServices::ErrorType QEnginioOperationObject::errorType() const
         return QtCloudServices::NoError;
     }
 
-    if (pData().isEmpty()) {
+    if (resultBytes().isEmpty()) {
         return QtCloudServices::NetworkError;
     }
 
     return QtCloudServices::BackendError;
 }
 
-QJsonObject QEnginioOperationObject::data() const
+QJsonObject QEnginioOperationObject::result() const
 {
-    return QJsonDocument::fromJson(pData()).object();
+    return QJsonDocument::fromJson(resultBytes()).object();
 }
 
-QByteArray QEnginioOperationObject::pData() const
+QByteArray QEnginioOperationObject::resultBytes() const
 {
     if (iData.isEmpty() && iNetworkReply->isFinished()) {
         iData = iNetworkReply->readAll();
@@ -175,6 +175,23 @@ QByteArray QEnginioOperationObject::pData() const
 
     return iData;
 }
+int QEnginioOperationObject::resultObjectCount() const
+{
+    return iResultObjects.size();
+}
+QEnginioObject QEnginioOperationObject::resultObject() const
+{
+    if (iResultObjects.size() == 1) {
+        iResultObjects.first();
+    }
+
+    return QEnginioObject();
+}
+QList<QEnginioObject> QEnginioOperationObject::resultObjects() const
+{
+    return iResultObjects;
+}
+
 void QEnginioOperationObject::dumpDebugInfo() const
 {
     static QHash<QNetworkAccessManager::Operation, QByteArray> operationNames;
@@ -359,10 +376,35 @@ QtCloudServices::ErrorType QEnginioOperationPrivate::errorType() const
 QJsonObject QEnginioOperationPrivate::result() const
 {
     if (iObject) {
-        return iObject->data();
+        return iObject->result();
     }
 
     return QJsonObject();
+}
+
+int QEnginioOperationPrivate::resultObjectCount() const
+{
+    if (iObject) {
+        return iObject->resultObjectCount();
+    }
+
+    return 0;
+}
+QEnginioObject QEnginioOperationPrivate::resultObject() const
+{
+    if (iObject) {
+        return iObject->resultObject();
+    }
+
+    return QEnginioObject();
+}
+QList<QEnginioObject> QEnginioOperationPrivate::resultObjects() const
+{
+    if (iObject) {
+        return iObject->resultObjects();
+    }
+
+    return QList<QEnginioObject>();
 }
 
 void QEnginioOperationPrivate::dumpDebugInfo() const
@@ -573,6 +615,23 @@ QJsonObject QEnginioOperation::result() const
     QTC_D(const QEnginioOperation);
     return d->result();
 }
+
+int QEnginioOperation::resultObjectCount() const
+{
+    QTC_D(const QEnginioOperation);
+    return d->resultObjectCount();
+}
+QEnginioObject QEnginioOperation::resultObject() const
+{
+    QTC_D(const QEnginioOperation);
+    return d->resultObject();
+}
+QList<QEnginioObject> QEnginioOperation::resultObjects() const
+{
+    QTC_D(const QEnginioOperation);
+    return d->resultObjects();
+}
+
 
 /*!
 \property QEnginioOperation::errorType

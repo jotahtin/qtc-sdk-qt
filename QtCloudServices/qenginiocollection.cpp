@@ -340,7 +340,6 @@ QEnginioOperation QEnginioCollection::find(const QEnginioQuery &aQuery,
 {
     QTC_D(QEnginioCollection);
     return d->find(aQuery, aCallback);
-
 }
 
 QEnginioOperation QEnginioCollection::findOne(const QString &aObjectId,

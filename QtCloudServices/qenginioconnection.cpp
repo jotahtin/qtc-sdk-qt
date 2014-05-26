@@ -43,12 +43,12 @@
 
 #include <QtNetwork/qnetworkreply.h>
 
+#include <QtCloudServices/qenginiomodel.h>
+
 #include <QtCloudServices/private/qenginioconnection_p.h>
 #include <QtCloudServices/private/qenginiooperation_p.h>
 #include <QtCloudServices/private/qenginiodatastorage_p.h>
 #include <QtCloudServices/private/qenginiorequest_p.h>
-
-#include <QtCloudServices/enginiomodel.h>
 #include <QtCloudServices/private/chunkdevice_p.h>
 
 

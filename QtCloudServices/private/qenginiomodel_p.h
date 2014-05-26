@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef ENGINIOMODELBASE_P_H
-#define ENGINIOMODELBASE_P_H
+#ifndef QCLOUDSERVICES_QENGINIOMODEL_P_H
+#define QCLOUDSERVICES_QENGINIOMODEL_P_H
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -51,8 +51,7 @@
 #include <QtCore/quuid.h>
 #include <QtCore/qvector.h>
 
-#include <QtCloudServices/enginiomodel.h>
-#include <QtCloudServices/enginiobasemodel.h>
+#include <QtCloudServices/qenginiomodel.h>
 
 #include <QtCloudServices/private/qcloudservicesobject_p.h>
 #include <QtCloudServices/private/qenginioconnection_p.h>
@@ -61,9 +60,10 @@
 #include <QtCloudServices/private/enginiofakereply_p.h>
 #include <QtCloudServices/private/enginiodummyreply_p.h>
 #include <QtCloudServices/private/enginiobackendconnection_p.h>
-#include <QtCloudServices/private/enginiobasemodel_p.h>
 
-// #include <QtCore/private/qabstractitemmodel_p.h>
+#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+# include <QtCore/private/qabstractitemmodel_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -260,13 +260,34 @@ public:
     }
 };
 
+#endif
 
-class QTCLOUDSERVICES_EXPORT EnginioBaseModelPrivate
+class QEnginioModelPrivate
 #if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
     : public QAbstractItemModelPrivate
+#else
+    : public QObject
 #endif
 {
+    Q_OBJECT
+public:
+    QEnginioModelPrivate();
+    virtual ~QEnginioModelPrivate();
+
+    int rowCount() const Q_REQUIRED_RESULT;
+    QVariant data(unsigned row, int role) const Q_REQUIRED_RESULT;
+
+    bool canFetchMore() const Q_REQUIRED_RESULT;
+    void fetchMore(int row);
+
 protected:
+
+    bool iCanFetchMore;
+
+    QJsonArray iData;
+    QHash<int, QString> iRoles;
+
+#if 0
     QEnginioConnectionPrivate *_enginio;
     QtCloudServices::Operation _operation;
     EnginioBaseModel *q;
@@ -277,12 +298,9 @@ protected:
     typedef EnginioModelPrivateAttachedData AttachedData;
     AttachedDataContainer _attachedData;
     int _latestRequestedOffset;
-    bool _canFetchMore;
 
     unsigned _rolesCounter;
-    QHash<int, QString> _roles;
 
-    QJsonArray _data;
 
     class NotificationObject {
         // connection object it can be:
@@ -417,18 +435,6 @@ protected:
     };
 
 public:
-    EnginioBaseModelPrivate(EnginioBaseModel *q_ptr)
-        : _enginio(0)
-        , _operation()
-        , q(q_ptr)
-        , _replyConnectionConntext(new QObject())
-        , _latestRequestedOffset(0)
-        , _canFetchMore(false)
-        , _rolesCounter(QtCloudServices::SyncedRole)
-    {
-    }
-
-    virtual ~EnginioBaseModelPrivate();
 
     void disableNotifications()
     {
@@ -937,77 +943,20 @@ public:
         return roles;
     }
 
-    int rowCount() const Q_REQUIRED_RESULT
-    {
-        return _data.count();
-    }
-
-    QVariant data(unsigned row, int role) const Q_REQUIRED_RESULT
-    {
-        if (role == QtCloudServices::SyncedRole) {
-            return _attachedData.isSynced(row);
-        }
-
-        const QJsonObject object = _data.at(row).toObject();
-
-        if (!object.isEmpty()) {
-            const QString roleName = _roles.value(role);
-
-            if (!roleName.isEmpty()) {
-                return object[roleName];
-            } else if (role == Qt::DisplayRole) {
-                return _data.at(row);
-            }
-        }
-
-        return QVariant();
-    }
-
-    bool canFetchMore() const Q_REQUIRED_RESULT
-    {
-        return _canFetchMore;
-    }
-
-    void fetchMore(int row)
-    {
-#if 0
-        int currentOffset = _data.count();
-
-        if (!_canFetchMore || currentOffset < _latestRequestedOffset) {
-            return;    // we do not want to spam the server, lets wait for the last fetch
-        }
-
-        QJsonObject query(queryAsJson());
-
-        int limit = query[QtCloudServicesConstants::limit].toDouble();
-        limit = qMax(row - currentOffset, limit); // check if default limit is not too small
-
-        query[QtCloudServicesConstants::offset] = currentOffset;
-        query[QtCloudServicesConstants::limit] = limit;
-
-        qDebug() << Q_FUNC_INFO << query;
-        _latestRequestedOffset += limit;
-        ObjectAdaptor<QJsonObject> aQuery(query);
-        QNetworkReply *nreply = _enginio->query(aQuery, static_cast<QtCloudServices::Operation>(_operation));
-        QEnginioOperation ereply = _enginio->createReply(nreply);
-        QObject::connect(ereply, &QEnginioOperation::dataChanged, ereply, &QEnginioOperation::deleteLater);
-        FinishedIncrementalUpdateRequest finishedRequest = { this, query, ereply };
-        QObject::connect(ereply, &QEnginioOperation::dataChanged, _replyConnectionConntext, finishedRequest);
-#endif
-    }
 
     virtual QJsonObject replyData(const QEnginioOperation reply) const = 0;
     virtual QJsonValue queryData(const QString &name) = 0;
     virtual bool queryIsEmpty() const = 0;
     virtual QJsonObject queryAsJson() const = 0;
+#endif
 
 public:
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    EnginioBaseModel *iInterface;
+    QEnginioModel *iInterface;
 #endif
-
 };
 
+#if 0
 
 template<typename Derived, typename Types>
 struct EnginioModelPrivateT : public EnginioBaseModelPrivate {
@@ -1143,5 +1092,6 @@ struct EnginioModelPrivateT : public EnginioBaseModelPrivate {
 #endif
 
 QT_END_NAMESPACE
-#endif // ENGINIOMODELBASE_P_H
+
+#endif /* QCLOUDSERVICES_QENGINIOMODEL_P_H */
 

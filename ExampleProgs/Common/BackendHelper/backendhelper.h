@@ -38,29 +38,12 @@
 **
 ****************************************************************************/
 
-#ifndef TODOSMODEL_H
-#define TODOSMODEL_H
+#ifndef ENGINIO_EXAMPLE_BACKEND_HELPER
+#define ENGINIO_EXAMPLE_BACKEND_HELPER
 
-#include <Enginio/enginiomodel.h>
+#include <QtCore>
 
-//![definition]
-class TodosModel : public EnginioModel
-{
-    Q_OBJECT
+QString backendAddress(const QString &exampleName);
+QString backendId(const QString &exampleName);
 
-public:
-    enum Role
-    {
-        TitleRole = Enginio::CustomPropertyRole,
-        CompletedRole
-    };
-//![definition]
-
-    explicit TodosModel(QObject *parent = 0);
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
-
-    virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
-};
-
-#endif // TODOSMODEL_H
+#endif

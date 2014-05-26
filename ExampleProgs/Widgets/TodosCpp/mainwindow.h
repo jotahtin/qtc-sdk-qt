@@ -38,11 +38,54 @@
 **
 ****************************************************************************/
 
-#ifndef ENGINIO_EXAMPLE_BACKEND_HELPER
-#define ENGINIO_EXAMPLE_BACKEND_HELPER
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QtCore>
+#include <QMainWindow>
+#include <QTreeView>
 
-QByteArray backendId(const QString &exampleName);
+#include <QtCloudServices/QEnginioDataStorage>
 
-#endif
+QT_BEGIN_NAMESPACE
+class QPushButton;
+class EnginioClient;
+class EnginioReply;
+QT_END_NAMESPACE
+QT_USE_NAMESPACE
+
+class TodosModel;
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = 0);
+    virtual QSize sizeHint() const;
+
+private slots:
+    void operationError(const QEnginioOperation &aOperation);
+    // void error(EnginioReply *error);
+
+    void removeItem();
+    void appendItem();
+    void toggleCompleted();
+    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+private:
+    void queryTodos();
+
+    // The Enginio Data Storage used in all enginio operations
+    QEnginioDataStorage iEnginioDataStorage;
+
+    // Enginio object model containing todos objects
+    TodosModel *m_model;
+
+    // The list view showing contents of m_model
+    QTreeView *m_view;
+
+    QPushButton *m_addNewButton;
+    QPushButton *m_removeButton;
+    QPushButton *m_toggleButton;
+};
+
+#endif // MAINWINDOW_H
