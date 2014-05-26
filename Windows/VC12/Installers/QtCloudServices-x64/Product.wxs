@@ -1,18 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <Product Id="*" Name="QtCloudServices_x64" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="bbce7342-d4c5-44ce-b76b-0c5cceaf2605">
-        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
-        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-        <MediaTemplate />
-        <Feature Id="ProductFeature" Title="QtCloudServices_x64" Level="1">
-            <ComponentGroupRef Id="ProductComponents" />
+    <?define ProductName = "QtCloudServices (64 bit)"?>
+    <?define UpgradeCode = "6C66CD0C-6FBA-46D1-A486-371F152BFB86"?>
+    <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="$(var.ProductVersion)" Manufacturer="Digia Plc" UpgradeCode="$(var.UpgradeCode)">
+        <Package InstallerVersion="405" Compressed="yes" InstallScope="perMachine" Description="QtCloudServices" Manufacturer="Digia Plc" Platform="x64" />
+        <Feature Id="Complete" Title="QtCloudServices SDK" Level="1" Description="QtCloudServices SDK" Display="expand" ConfigurableDirectory="INSTALLFOLDER">
+            <ComponentRef Id="ApiUsageDemoExecutable" />
+            <ComponentRef Id="QtCloudServicesDll" />
+            <ComponentRef Id="Qt5Libraries" />
+            <ComponentRef Id="ProgramMenuDir" />
+            <MergeRef Id="VCRedist" />
         </Feature>
         <UI />
+        <Upgrade Id="$(var.UpgradeCode)">
+            <UpgradeVersion Minimum="$(var.ProductVersion)" IncludeMinimum="no" OnlyDetect="yes" Property="NEWPRODUCTFOUND" />
+            <UpgradeVersion Minimum="1.0.0.0" IncludeMinimum="yes" Maximum="$(var.ProductVersion)" IncludeMaximum="no" Property="UPGRADEFOUND" />
+        </Upgrade>
+        <Media Id="1" Cabinet="QtCloudServices1.cab" DiskPrompt="Qt CloudServces #1" EmbedCab="yes" />
+        <Property Id="DiskPrompt" Value="Please insert QtCloudServces Installation media." />
+        <Property Id="ARPPRODUCTICON" Value="QtCloudServcesProgramsAndFeatures.ico" />
+        <InstallExecuteSequence>
+            <Custom Action="PreventDowngrading" After="FindRelatedProducts">NEWPRODUCTFOUND</Custom>
+            <RemoveExistingProducts After="InstallFinalize" />
+        </InstallExecuteSequence>
+        <InstallUISequence>
+            <Custom Action="PreventDowngrading" After="FindRelatedProducts">NEWPRODUCTFOUND</Custom>
+        </InstallUISequence>
+        <CustomAction Id="PreventDowngrading" Error="Newer version already installed" />
+        <Icon Id="QtCloudServcesProgramsAndFeatures.ico" SourceFile="QtCloudServces.ico" />
     </Product>
     <Fragment>
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder">
-                <Directory Id="INSTALLFOLDER" Name="QtCloudServices_x64" />
+                <Directory Id="Digia_Folder" Name="Digia">
+                    <Directory Id="INSTALLFOLDER" Name="QtCloudServices">
+                        <Component Id="ApiUsageDemoExecutable" Guid="A69847CC-BA75-4C8A-AA80-0B87D3955927">
+                            <File DiskId="1" Id="ApiUsageDemoEXE" Name="ApiUsageDemo.exe" Source="$(var.ApiUsageDemo.TargetPath)" />
+                            <Shortcut Id="startApiUsageDemo" Name="ApiUsageDemo" Directory="ProgramMenuDir" WorkingDirectory="INSTALLFOLDER" Icon="ApiUsageDemo.ico" IconIndex="0" Advertise="yes">
+                                <Icon Id="ApiUsageDemo.ico" SourceFile="ApiUsageDemo.ico" />
+                            </Shortcut>
+                        </Component>
+                        <Component Id="QtCloudServicesDll" Guid="4161FB16-32A4-4E3A-A690-B0EAC287F0FC">
+                            <File DiskId="1" Id="QtCloudServicesDLL" Name="QtCloudServices.dll" Source="$(var.QtCloudServices.TargetPath)" />
+                        </Component>
+                        <Component Id="Qt5Libraries" Guid="A4C9AC29-FE8D-49A8-BCFD-1E551DDBC334">
+                            <File DiskId="1" Id="Qt5CoreDll" Name="Qt5Core.dll" Source="$(env.QTDIR)\bin\Qt5Core.dll" />
+                            <File DiskId="1" Id="Qt5GuiDll" Name="Qt5Gui.dll" Source="$(env.QTDIR)\bin\Qt5Gui.dll" />
+                            <File DiskId="1" Id="Qt5WidgetsDll" Name="Qt5Widgets.dll" Source="$(env.QTDIR)\bin\Qt5Widgets.dll" />
+                            <File DiskId="1" Id="Qt5NetworkDll" Name="Qt5Network.dll" Source="$(env.QTDIR)\bin\Qt5Network.dll" />
+                            <File DiskId="1" Id="libGLESv2Dll" Name="libGLESv2.dll" Source="$(env.QTDIR)\bin\libGLESv2.dll" />
+                            <File DiskId="1" Id="libEGLDll" Name="libEGL.dll" Source="$(env.QTDIR)\bin\libEGL.dll" />
+                            <File DiskId="1" Id="icuin52Dll" Name="icuin52.dll" Source="$(env.QTDIR)\bin\icuin52.dll" />
+                            <File DiskId="1" Id="icuuc52Dll" Name="icuuc52.dll" Source="$(env.QTDIR)\bin\icuuc52.dll" />
+                            <File DiskId="1" Id="icudt52Dll" Name="icudt52.dll" Source="$(env.QTDIR)\bin\icudt52.dll" />
+                        </Component>
+                        <Merge Id="VCRedist" Language="0" DiskId="1" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\Microsoft_VC110_CRT_x86.msm" />
+                    </Directory>
+                </Directory>
+            </Directory>
+            <Directory Id="ProgramMenuFolder" Name="Programs">
+                <Directory Id="ProgramMenuDir" Name="QtCloudServices">
+                    <Component Id="ProgramMenuDir" Guid="637C8DAA-957C-4D7D-AC3A-F5BEA51F1CBE">
+                        <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
+                        <RegistryValue Root="HKCU" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="" KeyPath="yes" />
+                    </Component>
+                </Directory>
             </Directory>
         </Directory>
     </Fragment>
