@@ -61,6 +61,9 @@
               <File DiskId="1" Id="icuin52Dll" Name="icuin52.dll" Source="$(env.QTDIR)\bin\icuin52.dll" />
               <File DiskId="1" Id="icuuc52Dll" Name="icuuc52.dll" Source="$(env.QTDIR)\bin\icuuc52.dll" />
               <File DiskId="1" Id="icudt52Dll" Name="icudt52.dll" Source="$(env.QTDIR)\bin\icudt52.dll" />
+
+              <File DiskId="1" Id="libeay32Dll" Name="libeay32.dll" Source="$(env.T7_ROOT)\VC12_Win32\bin\libeay32.dll" />
+              <File DiskId="1" Id="ssleay32Dll" Name="ssleay32.dll" Source="$(env.T7_ROOT)\VC12_Win32\bin\ssleay32.dll" />              
             </Component>            
             <Merge Id="VCRedist" Language="0" DiskId="1" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\Microsoft_VC110_CRT_x86.msm" />
           </Directory>

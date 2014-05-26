@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#if 0
 #ifndef ENGINIOMODELBASE_P_H
 #define ENGINIOMODELBASE_P_H
 
@@ -67,6 +66,8 @@
 // #include <QtCore/private/qabstractitemmodel_p.h>
 
 QT_BEGIN_NAMESPACE
+
+#if 0
 
 enum {
     DeletedRow = -3,
@@ -1139,6 +1140,8 @@ struct EnginioModelPrivateT : public EnginioBaseModelPrivate {
     }
 };
 
+#endif
+
 QT_END_NAMESPACE
 #endif // ENGINIOMODELBASE_P_H
-#endif
+

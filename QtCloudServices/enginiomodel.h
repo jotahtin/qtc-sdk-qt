@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#if 0
 #ifndef ENGINIOMODEL_H
 #define ENGINIOMODEL_H
 
@@ -50,6 +49,8 @@
 #include <QtCloudServices/enginiobasemodel.h>
 
 QT_BEGIN_NAMESPACE
+
+#if 0
 
 class EnginioModelPrivate;
 class QTCLOUDSERVICES_EXPORT EnginioModel
@@ -94,7 +95,9 @@ private:
     friend class EnginioBaseModelPrivate;
 };
 
+#endif
+
 QT_END_NAMESPACE
 
 #endif // ENGINIOMODEL_H
-#endif
+

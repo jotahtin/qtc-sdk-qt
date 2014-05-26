@@ -41,8 +41,6 @@
 
 #include "stdafx.h"
 
-#if 0
-
 #include <QtCloudServices/enginiomodel.h>
 #include <QtCloudServices/QEnginioOperation.h>
 #include <QtCloudServices/enginiobasemodel.h>
@@ -59,6 +57,8 @@
 #include <QtCore/qjsonarray.h>
 
 QT_BEGIN_NAMESPACE
+
+#if 0
 
 const int EnginioBaseModelPrivate::IncrementalModelUpdate = -2;
 
@@ -699,6 +699,7 @@ bool EnginioBaseModel::canFetchMore(const QModelIndex &parent) const
     return d->canFetchMore();
 }
 
+#endif
+
 QT_END_NAMESPACE
 
-#endif
