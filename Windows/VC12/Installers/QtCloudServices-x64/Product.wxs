@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="*" Name="QtCloudServices_x64" Language="1033" Version="1.0.0.0" Manufacturer="" UpgradeCode="bbce7342-d4c5-44ce-b76b-0c5cceaf2605">
+        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+        <MediaTemplate />
+        <Feature Id="ProductFeature" Title="QtCloudServices_x64" Level="1">
+            <ComponentGroupRef Id="ProductComponents" />
+        </Feature>
+        <UI />
+    </Product>
+    <Fragment>
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLFOLDER" Name="QtCloudServices_x64" />
+            </Directory>
+        </Directory>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+            <!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+            <!-- <Component Id="ProductComponent"> -->
+            <!-- TODO: Insert files, registry keys, and other resources here. -->
+            <!-- </Component> -->
+        </ComponentGroup>
+    </Fragment>
+</Wix>
