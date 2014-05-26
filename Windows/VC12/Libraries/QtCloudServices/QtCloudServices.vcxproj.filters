@@ -95,9 +95,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_enginiofakereply_p.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\QtCloudServices\enginiostring.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\QtCloudServices\enginiofakereply.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -176,17 +173,8 @@
     <ClCompile Include="GeneratedFiles\Release\moc_qenginioquery.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_enginiobasemodel.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_enginiobasemodel.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_enginiomodel.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_enginiomodel.cpp">
-      <Filter>Generated Files\Release</Filter>
+    <ClCompile Include="..\..\..\..\QtCloudServices\qcloudservicesconstants.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -264,12 +252,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\..\QtCloudServices\qenginioquery.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\..\QtCloudServices\enginiobasemodel.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\..\QtCloudServices\enginiomodel.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

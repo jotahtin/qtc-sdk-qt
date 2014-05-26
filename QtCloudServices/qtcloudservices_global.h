@@ -45,7 +45,7 @@
 #include <QtCore/qglobal.h>
 #include <QDebug>
 
-#ifdef QTCLOUDSERVICES_LIB
+#ifdef QTCLOUDSERVICES_LIBRARY
 # define QTCLOUDSERVICES_EXPORT Q_DECL_EXPORT
 #else
 # define QTCLOUDSERVICES_EXPORT Q_DECL_IMPORT
