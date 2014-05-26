@@ -58,9 +58,9 @@
               <File DiskId="1" Id="Qt5NetworkDll" Name="Qt5Network.dll" Source="$(env.QTDIR)\bin\Qt5Network.dll" />
               <File DiskId="1" Id="libGLESv2Dll" Name="libGLESv2.dll" Source="$(env.QTDIR)\bin\libGLESv2.dll" />
               <File DiskId="1" Id="libEGLDll" Name="libEGL.dll" Source="$(env.QTDIR)\bin\libEGL.dll" />
-              <File DiskId="1" Id="icuin51Dll" Name="icuin51.dll" Source="$(env.QTDIR)\bin\icuin52.dll" />
-              <File DiskId="1" Id="icuuc51Dll" Name="icuuc51.dll" Source="$(env.QTDIR)\bin\icuuc52.dll" />
-              <File DiskId="1" Id="icudt51Dll" Name="icudt51.dll" Source="$(env.QTDIR)\bin\icudt52.dll" />
+              <File DiskId="1" Id="icuin52Dll" Name="icuin52.dll" Source="$(env.QTDIR)\bin\icuin52.dll" />
+              <File DiskId="1" Id="icuuc52Dll" Name="icuuc52.dll" Source="$(env.QTDIR)\bin\icuuc52.dll" />
+              <File DiskId="1" Id="icudt52Dll" Name="icudt52.dll" Source="$(env.QTDIR)\bin\icudt52.dll" />
             </Component>            
             <Merge Id="VCRedist" Language="0" DiskId="1" SourceFile="C:\Program Files (x86)\Common Files\Merge Modules\Microsoft_VC110_CRT_x86.msm" />
           </Directory>
