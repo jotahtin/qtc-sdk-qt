@@ -8,4 +8,6 @@ load(qt_parts)
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    QtCloudServices
+    QtCloudServices \
+    Examples
+

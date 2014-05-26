@@ -86,6 +86,7 @@ Global
 		{BBA4F916-220A-4685-ABB6-C148AB6DC040}.Release|Mixed Platforms.Build.0 = Release|x86
 		{BBA4F916-220A-4685-ABB6-C148AB6DC040}.Release|Win32.ActiveCfg = Release|x86
 		{BBA4F916-220A-4685-ABB6-C148AB6DC040}.Release|x64.ActiveCfg = Release|x64
+		{BBA4F916-220A-4685-ABB6-C148AB6DC040}.Release|x64.Build.0 = Release|x64
 		{BBA4F916-220A-4685-ABB6-C148AB6DC040}.Release|x86.ActiveCfg = Release|x86
 		{BBA4F916-220A-4685-ABB6-C148AB6DC040}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
