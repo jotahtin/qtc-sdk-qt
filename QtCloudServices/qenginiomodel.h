@@ -48,8 +48,10 @@
 
 #include <QtCloudServices/qtcloudservices_global.h>
 #include <QtCloudServices/qenginiocollection.h>
+#include <QtCloudServices/qenginiomodelnode.h>
 
 QT_BEGIN_NAMESPACE
+
 
 class QEnginioModelPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioModel : public QAbstractListModel {
@@ -59,6 +61,8 @@ class QTCLOUDSERVICES_EXPORT QEnginioModel : public QAbstractListModel {
     // Q_PROPERTY(QtCloudServices::Operation operation READ operation WRITE setOperation NOTIFY operationChanged)
     // Q_PROPERTY(QEnginioConnection *client READ client WRITE setClient NOTIFY clientChanged)
     // Q_PROPERTY(QJsonObject query READ query WRITE setQuery NOTIFY queryChanged)
+
+    friend class QEnginioModelNodePrivate;
 public:
     explicit QEnginioModel(QObject *aParent = 0);
     ~QEnginioModel();
@@ -75,17 +79,22 @@ public:
     void disableNotifications();
 #endif
 
-    QEnginioCollection collection() const Q_REQUIRED_RESULT;
-    void setCollection(const QEnginioCollection &aCollection);
+    QEnginioCollection collection(const QModelIndex &aParent = QModelIndex()) const Q_REQUIRED_RESULT;
+    void setCollection(const QEnginioCollection &aCollection,
+                       const QModelIndex &aParent = QModelIndex());
 
-    QEnginioQuery query() Q_REQUIRED_RESULT;
-    void setQuery(const QEnginioQuery &aQuery);
+    QEnginioQuery query(const QModelIndex &aParent = QModelIndex()) Q_REQUIRED_RESULT;
+    void setQuery(const QEnginioQuery &aQuery,
+                  const QModelIndex &aParent = QModelIndex());
+
+
 
 #if 0
     QtCloudServices::Operation operation() const Q_REQUIRED_RESULT;
     void setOperation(QtCloudServices::Operation operation);
 #endif
-    Q_INVOKABLE QEnginioOperation append(const QEnginioObject &aObject);
+    Q_INVOKABLE QEnginioOperation append(const QEnginioObject &aObject,
+                                         const QModelIndex &aParent = QModelIndex());
 #if 0
 
     Q_INVOKABLE QEnginioOperation remove(int row);
@@ -93,6 +102,9 @@ public:
     using EnginioBaseModel::setData;
 #endif
 
+protected:
+    QEnginioModelNode *nodeAt(const QModelIndex &aIndex);
+    QEnginioModelNode *getNode(const QModelIndex &aIndex) const;
 Q_SIGNALS:
     void collectionChanged(const QEnginioCollection &aCollection);
     // void queryChanged(const QJsonObject &query);

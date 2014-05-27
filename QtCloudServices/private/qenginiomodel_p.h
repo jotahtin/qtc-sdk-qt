@@ -56,6 +56,7 @@
 #include <QtCloudServices/private/qcloudservicesobject_p.h>
 #include <QtCloudServices/private/qenginioconnection_p.h>
 #include <QtCloudServices/private/qenginiooperation_p.h>
+#include <QtCloudServices/private/qenginiomodelnode_p.h>
 
 #include <QtCloudServices/private/enginiofakereply_p.h>
 #include <QtCloudServices/private/enginiodummyreply_p.h>
@@ -263,48 +264,6 @@ public:
 #endif
 
 /*
-** QEnginioModelObject
-*/
-class QEnginioModelObject : public QObject {
-    Q_OBJECT
-    enum HandleOperationType {
-        HandleOperationInsert
-    };
-public:
-    QEnginioModelObject();
-
-    int rowCount() const Q_REQUIRED_RESULT;
-    QVariant data(unsigned row, int role) const Q_REQUIRED_RESULT;
-
-    bool canFetchMore() const Q_REQUIRED_RESULT;
-    void fetchMore(int row);
-
-    QEnginioCollection collection() const Q_REQUIRED_RESULT;
-    void setCollection(const QEnginioCollection &aCollection);
-
-    QEnginioQuery query() Q_REQUIRED_RESULT;
-    void setQuery(const QEnginioQuery &aQuery);
-
-    QEnginioOperation append(QSharedPointer<QEnginioModelObject> aSelf,
-                             const QEnginioObject &aObject);
-
-public:
-    void handleOperationReply(HandleOperationType aType,
-                              QEnginioOperation aOperation);
-private:
-    Q_DISABLE_COPY(QEnginioModelObject)
-private:
-
-    bool iCanFetchMore;
-
-    QJsonArray iData;
-    QHash<int, QString> iRoles;
-
-    QEnginioCollection iCollection; // QEnginioConnectionPrivate *_enginio;
-    QEnginioQuery iQuery;
-};
-
-/*
 ** QEnginioModelPrivate
 */
 class QEnginioModelPrivate
@@ -319,22 +278,37 @@ public:
     QEnginioModelPrivate();
     virtual ~QEnginioModelPrivate();
 
+    virtual Qt::ItemFlags flags(const QModelIndex &aIndex) const;
+    /*
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
+    void fetchMore(const QModelIndex &parent) Q_DECL_OVERRIDE;
+    bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    */
+
     int rowCount() const Q_REQUIRED_RESULT;
     QVariant data(unsigned row, int role) const Q_REQUIRED_RESULT;
 
     bool canFetchMore() const Q_REQUIRED_RESULT;
     void fetchMore(int row);
 
-    QEnginioCollection collection() const Q_REQUIRED_RESULT;
-    void setCollection(const QEnginioCollection &aCollection);
+    QEnginioCollection collection(const QModelIndex &aParent) const Q_REQUIRED_RESULT;
+    void setCollection(const QEnginioCollection &aCollection,
+                       const QModelIndex &aParent);
 
-    QEnginioQuery query() Q_REQUIRED_RESULT;
-    void setQuery(const QEnginioQuery &aQuery);
+    QEnginioQuery query(const QModelIndex &aParent) Q_REQUIRED_RESULT;
+    void setQuery(const QEnginioQuery &aQuery,
+                  const QModelIndex &aParent);
 
-    QEnginioOperation append(const QEnginioObject &aObject);
+    QEnginioOperation append(const QEnginioObject &aObject,
+                             const QModelIndex &aParent);
 
+public:
+    QEnginioModelNodePrivate *nodeAt(const QModelIndex &aIndex);
+    QEnginioModelNodePrivate *getNode(const QModelIndex &aIndex) const;
 protected:
-    QSharedPointer<QEnginioModelObject> iObject;
+    QEnginioModelNode *iRoot;
 
 #if 0
     QtCloudServices::Operation _operation;

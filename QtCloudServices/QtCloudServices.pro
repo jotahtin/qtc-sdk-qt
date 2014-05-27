@@ -28,7 +28,8 @@ SOURCES += \
     qcloudservicesconstants.cpp \
     qenginiomodel.cpp \
     qenginioobject.cpp \
-    qenginiouser.cpp
+    qenginiouser.cpp \
+    qenginiomodelnode.cpp
 
 HEADERS += qtcloudservices.h\
         qtcloudservices_global.h \
@@ -62,7 +63,9 @@ HEADERS += qtcloudservices.h\
     private/qenginiouser_p.h \
     qenginiomodel.h \
     qenginioobject.h \
-    qenginiouser.h
+    qenginiouser.h \
+    qenginiomodelnode.h \
+    private/qenginiomodelnode_p.h
 
 unix {
     target.path = /usr/lib
