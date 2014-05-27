@@ -1,7 +1,7 @@
 qtc-sdk-qt
 ==========
 
-<<<<<<< HEAD
+=======
 # Qt Cloud Services SDK for Qt
 
 This is Qt Cloud Services SDK for Qt. What is Qt Cloud Services? See below:
@@ -36,4 +36,4 @@ See the product specific SDK API References:
 
 =======
 Qt Cloud Services SDK for Qt
->>>>>>> Initial commit
+=======
