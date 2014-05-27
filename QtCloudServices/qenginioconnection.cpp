@@ -288,7 +288,8 @@ QSharedPointer<QNetworkAccessManager> QEnginioConnectionObject::networkManager()
 }
 
 QEnginioOperation QEnginioConnectionObject::customRequest(QSharedPointer<QEnginioConnectionObject> aSelf,
-        const QEnginioRequest &aRequest)
+        const QEnginioRequest &aRequest,
+        QSharedPointer<QEnginioCollectionObject> aEnginioCollection)
 {
     QBuffer *buffer = 0;
     QNetworkRequest request;
@@ -300,6 +301,7 @@ QEnginioOperation QEnginioConnectionObject::customRequest(QSharedPointer<QEngini
     enginioRequest = reinterpret_cast<QEnginioRequestPrivate *>(QTC_D_PTR(&aRequest));
 
     QSharedPointer<QEnginioOperationObject> operationObject(new QEnginioOperationObject(aSelf));
+    operationObject->setEnginioCollection(aEnginioCollection);
     operationObject->setEnginioRequest(aRequest);
 
     switch (enginioRequest->iOperation) {

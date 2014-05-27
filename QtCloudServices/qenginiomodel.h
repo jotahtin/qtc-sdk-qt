@@ -75,31 +75,28 @@ public:
     void disableNotifications();
 #endif
 
-#if 0
-    QEnginioConnection *client() const Q_REQUIRED_RESULT;
-    void setClient(const QEnginioConnection *client);
+    QEnginioCollection collection() const Q_REQUIRED_RESULT;
+    void setCollection(const QEnginioCollection &aCollection);
 
-    QJsonObject query() Q_REQUIRED_RESULT;
-    void setQuery(const QJsonObject &query);
-#endif
-
-    void setCollection(const QEnginioCollection &aCollection,
-                       const QEnginioQuery &aQuery = QEnginioQuery());
+    QEnginioQuery query() Q_REQUIRED_RESULT;
+    void setQuery(const QEnginioQuery &aQuery);
 
 #if 0
     QtCloudServices::Operation operation() const Q_REQUIRED_RESULT;
     void setOperation(QtCloudServices::Operation operation);
+#endif
+    Q_INVOKABLE QEnginioOperation append(const QEnginioObject &aObject);
+#if 0
 
-    Q_INVOKABLE QEnginioOperation append(const QJsonObject &value);
     Q_INVOKABLE QEnginioOperation remove(int row);
     Q_INVOKABLE QEnginioOperation setData(int row, const QVariant &value, const QString &role);
     using EnginioBaseModel::setData;
+#endif
 
 Q_SIGNALS:
-    void queryChanged(const QJsonObject &query);
-    void clientChanged(QEnginioConnection *client);
-    void operationChanged(QtCloudServices::Operation operation);
-#endif
+    void collectionChanged(const QEnginioCollection &aCollection);
+    // void queryChanged(const QJsonObject &query);
+    // void operationChanged(QtCloudServices::Operation operation);
 
 private:
     Q_DISABLE_COPY(QEnginioModel)

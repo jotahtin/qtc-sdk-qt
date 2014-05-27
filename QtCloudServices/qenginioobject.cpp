@@ -42,14 +42,20 @@
 #include "stdafx.h"
 
 #include "QtCloudServices/private/qenginioobject_p.h"
+#include "QtCloudServices/private/qcloudservicesconstants_p.h"
 
 QT_BEGIN_NAMESPACE
 
 /*
 ** Shared Implementation
 */
-QEnginioObjectObject::QEnginioObjectObject(QSharedPointer<QEnginioCollectionObject> aCollection)
-    : iCollection(aCollection)
+QEnginioObjectObject::QEnginioObjectObject()
+{
+
+}
+QEnginioObjectObject::QEnginioObjectObject(QSharedPointer<QEnginioCollectionObject> aCollection,
+        QJsonObject aJsonObject)
+    : iCollection(aCollection), iJsonObject(aJsonObject)
 {
 
 }
@@ -63,6 +69,27 @@ bool QEnginioObjectObject::isValid() const
     return true;
 }
 
+void QEnginioObjectObject::insert(const QString &aKey, const QJsonValue &aValue)
+{
+    iJsonObject.insert(aKey, aValue);
+}
+void QEnginioObjectObject::remove(const QString &aKey)
+{
+    iJsonObject.remove(aKey);
+}
+bool QEnginioObjectObject::contains(const QString &aKey) const
+{
+    return iJsonObject.contains(aKey);
+}
+QJsonValue QEnginioObjectObject::value(const QString &aKey) const
+{
+    return iJsonObject.value(aKey);
+}
+QJsonValueRef QEnginioObjectObject::valueRef(const QString &aKey)
+{
+    return iJsonObject[aKey];
+}
+
 const QJsonObject QEnginioObjectObject::jsonObject() const
 {
     return iJsonObject;
@@ -70,7 +97,11 @@ const QJsonObject QEnginioObjectObject::jsonObject() const
 
 const QString QEnginioObjectObject::objectId() const
 {
-    return iObjectId;
+    return value(QtCloudServicesConstants::id).toString();
+}
+const QString QEnginioObjectObject::objectType() const
+{
+    return value(QtCloudServicesConstants::objectType).toString();
 }
 const QTime QEnginioObjectObject::createAt() const
 {
@@ -79,10 +110,6 @@ const QTime QEnginioObjectObject::createAt() const
 const QEnginioUser QEnginioObjectObject::creator() const
 {
     return iCreator;
-}
-const QString QEnginioObjectObject::objectType() const
-{
-    return iObjectType;
 }
 const QTime QEnginioObjectObject::updatedAt() const
 {
@@ -93,15 +120,15 @@ const QEnginioUser QEnginioObjectObject::updater() const
     return iUpdater;
 }
 
-QSharedPointer<QEnginioObjectObject> QEnginioObjectObject::get(QSharedPointer<QEnginioCollectionObject> aCollection)
+QSharedPointer<QEnginioObjectObject> QEnginioObjectObject::get(QSharedPointer<QEnginioCollectionObject> aCollection,
+        QJsonObject aJsonObject)
 {
     QSharedPointer<QEnginioObjectObject> obj;
-    obj = QSharedPointer<QEnginioObjectObject>(new QEnginioObjectObject(aCollection));
+    obj = QSharedPointer<QEnginioObjectObject>(new QEnginioObjectObject(aCollection, aJsonObject));
 
 
     return obj;
 }
-
 
 
 
@@ -110,6 +137,7 @@ QSharedPointer<QEnginioObjectObject> QEnginioObjectObject::get(QSharedPointer<QE
 */
 
 QEnginioObjectPrivate::QEnginioObjectPrivate()
+    : iObject()
 {
 
 }
@@ -121,6 +149,46 @@ bool QEnginioObjectPrivate::isValid() const
     }
 
     return false;
+}
+
+void QEnginioObjectPrivate::insert(const QString &aKey, const QJsonValue &aValue)
+{
+    if (!iObject) {
+        iObject = QSharedPointer<QEnginioObjectObject>(new QEnginioObjectObject());
+    }
+
+    iObject->insert(aKey, aValue);
+}
+void QEnginioObjectPrivate::remove(const QString &aKey)
+{
+    if (iObject) {
+        iObject->remove(aKey);
+    }
+}
+bool QEnginioObjectPrivate::contains(const QString &aKey) const
+{
+    if (iObject) {
+        return iObject->contains(aKey);
+    }
+
+    return false;
+}
+QJsonValue QEnginioObjectPrivate::value(const QString &aKey) const
+{
+    if (!iObject) {
+        const_cast<QEnginioObjectPrivate *>(this)->iObject
+            = QSharedPointer<QEnginioObjectObject>(new QEnginioObjectObject());
+    }
+
+    return iObject->value(aKey);
+}
+QJsonValueRef QEnginioObjectPrivate::valueRef(const QString &aKey)
+{
+    if (!iObject) {
+        iObject = QSharedPointer<QEnginioObjectObject>(new QEnginioObjectObject());
+    }
+
+    return iObject->valueRef(aKey);
 }
 
 const QJsonObject QEnginioObjectPrivate::jsonObject() const
@@ -210,6 +278,14 @@ QEnginioObject::QEnginioObject(const QEnginioObject &aOther)
     *this = aOther;
 }
 
+QEnginioObject::QEnginioObject(const QJsonObject &aJsonObject)
+    : QCloudServicesObject(*new QEnginioObjectPrivate())
+{
+    QTC_D(QEnginioObject);
+    QSharedPointer<QEnginioObjectObject> obj(new QEnginioObjectObject(QSharedPointer<QEnginioCollectionObject>(), aJsonObject));
+    d->setEnginioObjectObject(obj);
+}
+
 QEnginioObject& QEnginioObject::operator=(const QEnginioObject &aOther)
 {
 
@@ -229,6 +305,39 @@ bool QEnginioObject::isValid() const
 {
     QTC_D(const QEnginioObject);
     return d->isValid();
+}
+
+QEnginioObject& QEnginioObject::insert(const QString &aKey, const QJsonValue &aValue)
+{
+    QTC_D(QEnginioObject);
+    d->insert(aKey, aValue);
+    return *this;
+}
+QEnginioObject& QEnginioObject::remove(const QString &aKey)
+{
+    QTC_D(QEnginioObject);
+    d->remove(aKey);
+    return *this;
+}
+bool QEnginioObject::contains(const QString &aKey) const
+{
+    QTC_D(const QEnginioObject);
+    return d->contains(aKey);
+}
+QJsonValue QEnginioObject::value(const QString &aKey) const
+{
+    QTC_D(const QEnginioObject);
+    return d->value(aKey);
+}
+QJsonValue QEnginioObject::operator[](const QString &aKey) const
+{
+    QTC_D(const QEnginioObject);
+    return d->value(aKey);
+}
+QJsonValueRef QEnginioObject::operator[](const QString &aKey)
+{
+    QTC_D(QEnginioObject);
+    return d->valueRef(aKey);
 }
 
 const QJsonObject QEnginioObject::jsonObject() const
@@ -266,6 +375,33 @@ const QEnginioUser QEnginioObject::updater() const
     QTC_D(const QEnginioObject);
     return d->updater();
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, QEnginioObject aObject)
+{
+    if (!aObject.isValid()) {
+        d << "QEnginioObject(null)";
+        return d;
+    }
+
+    d.nospace();
+    d << "QEnginioObject("; // << hex << (void *)aReply << dec;
+    d << "objectId = " << aObject.objectId() << ", ";
+    d << "createAt = " << aObject.createAt(); //  << ", ";
+
+    /*
+    const QTime createAt() const Q_REQUIRED_RESULT;
+    const QEnginioUser creator() const Q_REQUIRED_RESULT;
+    const QString objectType() const Q_REQUIRED_RESULT;
+    const QTime updatedAt() const Q_REQUIRED_RESULT;
+    const QEnginioUser updater() const Q_REQUIRED_RESULT;
+    */
+    d << ")";
+
+    return d.space();
+}
+
+#endif /* QT_NO_DEBUG_STREAM */
 
 QT_END_NAMESPACE
 

@@ -61,6 +61,8 @@ public:
     QEnginioCollection(const QEnginioCollection &aOther, QObject *aParent = 0);
     QEnginioCollection& operator=(const QEnginioCollection &aOther);
 public:
+    bool operator!() const;
+
     bool isValid() const;
     QString collectionName() const;
 
@@ -68,14 +70,20 @@ public:
                                        QEnginioOperation::Callback aCallback);
     Q_INVOKABLE QEnginioOperation findOne(const QString &aObjectId,
                                           QEnginioOperation::Callback aCallback);
+    Q_INVOKABLE QEnginioOperation insert(const QEnginioObject &aObject,
+                                         QEnginioOperation::Callback aCallback);
+    /*
     Q_INVOKABLE QEnginioOperation insert(const QJsonObject &aObject,
                                          QEnginioOperation::Callback aCallback);
+    */
     Q_INVOKABLE QEnginioOperation update(const QString &aObjectId,
                                          const QJsonObject &aObject,
                                          QEnginioOperation::Callback aCallback);
     Q_INVOKABLE QEnginioOperation remove(const QString &aObjectId,
                                          QEnginioOperation::Callback aCallback);
 
+public:
+    QEnginioObject fromJsonObject(const QJsonObject &aJsonObject);
 protected:
     QTC_DECLARE_PRIVATE(QEnginioCollection)
 };

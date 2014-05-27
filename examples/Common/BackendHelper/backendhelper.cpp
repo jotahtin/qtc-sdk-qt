@@ -49,6 +49,7 @@ const QString showAgainKey = QStringLiteral("showAgain");
 
 static QString gBackendAddress;
 static QString gBackendId;
+static QTime gBackendTime;
 
 static void backendResolve(const QString &exampleName) {
     QString fileName = QStringLiteral("QtCloudServicesExamples.conf");
@@ -68,6 +69,12 @@ static void backendResolve(const QString &exampleName) {
     gBackendId = settings->value(backendIdKey).toString();
     bool askAgain = settings->value(showAgainKey, true).toBool();
 
+    if (askAgain) {
+        if (gBackendTime.secsTo(QTime::currentTime())<10) {
+            askAgain = false;
+        }
+    }
+
     if (askAgain || gBackendId.isEmpty() || gBackendAddress.isEmpty()) {
         Ui::Dialog dialog;
         QDialog d;
@@ -80,6 +87,7 @@ static void backendResolve(const QString &exampleName) {
         if (d.exec() == QDialog::Accepted) {
             gBackendAddress = dialog.backendAddress->text();
             gBackendId = dialog.backendId->text();
+            gBackendTime = QTime::currentTime();
             askAgain = !dialog.askAgain->isChecked();
             settings->setValue(backendAddressKey, gBackendAddress);
             settings->setValue(backendIdKey, gBackendId);

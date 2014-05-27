@@ -43,6 +43,7 @@
 #define QCLOUDSERVICES_QENGINIOOBJECT_H
 
 #include <QTime>
+#include <QJsonValueRef>
 
 #include <QtCloudServices/qtcloudservices.h>
 #include <QtCloudServices/qcloudservicesobject.h>
@@ -50,19 +51,29 @@
 QT_BEGIN_NAMESPACE
 
 class QEnginioUser;
+class QEnginioCollectionObject;
 class QEnginioObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioObject : public QCloudServicesObject {
     Q_OBJECT
     Q_PROPERTY(QString objectId READ objectId NOTIFY objectChanged)
+    friend class QEnginioCollectionObject;
 protected:
     QEnginioObject(QEnginioObjectPrivate &dd, QObject *aParent = 0);
 public:
     QEnginioObject(QObject *aParent = 0);
     QEnginioObject(const QEnginioObject &aOther);
+    QEnginioObject(const QJsonObject &aJsonObject);
 
     QEnginioObject& operator=(const QEnginioObject &aOther);
 
     bool isValid() const Q_REQUIRED_RESULT;
+
+    QEnginioObject& insert(const QString &aKey, const QJsonValue &aValue);
+    QEnginioObject& remove(const QString &aKey);
+    bool contains(const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValue value(const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValue operator[](const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValueRef operator[](const QString &aKey) Q_REQUIRED_RESULT;
 
     const QJsonObject jsonObject() const Q_REQUIRED_RESULT;
 
@@ -78,6 +89,14 @@ protected:
     QTC_DECLARE_PRIVATE(QEnginioObject)
 };
 
+Q_DECLARE_TYPEINFO(QEnginioObject, Q_COMPLEX_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+QTCLOUDSERVICES_EXPORT QDebug operator<<(QDebug d, QEnginioObject aObject);
+#endif
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QEnginioObject);
 
 #endif /* QCLOUDSERVICES_QENGINIOOBJECT_H */

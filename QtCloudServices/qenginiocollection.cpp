@@ -45,6 +45,7 @@
 
 #include <QtCloudServices/private/qenginiocollection_p.h>
 #include <QtCloudServices/private/qenginiodatastorage_p.h>
+#include <QtCloudServices/private/qenginioobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,7 +77,8 @@ QString QEnginioCollectionObject::collectionName() const
     return iCollectionName;
 }
 
-QEnginioOperation QEnginioCollectionObject::find(const QEnginioQuery &aQuery,
+QEnginioOperation QEnginioCollectionObject::find(QSharedPointer<QEnginioCollectionObject> aSelf,
+        const QEnginioQuery &aQuery,
         QEnginioOperation::Callback aCallback)
 {
     QString path;
@@ -105,11 +107,12 @@ QEnginioOperation QEnginioCollectionObject::find(const QEnginioQuery &aQuery,
 
         aCallback(op);
     });
-    return connection->customRequest(connection, request);
+    return connection->customRequest(connection, request, aSelf);
 
 }
 
-QEnginioOperation QEnginioCollectionObject::findOne(const QString &aObjectId,
+QEnginioOperation QEnginioCollectionObject::findOne(QSharedPointer<QEnginioCollectionObject> aSelf,
+        const QString &aObjectId,
         QEnginioOperation::Callback aCallback)
 {
     QString path;
@@ -129,10 +132,12 @@ QEnginioOperation QEnginioCollectionObject::findOne(const QString &aObjectId,
 
         aCallback(op);
     });
-    return connection->customRequest(connection, request);
+    return connection->customRequest(connection, request, aSelf);
 }
 
-QEnginioOperation QEnginioCollectionObject::insert(const QJsonObject &aObject,
+
+QEnginioOperation QEnginioCollectionObject::insert(QSharedPointer<QEnginioCollectionObject> aSelf,
+        const QEnginioObject &aObject,
         QEnginioOperation::Callback aCallback)
 {
     QString path;
@@ -143,18 +148,21 @@ QEnginioOperation QEnginioCollectionObject::insert(const QJsonObject &aObject,
     path.append(iCollectionName);
 
     QEnginioRequest request(QtCloudServices::RESTOperationPost, path);
-    request.payload(aObject);
+    request.payload(aObject.jsonObject());
     request.then([ = ](QEnginioOperation & op) {
         if (op.isValid() && !op.isError()) {
             iEDS->releaseConnection(connection);
         }
 
+        // TODO: update collection & collect weak ref to object object
+
         aCallback(op);
     });
-    return connection->customRequest(connection, request);
+    return connection->customRequest(connection, request, aSelf);
 }
 
-QEnginioOperation QEnginioCollectionObject::update(const QString &aObjectId,
+QEnginioOperation QEnginioCollectionObject::update(QSharedPointer<QEnginioCollectionObject> aSelf,
+        const QString &aObjectId,
         const QJsonObject &aObject,
         QEnginioOperation::Callback aCallback)
 {
@@ -176,10 +184,11 @@ QEnginioOperation QEnginioCollectionObject::update(const QString &aObjectId,
 
         aCallback(op);
     });
-    return connection->customRequest(connection, request);
+    return connection->customRequest(connection, request, aSelf);
 }
 
-QEnginioOperation QEnginioCollectionObject::remove(const QString &aObjectId,
+QEnginioOperation QEnginioCollectionObject::remove(QSharedPointer<QEnginioCollectionObject> aSelf,
+        const QString &aObjectId,
         QEnginioOperation::Callback aCallback)
 {
     QString path;
@@ -199,7 +208,21 @@ QEnginioOperation QEnginioCollectionObject::remove(const QString &aObjectId,
 
         aCallback(op);
     });
-    return connection->customRequest(connection, request);
+    return connection->customRequest(connection, request, aSelf);
+}
+
+QEnginioObject QEnginioCollectionObject::fromJsonObject(QSharedPointer<QEnginioCollectionObject> aSelf,
+        const QJsonObject &aJsonObject)
+{
+    QEnginioObject obj;
+    QEnginioObjectPrivate *obj_d;
+    obj_d = reinterpret_cast<QEnginioObjectPrivate *>(QTC_D_PTR(&obj));
+
+    if (obj_d) {
+        obj_d->setEnginioObjectObject(QEnginioObjectObject::get(aSelf, aJsonObject));
+    }
+
+    return obj;
 }
 
 /*
@@ -242,7 +265,7 @@ QEnginioOperation QEnginioCollectionPrivate::find(const QEnginioQuery &aQuery,
     QEnginioOperation operation;
 
     if (iObject) {
-        operation = iObject->find(aQuery, aCallback);
+        operation = iObject->find(iObject, aQuery, aCallback);
     }
 
     return operation;
@@ -253,19 +276,19 @@ QEnginioOperation QEnginioCollectionPrivate::findOne(const QString &aObjectId,
     QEnginioOperation operation;
 
     if (iObject) {
-        operation = iObject->findOne(aObjectId, aCallback);
+        operation = iObject->findOne(iObject, aObjectId, aCallback);
     }
 
     return operation;
 }
 
-QEnginioOperation QEnginioCollectionPrivate::insert(const QJsonObject &aObject,
+QEnginioOperation QEnginioCollectionPrivate::insert(const QEnginioObject &aObject,
         QEnginioOperation::Callback aCallback)
 {
     QEnginioOperation operation;
 
     if (iObject) {
-        operation = iObject->insert(aObject, aCallback);
+        operation = iObject->insert(iObject, aObject, aCallback);
     }
 
     return operation;
@@ -277,7 +300,7 @@ QEnginioOperation QEnginioCollectionPrivate::update(const QString &aObjectId,
     QEnginioOperation operation;
 
     if (iObject) {
-        operation = iObject->update(aObjectId, aObject, aCallback);
+        operation = iObject->update(iObject, aObjectId, aObject, aCallback);
     }
 
     return operation;
@@ -289,12 +312,20 @@ QEnginioOperation QEnginioCollectionPrivate::remove(const QString &aObjectId,
     QEnginioOperation operation;
 
     if (iObject) {
-        operation = iObject->remove(aObjectId, aCallback);
+        operation = iObject->remove(iObject, aObjectId, aCallback);
     }
 
     return operation;
 }
 
+QEnginioObject QEnginioCollectionPrivate::fromJsonObject(const QJsonObject &aJsonObject)
+{
+    if (iObject) {
+        return iObject->fromJsonObject(enginioCollectionObject(), aJsonObject);
+    }
+
+    return QEnginioObject();
+}
 
 /*
 ** QEnginioCollection
@@ -323,6 +354,11 @@ QEnginioCollection& QEnginioCollection::operator=(const QEnginioCollection &aOth
     return *this;
 }
 
+bool QEnginioCollection::operator!() const
+{
+    return !isValid();
+}
+
 bool QEnginioCollection::isValid() const
 {
     QTC_D(const QEnginioCollection);
@@ -349,13 +385,20 @@ QEnginioOperation QEnginioCollection::findOne(const QString &aObjectId,
     return d->findOne(aObjectId, aCallback);
 }
 
+QEnginioOperation QEnginioCollection::insert(const QEnginioObject &aObject,
+        QEnginioOperation::Callback aCallback)
+{
+    QTC_D(QEnginioCollection);
+    return d->insert(aObject, aCallback);
+}
+/*
 QEnginioOperation QEnginioCollection::insert(const QJsonObject &aObject,
         QEnginioOperation::Callback aCallback)
 {
     QTC_D(QEnginioCollection);
     return d->insert(aObject, aCallback);
 }
-
+*/
 QEnginioOperation QEnginioCollection::update(const QString &aObjectId,
         const QJsonObject &aObject,
         QEnginioOperation::Callback aCallback)
@@ -368,6 +411,12 @@ QEnginioOperation QEnginioCollection::remove(const QString &aObjectId,
 {
     QTC_D(QEnginioCollection);
     return d->remove(aObjectId, aCallback);
+}
+
+QEnginioObject QEnginioCollection::fromJsonObject(const QJsonObject &aJsonObject)
+{
+    QTC_D(QEnginioCollection);
+    return d->fromJsonObject(aJsonObject);
 }
 
 QT_END_NAMESPACE

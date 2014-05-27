@@ -262,6 +262,51 @@ public:
 
 #endif
 
+/*
+** QEnginioModelObject
+*/
+class QEnginioModelObject : public QObject {
+    Q_OBJECT
+    enum HandleOperationType {
+        HandleOperationInsert
+    };
+public:
+    QEnginioModelObject();
+
+    int rowCount() const Q_REQUIRED_RESULT;
+    QVariant data(unsigned row, int role) const Q_REQUIRED_RESULT;
+
+    bool canFetchMore() const Q_REQUIRED_RESULT;
+    void fetchMore(int row);
+
+    QEnginioCollection collection() const Q_REQUIRED_RESULT;
+    void setCollection(const QEnginioCollection &aCollection);
+
+    QEnginioQuery query() Q_REQUIRED_RESULT;
+    void setQuery(const QEnginioQuery &aQuery);
+
+    QEnginioOperation append(QSharedPointer<QEnginioModelObject> aSelf,
+                             const QEnginioObject &aObject);
+
+public:
+    void handleOperationReply(HandleOperationType aType,
+                              QEnginioOperation aOperation);
+private:
+    Q_DISABLE_COPY(QEnginioModelObject)
+private:
+
+    bool iCanFetchMore;
+
+    QJsonArray iData;
+    QHash<int, QString> iRoles;
+
+    QEnginioCollection iCollection; // QEnginioConnectionPrivate *_enginio;
+    QEnginioQuery iQuery;
+};
+
+/*
+** QEnginioModelPrivate
+*/
 class QEnginioModelPrivate
 #if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
     : public QAbstractItemModelPrivate
@@ -280,15 +325,18 @@ public:
     bool canFetchMore() const Q_REQUIRED_RESULT;
     void fetchMore(int row);
 
+    QEnginioCollection collection() const Q_REQUIRED_RESULT;
+    void setCollection(const QEnginioCollection &aCollection);
+
+    QEnginioQuery query() Q_REQUIRED_RESULT;
+    void setQuery(const QEnginioQuery &aQuery);
+
+    QEnginioOperation append(const QEnginioObject &aObject);
+
 protected:
-
-    bool iCanFetchMore;
-
-    QJsonArray iData;
-    QHash<int, QString> iRoles;
+    QSharedPointer<QEnginioModelObject> iObject;
 
 #if 0
-    QEnginioConnectionPrivate *_enginio;
     QtCloudServices::Operation _operation;
     EnginioBaseModel *q;
     QVector<QMetaObject::Connection> _clientConnections;
@@ -446,41 +494,6 @@ public:
     void receivedUpdateNotification(const QJsonObject &object, const QString &idHint = QString(), int row = NoHintRow);
     void receivedCreateNotification(const QJsonObject &object);
 
-    QEnginioOperation append(const QJsonObject &value)
-    {
-#if 0
-        QJsonObject object(value);
-        QString temporaryId = QString::fromLatin1("tmp") + QUuid::createUuid().toString();
-        object[QtCloudServicesConstants::objectType] = queryData(QtCloudServicesConstants::objectType); // TODO think about it, it means that not all queries are valid
-        ObjectAdaptor<QJsonObject> aObject(object);
-        QNetworkReply *nreply = _enginio->create(aObject, _operation);
-        QEnginioOperation ereply = _enginio->createReply(nreply);
-        FinishedCreateRequest finishedRequest = { this, temporaryId, ereply };
-        QObject::connect(ereply, &QEnginioOperation::dataChanged, _replyConnectionConntext, finishedRequest);
-        object[QtCloudServicesConstants::id] = temporaryId;
-        const int row = _data.count();
-        AttachedData data(row, temporaryId);
-        data.ref = 1;
-        data.createReply = ereply;
-
-        if (!row) { // the first item need to update roles
-            q->beginResetModel();
-            _attachedData.insert(data);
-            _data.append(value);
-            syncRoles();
-            q->endResetModel();
-        } else {
-            q->beginInsertRows(QModelIndex(), _data.count(), _data.count());
-            _attachedData.insert(data);
-            _data.append(value);
-            q->endInsertRows();
-        }
-
-        _attachedData.insertRequestId(ereply->requestId(), row);
-        return ereply;
-#endif
-        return NULL;
-    }
 
     struct SwapNetworkReplyBase {
         QEnginioOperation _reply;
@@ -952,6 +965,14 @@ public:
 
 public:
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+    inline QEnginioModel* pub_func()
+    {
+        return static_cast<QEnginioModel *>(iInterface);
+    }
+    inline const QEnginioModel* pub_func() const
+    {
+        return static_cast<const QEnginioModel *>(iInterface);
+    }
     QEnginioModel *iInterface;
 #endif
 };
@@ -974,20 +995,6 @@ struct EnginioModelPrivateT : public EnginioBaseModelPrivate {
         return static_cast<Public*>(Base::q);
     }
 
-    class EnginioDestroyed {
-        EnginioModelPrivateT *model;
-    public:
-        EnginioDestroyed(EnginioModelPrivateT *m)
-            : model(m)
-        {
-            Q_ASSERT(m);
-        }
-        void operator ()()
-        {
-            model->setClient(0);
-        }
-    };
-
     EnginioModelPrivateT(EnginioBaseModel *pub)
         : Base(pub)
     {}
@@ -999,67 +1006,6 @@ struct EnginioModelPrivateT : public EnginioBaseModelPrivate {
         QObject::connect(q(), &Public::operationChanged, QueryChanged(this));
     }
 
-    Client *enginio() const Q_REQUIRED_RESULT
-    {
-#if 0
-        return _enginio ? ClientPrivate::get(_enginio) : 0;
-#endif
-        return 0;
-    }
-
-    void setClient(const QEnginioConnection *enginio)
-    {
-#if 0
-
-        if (_enginio) {
-            foreach (const QMetaObject::Connection & connection, _clientConnections)
-            QObject::disconnect(connection);
-            _clientConnections.clear();
-        }
-
-        if (enginio) {
-            _enginio = QEnginioConnectionPrivate::get(const_cast<QEnginioConnection*>(enginio));
-            _clientConnections.append(QObject::connect(enginio, &QObject::destroyed, EnginioDestroyed(this)));
-
-            //WILL NOT CHANGE
-            //_clientConnections.append(QObject::connect(enginio, &QEnginioConnection::backendIdChanged, QueryChanged(this)));
-        } else {
-            _enginio = 0;
-        }
-
-        q()->clientChanged(static_cast<Client*>(const_cast<QEnginioConnection*>(enginio)));
-#endif
-    }
-
-    Data query() Q_REQUIRED_RESULT {
-        return _query;
-    }
-
-    void setQuery(const Data &query)
-    {
-        _query = query;
-
-        // TODO Enable together with pageing support
-//        if (_query.contains(QtCloudServicesConstants::pageSize)) {
-//            const int pageSize = _query[QtCloudServicesConstants::pageSize].toDouble();
-//            const QString limitString(QtCloudServicesConstants::limit);
-//            const QString offsetString(QtCloudServicesConstants::offset);
-//            const unsigned limit = _query[limitString].toDouble();
-//            const unsigned offset = _query[offsetString].toDouble();
-//            if (limit)
-//                qWarning() << "EnginioModel::setQuery()" << "'limit' parameter can not be used together with model pagining feature, the value will be ignored";
-
-//            if (offset) {
-//                qWarning() << "EnginioModel::setQuery()" << "'offset' parameter can not be used together with model pagining feature, the value will be ignored";
-//                _query.remove(offsetString);
-//            }
-//            _query[limitString] = pageSize;
-//            _canFetchMore = true;
-//        } else {
-//            _canFetchMore = false;
-//        }
-        emit q()->queryChanged(query);
-    }
 
     Reply *append(const QJsonObject &value)
     {

@@ -54,7 +54,8 @@ class QEnginioUserObject : public QEnginioObjectObject {
     Q_OBJECT
     friend class QEnginioCollectionObject;
 public:
-    QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection);
+    QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection,
+                       QJsonObject aJsonObject);
     ~QEnginioUserObject();
 
     const QString username() const Q_REQUIRED_RESULT;
@@ -64,7 +65,8 @@ public:
 private:
     Q_DISABLE_COPY(QEnginioUserObject)
 public:
-    static QSharedPointer<QEnginioUserObject> get(QSharedPointer<QEnginioCollectionObject> aCollection);
+    static QSharedPointer<QEnginioUserObject> get(QSharedPointer<QEnginioCollectionObject> aCollection,
+            QJsonObject aJsonObject);
 private:
     QString iUsername;
     QString iEMail;

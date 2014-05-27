@@ -110,7 +110,9 @@ public:
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
     QEnginioOperation customRequest(QSharedPointer<QEnginioConnectionObject> aSelf,
-                                    const QEnginioRequest &aRequest);
+                                    const QEnginioRequest &aRequest,
+                                    QSharedPointer<QEnginioCollectionObject> aEnginioCollection
+                                    = QSharedPointer<QEnginioCollectionObject>());
 
 
 

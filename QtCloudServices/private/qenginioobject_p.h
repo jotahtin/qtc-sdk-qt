@@ -59,34 +59,39 @@ class QEnginioObjectObject : public QObject {
     Q_OBJECT
     friend class QEnginioCollectionObject;
 public:
-    QEnginioObjectObject(QSharedPointer<QEnginioCollectionObject> aCollection);
+    QEnginioObjectObject();
+    QEnginioObjectObject(QSharedPointer<QEnginioCollectionObject> aCollection,
+                         QJsonObject aJsonObject);
     ~QEnginioObjectObject();
 
     bool isValid() const Q_REQUIRED_RESULT;
 
+    void insert(const QString &aKey, const QJsonValue &aValue);
+    void remove(const QString &aKey);
+    bool contains(const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValue value(const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValueRef valueRef(const QString &aKey)  Q_REQUIRED_RESULT;
+
     const QJsonObject jsonObject() const Q_REQUIRED_RESULT;
 
     const QString objectId() const Q_REQUIRED_RESULT;
+    const QString objectType() const Q_REQUIRED_RESULT;
     const QTime createAt() const Q_REQUIRED_RESULT;
     const QEnginioUser creator() const Q_REQUIRED_RESULT;
-    const QString objectType() const Q_REQUIRED_RESULT;
     const QTime updatedAt() const Q_REQUIRED_RESULT;
     const QEnginioUser updater() const Q_REQUIRED_RESULT;
 private:
     Q_DISABLE_COPY(QEnginioObjectObject)
 public:
-    static QSharedPointer<QEnginioObjectObject> get(QSharedPointer<QEnginioCollectionObject> aCollection);
-private:
+    static QSharedPointer<QEnginioObjectObject> get(QSharedPointer<QEnginioCollectionObject> aCollection,
+            QJsonObject aJsonObject = QJsonObject());
+protected:
     QSharedPointer<QEnginioCollectionObject> iCollection;
-
-    // Reference Object
     QJsonObject iJsonObject;
-
+private:
     // Common Fields
-    QString iObjectId;
     QTime iCreatedAt;
     QEnginioUser iCreator;
-    QString iObjectType;
     QTime iUpdatedAt;
     QEnginioUser iUpdater;
 
@@ -101,6 +106,12 @@ public:
     QEnginioObjectPrivate();
 
     bool isValid() const Q_REQUIRED_RESULT;
+
+    void insert(const QString &aKey, const QJsonValue &aValue);
+    void remove(const QString &aKey);
+    bool contains(const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValue value(const QString &aKey) const Q_REQUIRED_RESULT;
+    QJsonValueRef valueRef(const QString &aKey)  Q_REQUIRED_RESULT;
 
     const QJsonObject jsonObject() const Q_REQUIRED_RESULT;
 

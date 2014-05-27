@@ -48,6 +48,14 @@
 #define FOR_EACH_QTCLOUDSERVICES_STRING(F)\
 	F(service_path_objects, "/v1/objects/")\
 	\
+	F(id, "id") \
+	F(objectType, "objectType")\
+	F(createdAt, "createdAt")\
+	F(creator, "creator")\
+	F(updatedAt, "updatedAt")\
+	F(updater, "updater")\
+	F(results, "results")\
+	\
     F(_synced, "_synced")\
     F(_delete, "delete")\
     F(access, "access")\
@@ -57,7 +65,6 @@
     F(complete, "complete")\
     F(count, "count")\
     F(create, "create")\
-    F(createdAt, "createdAt")\
     F(data, "data")\
     F(empty, "empty")\
     F(event, "event")\
@@ -67,7 +74,6 @@
     F(files, "files")\
     F(grant_type, "grant_type")\
     F(headers, "headers")\
-    F(id, "id")\
     F(include, "include")\
     F(incomplete, "incomplete")\
     F(length, "length")\
@@ -77,7 +83,6 @@
     F(message, "message")\
     F(messageType, "messageType")\
     F(object, "object")\
-    F(objectType, "objectType")\
     F(objectTypes, "objectTypes")\
     F(offset, "offset")\
     F(origin, "origin")\
@@ -86,7 +91,6 @@
     F(payload, "payload")\
     F(propertyName, "propertyName")\
     F(query, "query")\
-    F(results, "results")\
     F(search, "search")\
     F(session, "session")\
     F(sessionToken, "sessionToken")\
@@ -95,7 +99,6 @@
     F(status, "status")\
     F(targetFileProperty, "targetFileProperty")\
     F(update, "update")\
-    F(updatedAt, "updatedAt")\
     F(url, "url")\
     F(usergroups, "usergroups")\
     F(username, "username")\

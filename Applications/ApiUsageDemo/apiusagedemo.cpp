@@ -11,7 +11,7 @@
 
 ApiUsageDemo::ApiUsageDemo(QWidget *parent)
     : QMainWindow(parent),
-      iEnginioDataStorage("https://api.engin.io", "5379dea0698b3c1dc00cdf57")
+      iEnginioDataStorage("https://api.engin.io", "")
 {
     ui.setupUi(this);
 
@@ -164,4 +164,15 @@ void ApiUsageDemo::handleOperationReply(QEnginioOperation & op)
     ui.plainTextEditOutput->insertPlainText(
         QString::fromLatin1(QJsonDocument(op.result()).toJson())
     );
+
+
+    if (0 == ui.tabWidgetObjectOperations->currentIndex()) { // find
+        qDebug() << "ResultObjects: " << op.resultObjectCount();
+        QList<QEnginioObject> lst = op.resultObjects();
+        QList<QEnginioObject>::iterator i;
+
+        for (i = lst.begin(); i != lst.end(); ++i) {
+            qDebug() << (*i);
+        }
+    }
 }

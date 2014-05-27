@@ -67,17 +67,32 @@ public:
     bool isValid() const;
     QString collectionName() const;
 
-    QEnginioOperation find(const QEnginioQuery &aQuery,
+    QEnginioOperation find(QSharedPointer<QEnginioCollectionObject> aSelf,
+                           const QEnginioQuery &aQuery,
                            QEnginioOperation::Callback aCallback);
-    QEnginioOperation findOne(const QString &aObjectId,
+    QEnginioOperation findOne(QSharedPointer<QEnginioCollectionObject> aSelf,
+                              const QString &aObjectId,
                               QEnginioOperation::Callback aCallback);
-    QEnginioOperation insert(const QJsonObject &aObject,
+    QEnginioOperation insert(QSharedPointer<QEnginioCollectionObject> aSelf,
+                             const QEnginioObject &aObject,
                              QEnginioOperation::Callback aCallback);
-    QEnginioOperation update(const QString &aObjectId,
+    /*
+    QEnginioOperation insert(QSharedPointer<QEnginioCollectionObject> aSelf,
                              const QJsonObject &aObject,
                              QEnginioOperation::Callback aCallback);
-    QEnginioOperation remove(const QString &aObjectId,
+    						 */
+    QEnginioOperation update(QSharedPointer<QEnginioCollectionObject> aSelf,
+                             const QString &aObjectId,
+                             const QJsonObject &aObject,
                              QEnginioOperation::Callback aCallback);
+    QEnginioOperation remove(QSharedPointer<QEnginioCollectionObject> aSelf,
+                             const QString &aObjectId,
+                             QEnginioOperation::Callback aCallback);
+
+public:
+    QEnginioObject fromJsonObject(QSharedPointer<QEnginioCollectionObject> aSelf,
+                                  const QJsonObject &aJsonObject);
+
 private:
     QSharedPointer<QEnginioDataStorageObject> iEDS;
     QString iCollectionName;
@@ -101,13 +116,19 @@ public:
                            QEnginioOperation::Callback aCallback);
     QEnginioOperation findOne(const QString &aObjectId,
                               QEnginioOperation::Callback aCallback);
+    /*
     QEnginioOperation insert(const QJsonObject &aObject,
+                             QEnginioOperation::Callback aCallback);
+    						 */
+    QEnginioOperation insert(const QEnginioObject &aObject,
                              QEnginioOperation::Callback aCallback);
     QEnginioOperation update(const QString &aObjectId,
                              const QJsonObject &aObject,
                              QEnginioOperation::Callback aCallback);
     QEnginioOperation remove(const QString &aObjectId,
                              QEnginioOperation::Callback aCallback);
+public:
+    QEnginioObject fromJsonObject(const QJsonObject &aJsonObject);
 public:
     QTC_DECLARE_PUBLIC(QEnginioCollection);
 private:

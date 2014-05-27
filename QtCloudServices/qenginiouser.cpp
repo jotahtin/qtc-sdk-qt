@@ -48,8 +48,9 @@ QT_BEGIN_NAMESPACE
 /*
 ** Shared Implementation
 */
-QEnginioUserObject::QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection)
-    : QEnginioObjectObject(aCollection)
+QEnginioUserObject::QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection,
+                                       QJsonObject aJsonObject)
+    : QEnginioObjectObject(aCollection, aJsonObject)
 {
 
 }
@@ -75,10 +76,11 @@ const QString QEnginioUserObject::lastName() const
     return iLastName;
 }
 
-QSharedPointer<QEnginioUserObject> QEnginioUserObject::get(QSharedPointer<QEnginioCollectionObject> aCollection)
+QSharedPointer<QEnginioUserObject> QEnginioUserObject::get(QSharedPointer<QEnginioCollectionObject> aCollection,
+        QJsonObject aJsonObject)
 {
     QSharedPointer<QEnginioUserObject> usr;
-    usr = QSharedPointer<QEnginioUserObject>(new QEnginioUserObject(aCollection));
+    usr = QSharedPointer<QEnginioUserObject>(new QEnginioUserObject(aCollection, aJsonObject));
 
 
     return usr;

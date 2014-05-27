@@ -164,7 +164,7 @@ QtCloudServices::ErrorType QEnginioOperationObject::errorType() const
 
 QJsonObject QEnginioOperationObject::result() const
 {
-    return QJsonDocument::fromJson(resultBytes()).object();
+    return iJsonObject;
 }
 
 QByteArray QEnginioOperationObject::resultBytes() const
@@ -231,6 +231,10 @@ void QEnginioOperationObject::dumpDebugInfo() const
 #endif
 }
 
+void QEnginioOperationObject::setEnginioCollection(QSharedPointer<QEnginioCollectionObject> aEnginioCollection)
+{
+    iEnginioCollection = aEnginioCollection;
+}
 void QEnginioOperationObject::setEnginioRequest(const QEnginioRequest &aEnginioRequest)
 {
     iEnginioRequest = aEnginioRequest;
@@ -268,6 +272,30 @@ void QEnginioOperationObject::operationFinished(QSharedPointer<QEnginioOperation
 
     if (!enginioRequest) {
         return;
+    }
+
+    iJsonObject = QJsonDocument::fromJson(resultBytes()).object();
+
+    iResultObjects.clear();
+
+    if (iJsonObject.contains(QtCloudServicesConstants::results)) {
+        QJsonArray jsonObjects;
+        QJsonArray::const_iterator i;
+        jsonObjects = iJsonObject.value(QtCloudServicesConstants::results).toArray();
+
+        for (i = jsonObjects.begin(); i != jsonObjects.end(); ++i) {
+            if (!(*i).isObject()) {
+                continue;
+            }
+
+            if (!iEnginioCollection) {
+                qDebug() << "---- NEED RESOLVE...";
+                continue;
+            }
+
+            iResultObjects.push_back(iEnginioCollection->fromJsonObject(iEnginioCollection,
+                                     (*i).toObject()));
+        }
     }
 
     if (enginioRequest->iCallback) {

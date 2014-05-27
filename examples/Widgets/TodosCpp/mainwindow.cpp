@@ -49,19 +49,19 @@
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
 
-#include <Enginio/enginioclient.h>
-#include <Enginio/enginioreply.h>
+// #include <Enginio/enginioclient.h>
+// #include <Enginio/enginioreply.h>
 
 // To get the backend right, we use a helper class in the example.
 // Usually one would just insert the backend information below.
-#include "backendhelper.h"
+#include "examples/Common/BackendHelper/backendhelper.h"
 
 #include "mainwindow.h"
 #include "todosmodel.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      iEnginioDataStorage(backendAddress("todo"),backendId("todo"))
+      iEnginioDataStorage(backendAddress("todo"), backendId("todo"))
 {
     setWindowTitle(QStringLiteral("Enginio TODO example"));
 
@@ -143,12 +143,14 @@ void MainWindow::appendItem()
     QString text = QInputDialog::getText(this, tr("Create a new To Do")
                                          , tr("Title:"), QLineEdit::Normal
                                          , "", &ok);
-    if (ok && !text.isEmpty()){
-        QJsonObject object;
+
+    if (ok && !text.isEmpty()) {
+        QEnginioObject object;
+
         object["title"] = text;
         object["completed"] = false; // By default a new To Do is not completed
-        // EnginioReply *reply = m_model->append(object);
-        // QObject::connect(reply, &EnginioReply::finished, reply, &EnginioReply::deleteLater);
+
+        m_model->append(object);
     }
 }
 //![appendItem]

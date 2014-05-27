@@ -50,7 +50,9 @@
 #include <QtNetwork/qnetworkreply.h>
 
 #include <QtCloudServices/QEnginioOperation.h>
+
 #include <QtCloudServices/private/qenginioconnection_p.h>
+#include <QtCloudServices/private/qenginiocollection_p.h>
 #include <QtCloudServices/private/qcloudservicesobject_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -81,6 +83,7 @@ public:
 
     void dumpDebugInfo() const;
 protected:
+    void setEnginioCollection(QSharedPointer<QEnginioCollectionObject> aEnginioCollection);
     void setEnginioRequest(const QEnginioRequest &aEnginioRequest);
     void setNetworkReply(QSharedPointer<QEnginioOperationObject> aSelf,
                          QNetworkReply *aNetworkReply);
@@ -88,11 +91,14 @@ protected:
     void operationFinished(QSharedPointer<QEnginioOperationObject> aSelf);
 private:
     QSharedPointer<QEnginioConnectionObject> iConnection; // Client
+    QSharedPointer<QEnginioCollectionObject> iEnginioCollection;
+
     QEnginioRequest iEnginioRequest;
     QNetworkReply *iNetworkReply; //  _nreply;
     bool iDelay; //  _delay;
     mutable QByteArray iData; //  _data;
 
+    QJsonObject iJsonObject;
     QList<QEnginioObject> iResultObjects;
 };
 
