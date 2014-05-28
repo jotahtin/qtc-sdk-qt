@@ -9,6 +9,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     QtCloudServices \
-    examples
+    examples \
+    Applications
 
 

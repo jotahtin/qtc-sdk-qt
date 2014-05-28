@@ -31,10 +31,9 @@ SOURCES += \
     qenginiouser.cpp \
     qenginiomodelnode.cpp
 
-HEADERS += qtcloudservices.h\
-        qtcloudservices_global.h \
-    enginiobasemodel.h \
-    enginiomodel.h \
+HEADERS += stdafx.h \
+    qtcloudservices.h\
+    qtcloudservices_global.h \
     qcloudservicesobject.h \
     qcollectionobject.h \
     qenginiocollection.h \
@@ -43,9 +42,12 @@ HEADERS += qtcloudservices.h\
     qenginiooperation.h \
     qenginioquery.h \
     qenginiorequest.h \
+    qenginiomodel.h \
+    qenginioobject.h \
+    qenginiouser.h \
+    qenginiomodelnode.h \
     private/chunkdevice_p.h \
     private/enginiobackendconnection_p.h \
-    private/enginiobasemodel_p.h \
     private/enginiodummyreply_p.h \
     private/enginiofakereply_p.h \
     private/enginioobjectadaptor_p.h \
@@ -57,14 +59,9 @@ HEADERS += qtcloudservices.h\
     private/qenginiooperation_p.h \
     private/qenginioquery_p.h \
     private/qenginiorequest_p.h \
-    stdafx.h \
     private/qenginiomodel_p.h \
     private/qenginioobject_p.h \
     private/qenginiouser_p.h \
-    qenginiomodel.h \
-    qenginioobject.h \
-    qenginiouser.h \
-    qenginiomodelnode.h \
     private/qenginiomodelnode_p.h
 
 unix {

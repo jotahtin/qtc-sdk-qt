@@ -11,7 +11,7 @@
 
 ApiUsageDemo::ApiUsageDemo(QWidget *parent)
     : QMainWindow(parent),
-      iEnginioDataStorage("https://api.engin.io", "")
+      iEnginioDataStorage("https://api.engin.io", "5379dea0698b3c1dc00cdf57")
 {
     ui.setupUi(this);
 

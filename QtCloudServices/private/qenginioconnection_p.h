@@ -60,6 +60,7 @@
 #include <QtNetwork/qhttpmultipart.h>
 
 #include <QtCloudServices/qenginioconnection.h>
+#include <QtCloudServices/qenginiodatastorage.h>
 
 #include <QtCloudServices/private/enginiofakereply_p.h>
 #include <QtCloudServices/private/enginioobjectadaptor_p.h>
@@ -88,31 +89,21 @@ QT_BEGIN_NAMESPACE
 #define CHECK_AND_SET_PATH_WITH_ID(Url, Object, Operation) \
     CHECK_AND_SET_URL_PATH_IMPL(Url, Object, Operation, QEnginioConnectionPrivate::IncludeIdInPath)
 
-
-
-class QEnginioDataStorageObject;
-class QEnginioConnectionObject : public QObject {
+/*
+** QEnginioConnectionPrivate
+*/
+class QEnginioDataStorage;
+class QEnginioConnectionPrivate : public QCloudServicesObjectPrivate {
     Q_OBJECT
-    friend class QEnginioOperationObject;
+    friend class QEnginioOperationPrivate;
 public:
     class ReplyFinishedFunctor {
     public:
-        ReplyFinishedFunctor(QSharedPointer<QEnginioConnectionObject> aConnection);
+        ReplyFinishedFunctor(QEnginioConnection::dvar aConnection);
         void operator ()(QNetworkReply *aNetworkReply);
     private:
-        QWeakPointer<QEnginioConnectionObject> iConnection;
+        QEnginioConnection::wvar iConnection;
     };
-
-public:
-    QEnginioConnectionObject(QSharedPointer<QEnginioDataStorageObject> aEDS);
-    ~QEnginioConnectionObject();
-
-    QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
-
-    QEnginioOperation customRequest(QSharedPointer<QEnginioConnectionObject> aSelf,
-                                    const QEnginioRequest &aRequest,
-                                    QSharedPointer<QEnginioCollectionObject> aEnginioCollection
-                                    = QSharedPointer<QEnginioCollectionObject>());
 
 
 
@@ -497,56 +488,6 @@ private:
     void uploadChunk(QEnginioOperation *ereply, QIODevice *device, qint64 startPos);
 #endif
 
-
-    void replyFinished(QNetworkReply *aNetworkReply);
-protected:
-    void registerReply(QNetworkReply *aNetworkReply, QSharedPointer<QEnginioOperationObject> aOperation);
-    void unregisterReply(QNetworkReply *aNetworkReply);
-private:
-    QNetworkRequest prepareRequest(const QString &aPath,
-                                   const QUrlQuery &aQuery,
-                                   const QJsonObject &aExtraHeaders);
-private:
-    Q_DISABLE_COPY(QEnginioConnectionObject)
-public:
-    static QSharedPointer<QEnginioConnectionObject> get(QSharedPointer<QEnginioDataStorageObject> aEDS);
-private:
-    QSharedPointer<QEnginioDataStorageObject> iEDS;
-    QSharedPointer<QNetworkAccessManager> iNetworkManager;
-    QMetaObject::Connection iNetworkManagerConnection;
-
-#if 0
-    QByteArray _backendId;
-    EnginioIdentity *_identity;
-
-    QLinkedList<QMetaObject::Connection> _connections;
-    QVarLengthArray<QMetaObject::Connection, 4> _identityConnections;
-    QUrl _serviceUrl;
-    QNetworkRequest _request;
-#endif
-    //QMap<QNetworkReply*, QSharedPointer<QEnginioOperation> > iReplyReplyMap;
-    QMap<QNetworkReply*, QSharedPointer<QEnginioOperationObject> > iReplyOperationMap;
-
-#if 0
-    QMap<QNetworkReply*, QByteArray> _requestData;
-
-    // device and last position
-    QMap<QNetworkReply*, QPair<QIODevice*, qint64> > _chunkedUploads;
-    qint64 _uploadChunkSize;
-    QJsonObject _identityToken;
-    QtCloudServices::AuthenticationState _authenticationState;
-
-    QSet<QEnginioOperation*> _delayedReplies; // Used only for testing
-#endif
-private:
-    static QThreadStorage < QWeakPointer<QNetworkAccessManager> > gNetworkManager;
-};
-
-/*
-** QEnginioConnectionPrivate
-*/
-class QEnginioConnectionPrivate : public QCloudServicesObjectPrivate {
-
 #if 0
     enum PathOptions { Default, IncludeIdInPath = 1};
 
@@ -754,57 +695,63 @@ protected:
 #endif
 public:
     QEnginioConnectionPrivate();
-public:
-    QSharedPointer<QEnginioConnectionObject> enginioConnectionObject() const;
-    void setEnginioConnectionObject(QSharedPointer<QEnginioConnectionObject> aObject);
+    QEnginioConnectionPrivate(const QEnginioDataStorage &aEnginioDataStorage);
+    ~QEnginioConnectionPrivate();
 
     bool isValid() const;
+
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
     QEnginioOperation customRequest(const QEnginioRequest &aRequest);
 
-#if 0
+    void replyFinished(QNetworkReply *aNetworkReply);
+protected:
+    void registerReply(QNetworkReply *aNetworkReply, const QEnginioOperation &aOperation);
+    void unregisterReply(QNetworkReply *aNetworkReply);
+private:
+    QNetworkRequest prepareRequest(const QString &aPath,
+                                   const QUrlQuery &aQuery,
+                                   const QJsonObject &aExtraHeaders);
 
-    static QEnginioConnectionPrivate* get(QEnginioConnection *client)
-    {
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-        return client->d_func();
-#else
-        return client->priv_func();
-#endif
-    }
-    static const QEnginioConnectionPrivate* get(const QEnginioConnection *client)
-    {
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-        return client->d_func();
-#else
-        return client->priv_func();
-#endif
-    }
-    static QEnginioConnection* get(QEnginioConnectionPrivate *client)
-    {
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-        return static_cast<QEnginioConnection*>(client->q_ptr);
-#else
-        return static_cast<QEnginioConnection*>(client->iInterface);
-#endif
-    }
-    static const QEnginioConnection* get(const QEnginioConnectionPrivate *client)
-    {
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-        return static_cast<QEnginioConnection*>(client->q_ptr);
-#else
-        return static_cast<QEnginioConnection*>(client->iInterface);
-#endif
-    }
+
+#if 0
 
     static QByteArray constructErrorMessage(const QByteArray &msg);
 
 #endif
 
-
 private:
-    QSharedPointer<QEnginioConnectionObject> iObject;
+    Q_DISABLE_COPY(QEnginioConnectionPrivate)
+private:
+    QEnginioDataStorage iEnginioDataStorage;
+    QSharedPointer<QNetworkAccessManager> iNetworkManager;
+    QMetaObject::Connection iNetworkManagerConnection;
+
+#if 0
+    QByteArray _backendId;
+    EnginioIdentity *_identity;
+
+    QLinkedList<QMetaObject::Connection> _connections;
+    QVarLengthArray<QMetaObject::Connection, 4> _identityConnections;
+    QUrl _serviceUrl;
+    QNetworkRequest _request;
+#endif
+    QMap<QNetworkReply*, QEnginioOperation> iReplyOperationMap;
+
+#if 0
+    QMap<QNetworkReply*, QByteArray> _requestData;
+
+    // device and last position
+    QMap<QNetworkReply*, QPair<QIODevice*, qint64> > _chunkedUploads;
+    qint64 _uploadChunkSize;
+    QJsonObject _identityToken;
+    QtCloudServices::AuthenticationState _authenticationState;
+
+    QSet<QEnginioOperation*> _delayedReplies; // Used only for testing
+#endif
+private:
+    static QThreadStorage < QWeakPointer<QNetworkAccessManager> > gNetworkManager;
+
 };
 
 #undef CHECK_AND_SET_URL_PATH_IMPL

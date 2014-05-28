@@ -58,7 +58,7 @@ struct FinishedFunctor {
 };
 
 EnginioFakeReply::EnginioFakeReply(QEnginioConnectionPrivate *parent, const QByteArray &msg)
-    : QNetworkReply(QTC_Q_PTR(parent))
+    : QNetworkReply(parent->q<QEnginioConnection>())
     , _msg(msg)
 {
 #if 0

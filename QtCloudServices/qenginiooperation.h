@@ -61,6 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEnginioConnection;
+class QEnginioRequest;
 class QEnginioConnectionPrivate;
 class QEnginioOperationPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioOperation : public QCloudServicesObject {
@@ -76,17 +77,14 @@ class QTCLOUDSERVICES_EXPORT QEnginioOperation : public QCloudServicesObject {
     Q_PROPERTY(QString requestId READ requestId CONSTANT)
     Q_PROPERTY(QJsonObject result READ result NOTIFY dataChanged)
 
+    QTC_DECLARE_PRIVATE(QEnginioOperation)
     friend class QEnginioConnection;
     friend class QEnginioConnectionPrivate;
-    friend class QEnginioConnectionObject;
-    friend class QEnginioOperationObject;
 public:
     typedef std::function<void(QEnginioOperation &)> Callback;
 protected:
-    /*
-    QEnginioOperation(QEnginioConnectionPrivate *parent, QNetworkReply *reply,
-                      QEnginioOperationPrivate *priv);
-    */
+    QEnginioOperation(const QEnginioConnection &aEnginioConnection,
+                      const QEnginioRequest &aEnginioRequest);
 public:
     QEnginioOperation();
     QEnginioOperation(const QEnginioOperation &aOther);
@@ -122,20 +120,20 @@ public:
 
     // void swapNetworkReply(QEnginioOperation *other);
     */
+
+    QEnginioRequest enginioRequest() const Q_REQUIRED_RESULT;
 public Q_SLOTS:
     void dumpDebugInfo() const;
 Q_SIGNALS:
     void dataChanged();
     void progress(qint64 bytesSent, qint64 bytesTotal);
     void finished(QEnginioOperation aReply);
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioOperation)
 };
 
 Q_DECLARE_TYPEINFO(QEnginioOperation, Q_COMPLEX_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-QTCLOUDSERVICES_EXPORT QDebug operator<<(QDebug d, QEnginioOperation aReply);
+QTCLOUDSERVICES_EXPORT QDebug operator<<(QDebug d, const QEnginioOperation &aReply);
 #endif
 
 QT_END_NAMESPACE

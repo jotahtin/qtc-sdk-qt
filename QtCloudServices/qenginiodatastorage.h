@@ -74,7 +74,15 @@ public:
     QEnginioDataStorage(QObject *parent = 0);
     QEnginioDataStorage(const QUrl &backendAddress, const QString &backendId, QObject *parent = 0);
     QEnginioDataStorage(const QString &backendAddress, const QString &backendId, QObject *parent = 0);
+    QEnginioDataStorage(const QEnginioDataStorage &aEnginioDataStorage);
     ~QEnginioDataStorage();
+
+    // Assignment
+    QEnginioDataStorage& operator=(const QEnginioDataStorage &aEnginioDataStorage);
+
+    // IsValid
+    bool operator!() const;
+    virtual bool isValid() const;
 
     // Backend Address & Identification
     void setBackend(const QUrl &aBackendAddress, const QString &aBackendId);
@@ -100,7 +108,7 @@ public:
 
     // Get Plain connection
     QEnginioConnection reserveConnection();
-    void releaseConnection(QEnginioConnection &aConnection);
+    void releaseConnection(const QEnginioConnection &aConnection);
 Q_SIGNALS:
     void backendIdChanged(const QString &backendId);
     void backendAddressChanged(const QUrl &backendAddress);
@@ -119,7 +127,7 @@ Q_SIGNALS:
 //	virtual void prepareSessionToken(QEnginioConnectionPrivate *enginio) Q_DECL_OVERRIDE;
 //	virtual void removeSessionToken(QEnginioConnectionPrivate *enginio) Q_DECL_OVERRIDE;
 
-protected:
+public:
     QTC_DECLARE_PRIVATE(QEnginioDataStorage)
 };
 

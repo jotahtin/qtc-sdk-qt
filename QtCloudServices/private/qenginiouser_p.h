@@ -48,49 +48,24 @@
 QT_BEGIN_NAMESPACE
 
 /*
-** QEnginioUserObject
-*/
-class QEnginioUserObject : public QEnginioObjectObject {
-    Q_OBJECT
-    friend class QEnginioCollectionObject;
-public:
-    QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection,
-                       QJsonObject aJsonObject);
-    ~QEnginioUserObject();
-
-    const QString username() const Q_REQUIRED_RESULT;
-    const QString email() const Q_REQUIRED_RESULT;
-    const QString firstName() const Q_REQUIRED_RESULT;
-    const QString lastName() const Q_REQUIRED_RESULT;
-private:
-    Q_DISABLE_COPY(QEnginioUserObject)
-public:
-    static QSharedPointer<QEnginioUserObject> get(QSharedPointer<QEnginioCollectionObject> aCollection,
-            QJsonObject aJsonObject);
-private:
-    QString iUsername;
-    QString iEMail;
-    QString iFirstName;
-    QString iLastName;
-};
-
-/*
 ** QEnginioUserPrivate
 */
 class QEnginioUserPrivate : public QEnginioObjectPrivate {
     QTC_DECLARE_PUBLIC(QEnginioUser)
 public:
     QEnginioUserPrivate();
+    QEnginioUserPrivate(//const QEnginioCollection &aCollection,
+        const QJsonObject &aJsonObject);
 
     const QString username() const Q_REQUIRED_RESULT;
     const QString email() const Q_REQUIRED_RESULT;
     const QString firstName() const Q_REQUIRED_RESULT;
     const QString lastName() const Q_REQUIRED_RESULT;
-public:
-    QSharedPointer<QEnginioUserObject> enginioUserObject() const;
-    void setEnginioUserObject(QSharedPointer<QEnginioUserObject> aObject);
 private:
-    QSharedPointer<QEnginioUserObject> iObject;
+    QString iUsername;
+    QString iEMail;
+    QString iFirstName;
+    QString iLastName;
 };
 
 QT_END_NAMESPACE

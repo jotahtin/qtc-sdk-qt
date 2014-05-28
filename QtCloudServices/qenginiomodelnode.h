@@ -95,6 +95,8 @@ public:
     void setQuery(const QEnginioQuery &aQuery);
 
     void refresh();
+
+    QEnginioOperation append(const QEnginioObject &aObject);
 Q_SIGNALS:
     void nodeModified();
 private:

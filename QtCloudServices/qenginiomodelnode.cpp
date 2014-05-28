@@ -70,11 +70,11 @@ QEnginioModelNodePrivate::~QEnginioModelNodePrivate()
     qDeleteAll(iChildNodes);
 }
 
-QEnginioModelPrivate *QEnginioModelNodePrivate::model()
+QEnginioModel *QEnginioModelNodePrivate::model()
 {
     return iModel;
 }
-const QEnginioModelPrivate *QEnginioModelNodePrivate::model() const
+const QEnginioModel *QEnginioModelNodePrivate::model() const
 {
     return iModel;
 }
@@ -86,7 +86,7 @@ QList<QEnginioModelNode *>& QEnginioModelNodePrivate::childNodes()
 
 QEnginioModelNode *QEnginioModelNodePrivate::parentNode()
 {
-    return reinterpret_cast<QEnginioModelNode *>(QTC_Q_PTR(iParentNode));
+    return iParentNode;
 }
 
 void QEnginioModelNodePrivate::append(QEnginioModelNode *aNode)
@@ -95,21 +95,18 @@ void QEnginioModelNodePrivate::append(QEnginioModelNode *aNode)
         return;
     }
 
-    reinterpret_cast<QEnginioModelNodePrivate *>(QTC_D_PTR(aNode))->setModel(model());
-
-    reinterpret_cast<QEnginioModelNodePrivate *>(QTC_D_PTR(aNode))->setParentNode(this);
+    aNode->d<QEnginioModelNode>()->setModel(model());
+    aNode->d<QEnginioModelNode>()->setParentNode(q<QEnginioModelNode>());
 
     int n = iChildNodes.count();
 
-    QTC_Q_PTR(model())->beginInsertRows(index(), n, n);
+    model()->beginInsertRows(index(), n, n);
 
     iChildNodes.append(aNode);
 
-    QTC_Q_PTR(model())->endInsertRows();
+    model()->endInsertRows();
 
-    QTC_Q(QEnginioModelNode);
-
-    q->nodeModified();
+    q<QEnginioModelNode>()->nodeModified();
 }
 
 void QEnginioModelNodePrivate::insert(int aIndex, QEnginioModelNode *aNode)
@@ -118,19 +115,17 @@ void QEnginioModelNodePrivate::insert(int aIndex, QEnginioModelNode *aNode)
         return;
     }
 
-    reinterpret_cast<QEnginioModelNodePrivate *>(QTC_D_PTR(aNode))->setModel(model());
+    aNode->d<QEnginioModelNode>()->setModel(model());
+    aNode->d<QEnginioModelNode>()->setParentNode(q<QEnginioModelNode>());
 
-    reinterpret_cast<QEnginioModelNodePrivate *>(QTC_D_PTR(aNode))->setParentNode(this);
-
-    QTC_Q_PTR(model())->beginInsertRows(index(), aIndex, aIndex);
+    model()->beginInsertRows(index(), aIndex, aIndex);
 
     iChildNodes.insert(aIndex, aNode);
 
-    QTC_Q_PTR(model())->endInsertRows();
+    model()->endInsertRows();
 
-    QTC_Q(QEnginioModelNode);
 
-    q->nodeModified();
+    q<QEnginioModelNode>()->nodeModified();
 }
 
 QEnginioModelNode *QEnginioModelNodePrivate::remove(int aIndex)
@@ -141,12 +136,11 @@ QEnginioModelNode *QEnginioModelNodePrivate::remove(int aIndex)
         return nullptr;
     }
 
-    QTC_Q_PTR(model())->beginRemoveRows(index(), aIndex, aIndex);
+    model()->beginRemoveRows(index(), aIndex, aIndex);
     iChildNodes.removeAt(aIndex);
-    QTC_Q_PTR(model())->endRemoveRows();
+    model()->endRemoveRows();
 
-    QTC_Q(QEnginioModelNode);
-    q->nodeModified();
+    q<QEnginioModelNode>()->nodeModified();
     return node;
 }
 void QEnginioModelNodePrivate::removeAndDelete(int aIndex)
@@ -174,10 +168,8 @@ int QEnginioModelNodePrivate::childCount() const
 
 int QEnginioModelNodePrivate::childNumber() const
 {
-    QTC_Q(const QEnginioModelNode);
-
     if (iParentNode) {
-        QEnginioModelNode *self = const_cast<QEnginioModelNode*>(q);
+        QEnginioModelNode *self = const_cast<QEnginioModelNode*>(q<const QEnginioModelNode>());
         return iParentNode->childNodes().indexOf(self);
     }
 
@@ -186,7 +178,8 @@ int QEnginioModelNodePrivate::childNumber() const
 QModelIndex QEnginioModelNodePrivate::index()
 {
     if (parentNode() != nullptr) {
-        return QTC_Q_PTR(model())->createIndex(childNumber(), 0, this);
+        return model()->createIndex(childNumber(), 0,
+                                    q<QEnginioModelNode>());
     }
 
     return QModelIndex();
@@ -307,7 +300,8 @@ void QEnginioModelNodePrivate::fetchMore(int row)
 #endif
 }
 
-QEnginioOperation QEnginioModelNodePrivate::append(const QEnginioObject &aObject)
+QEnginioOperation QEnginioModelNodePrivate::append(QEnginioModelNode::dvar aSelf,
+        const QEnginioObject &aObject)
 {
     QEnginioOperation op;
 
@@ -317,7 +311,7 @@ QEnginioOperation QEnginioModelNodePrivate::append(const QEnginioObject &aObject
 
     op = iCollection.insert(aObject,
     [ = ](QEnginioOperation & op) {
-        this->handleOperationReply(HandleOperationInsert, op);
+        aSelf->handleOperationReply(HandleOperationInsert, op);
     });
 
 #if 0
@@ -369,12 +363,12 @@ void QEnginioModelNodePrivate::handleOperationReply(HandleOperationType aType,
 }
 
 
-void QEnginioModelNodePrivate::setModel(QEnginioModelPrivate *aModel)
+void QEnginioModelNodePrivate::setModel(QEnginioModel *aModel)
 {
     iModel = aModel;
 
 }
-void QEnginioModelNodePrivate::setParentNode(QEnginioModelNodePrivate *aParentNode)
+void QEnginioModelNodePrivate::setParentNode(QEnginioModelNode *aParentNode)
 {
     iParentNode = aParentNode;
 }
@@ -400,71 +394,58 @@ QEnginioModelNode::~QEnginioModelNode()
 
 QEnginioModel *QEnginioModelNode::model()
 {
-    QTC_D(QEnginioModelNode);
-    return QTC_Q_PTR(d->model());
+    return d<QEnginioModelNode>()->model();
 }
 const QEnginioModel *QEnginioModelNode::model() const
 {
-    QTC_D(const QEnginioModelNode);
-    return QTC_Q_PTR(d->model());
+    return d<const QEnginioModelNode>()->model();
 }
 
 QList<QEnginioModelNode *>& QEnginioModelNode::childNodes()
 {
-    QTC_D(QEnginioModelNode);
-    return d->childNodes();
+    return d<QEnginioModelNode>()->childNodes();
 }
 QEnginioModelNode *QEnginioModelNode::parentNode()
 {
-    QTC_D(QEnginioModelNode);
-    return d->parentNode();
+    return d<QEnginioModelNode>()->parentNode();
 }
 
 void QEnginioModelNode::append(QEnginioModelNode *aNode)
 {
-    QTC_D(QEnginioModelNode);
-    d->append(aNode);
+    d<QEnginioModelNode>()->append(aNode);
 }
 void QEnginioModelNode::insert(int aIndex, QEnginioModelNode *aNode)
 {
-    QTC_D(QEnginioModelNode);
-    d->insert(aIndex, aNode);
+    d<QEnginioModelNode>()->insert(aIndex, aNode);
 }
 QEnginioModelNode *QEnginioModelNode::remove(int aIndex)
 {
-    QTC_D(QEnginioModelNode);
-    return d->remove(aIndex);
+    return d<QEnginioModelNode>()->remove(aIndex);
 }
 void QEnginioModelNode::removeAndDelete(int aIndex)
 {
-    QTC_D(QEnginioModelNode);
-    d->removeAndDelete(aIndex);
+    d<QEnginioModelNode>()->removeAndDelete(aIndex);
 }
 
 QEnginioModelNode *QEnginioModelNode::child(int aIndex)
 {
-    QTC_D(QEnginioModelNode);
-    return d->child(aIndex);
+    return d<QEnginioModelNode>()->child(aIndex);
 }
 int QEnginioModelNode::childCount() const
 {
-    QTC_D(const QEnginioModelNode);
-    return d->childCount();
+    return d<const QEnginioModelNode>()->childCount();
 }
 int QEnginioModelNode::childNumber() const
 {
-    QTC_D(const QEnginioModelNode);
-    return d->childNumber();
+    return d<const QEnginioModelNode>()->childNumber();
 }
 QModelIndex QEnginioModelNode::index()
 {
-    QTC_D(QEnginioModelNode);
-    return d->index();
+    return d<QEnginioModelNode>()->index();
 }
 QModelIndex QEnginioModelNode::parentIndex()
 {
-    QTC_D(QEnginioModelNode);
-    return d->parentIndex();
+    return d<QEnginioModelNode>()->parentIndex();
 }
 
 
@@ -493,33 +474,33 @@ bool QEnginioModelNode::setData(int /*aColumn*/,
 
 QEnginioCollection QEnginioModelNode::collection() const
 {
-    QTC_D(const QEnginioModelNode);
-    return d->collection();
+    return d<const QEnginioModelNode>()->collection();
 }
 void QEnginioModelNode::setCollection(const QEnginioCollection &aCollection)
 {
-    QTC_D(QEnginioModelNode);
-    return d->setCollection(aCollection);
+    return d<QEnginioModelNode>()->setCollection(aCollection);
 }
 
 QEnginioQuery QEnginioModelNode::query() const
 {
-    QTC_D(const QEnginioModelNode);
-    return d->query();
+    return d<const QEnginioModelNode>()->query();
 }
 
 void QEnginioModelNode::setQuery(const QEnginioQuery &aQuery)
 {
-    QTC_D(QEnginioModelNode);
-    return d->setQuery(aQuery);
+    return d<QEnginioModelNode>()->setQuery(aQuery);
 }
 
 void QEnginioModelNode::refresh()
 {
-    QTC_D(QEnginioModelNode);
-    return d->refresh();
+    return d<QEnginioModelNode>()->refresh();
 }
 
+QEnginioOperation QEnginioModelNode::append(const QEnginioObject &aObject)
+{
+    QEnginioModelNode::dvar pimpl = d<QEnginioModelNode>();
+    return pimpl->append(pimpl, aObject);
+}
 
 QT_END_NAMESPACE
 

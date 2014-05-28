@@ -52,11 +52,11 @@
 QT_BEGIN_NAMESPACE
 
 class QEnginioOperation;
+class QEnginioCollection;
 class QEnginioRequestPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioRequest : public QCloudServicesObject {
     Q_OBJECT
-    friend class QEnginioConnectionObject;
-    friend class QEnginioOperationObject;
+    QTC_DECLARE_PRIVATE(QEnginioRequest)
 public:
     QEnginioRequest(QObject *aParent = 0);
     QEnginioRequest(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent = 0);
@@ -64,12 +64,22 @@ public:
 
     QEnginioRequest& operator=(const QEnginioRequest &aOther);
 
-    QEnginioRequest &urlQuery(const QUrlQuery &aUrlQuery);
-    QEnginioRequest &payload(const QJsonObject &aPayload);
-    QEnginioRequest &headers(const QJsonObject &aExtraHeaders);
+    QtCloudServices::RESTOperation operation() const Q_REQUIRED_RESULT;
+    QString path() const Q_REQUIRED_RESULT;
+
+    QEnginioCollection enginioCollection() const Q_REQUIRED_RESULT;
+    void setEnginioCollection(const QEnginioCollection &aEnginioCollection);
+
+    QUrlQuery urlQuery() const Q_REQUIRED_RESULT;
+    void setUrlQuery(const QUrlQuery &aUrlQuery);
+
+    QJsonObject payload() const Q_REQUIRED_RESULT;
+    void setPayload(const QJsonObject &aPayload);
+
+    QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
+    void setExtraHeaders(const QJsonObject &aExtraHeaders);
+
     QEnginioRequest &then(std::function<void(QEnginioOperation &)> aCallback);
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioRequest)
 };
 
 QT_END_NAMESPACE

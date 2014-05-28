@@ -45,6 +45,7 @@
 #include <QtCore/qjsonobject.h>
 
 #include "QtCloudServices/qenginiorequest.h"
+#include "QtCloudServices/qenginiocollection.h"
 #include "QtCloudServices/private/qcloudservicesobject_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -62,6 +63,7 @@ public:
     QUrlQuery iUrlQuery;
     QJsonObject iPayload;
     QJsonObject iExtraHeaders;
+    QEnginioCollection iEnginioCollection;
     std::function<void(QEnginioOperation &)> iCallback;
 };
 

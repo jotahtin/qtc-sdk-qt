@@ -240,245 +240,12 @@ This enum describes the state of the user authentication.
 
 QT_BEGIN_NAMESPACE
 
-/*
-** QEnginioConnectionObject
-*/
-QEnginioConnectionObject::ReplyFinishedFunctor::ReplyFinishedFunctor(QSharedPointer<QEnginioConnectionObject> aConnection)
-    : iConnection(aConnection)
-{
-}
-void QEnginioConnectionObject::ReplyFinishedFunctor::operator ()(QNetworkReply *aNetworkReply)
-{
-    QSharedPointer<QEnginioConnectionObject> connection;
-    connection = iConnection.toStrongRef();
-
-    if (connection) {
-        connection->replyFinished(aNetworkReply);
-    }
-}
-
-
-QThreadStorage < QWeakPointer<QNetworkAccessManager> > QEnginioConnectionObject::gNetworkManager;
-QEnginioConnectionObject::QEnginioConnectionObject(QSharedPointer<QEnginioDataStorageObject> aEDS)
-    : iEDS(aEDS)
-{
-    iNetworkManager = gNetworkManager.localData().toStrongRef();
-
-    if (!iNetworkManager) {
-        iNetworkManager = QSharedPointer<QNetworkAccessManager>(new QNetworkAccessManager());
-#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) && !defined(QT_NO_SSL) && !defined(ENGINIO_VALGRIND_DEBUG)
-        iNetworkManager->connectToHostEncrypted(QtCloudServicesConstants::apiEnginIo);
-#else
-# error "SSL Connection required."
-#endif
-        gNetworkManager.setLocalData(iNetworkManager);
-    }
-}
-
-QEnginioConnectionObject::~QEnginioConnectionObject()
-{
-    if (iNetworkManager) {
-        disconnect(iNetworkManagerConnection);
-    }
-}
-
-QSharedPointer<QNetworkAccessManager> QEnginioConnectionObject::networkManager() const
-{
-    return iNetworkManager;
-}
-
-QEnginioOperation QEnginioConnectionObject::customRequest(QSharedPointer<QEnginioConnectionObject> aSelf,
-        const QEnginioRequest &aRequest,
-        QSharedPointer<QEnginioCollectionObject> aEnginioCollection)
-{
-    QBuffer *buffer = 0;
-    QNetworkRequest request;
-    QEnginioOperation operation;
-    QByteArray verb;
-    QNetworkReply *reply;
-    QEnginioRequestPrivate *enginioRequest;
-
-    enginioRequest = reinterpret_cast<QEnginioRequestPrivate *>(QTC_D_PTR(&aRequest));
-
-    QSharedPointer<QEnginioOperationObject> operationObject(new QEnginioOperationObject(aSelf));
-    operationObject->setEnginioCollection(aEnginioCollection);
-    operationObject->setEnginioRequest(aRequest);
-
-    switch (enginioRequest->iOperation) {
-    case QtCloudServices::RESTOperationGet:
-        verb = QtCloudServicesConstants::RESTOperationGet;
-        break;
-
-    case QtCloudServices::RESTOperationPost:
-        verb = QtCloudServicesConstants::RESTOperationPost;
-        break;
-
-    case QtCloudServices::RESTOperationPut:
-        verb = QtCloudServicesConstants::RESTOperationPut;
-        break;
-
-    case QtCloudServices::RESTOperationDelete:
-        verb = QtCloudServicesConstants::RESTOperationDelete;
-        break;
-    }
-
-    request = prepareRequest(enginioRequest->iPath,
-                             enginioRequest->iUrlQuery,
-                             enginioRequest->iExtraHeaders);
-
-    if (!enginioRequest->iPayload.empty()) {
-        QByteArray payload;
-        payload = QJsonDocument(enginioRequest->iPayload).toJson(QJsonDocument::Compact);
-        buffer = new QBuffer();
-        buffer->setData(payload);
-        buffer->open(QIODevice::ReadOnly);
-    }
-
-    reply = networkManager()->sendCustomRequest(request, verb, buffer);
-    operationObject->setNetworkReply(operationObject, reply);
-
-    if (buffer) {
-        buffer->setParent(reply);
-    }
-
-    QEnginioOperationPrivate *op;
-    op = reinterpret_cast<QEnginioOperationPrivate *>(QTC_D_PTR(&operation));
-
-    if (op) {
-        op->setEnginioOperationObject(operationObject);
-    }
-
-    return operation;
-}
-
-
-void QEnginioConnectionObject::replyFinished(QNetworkReply *aNetworkReply)
-{
-    QSharedPointer<QEnginioOperationObject> operationObject;
-    operationObject = iReplyOperationMap.take(aNetworkReply);
-
-    if (!operationObject) {
-        return;
-    }
-
-    qDebug() << "Reply Finnished..";
-    operationObject->operationFinished(operationObject);
-
-#if 0
-
-    if (aNetworkReply->error() != QNetworkReply::NoError) {
-        QPair<QIODevice *, qint64> deviceState = _chunkedUploads.take(nreply);
-        delete deviceState.first;
-        emitError(ereply);
-    }
-
-    // continue chunked upload
-    else if (_chunkedUploads.contains(nreply)) {
-        QPair<QIODevice *, qint64> deviceState = _chunkedUploads.take(nreply);
-        QString status = ereply->data().value(QtCloudServicesConstants::status).toString();
-
-        if (status == QtCloudServicesConstants::empty || status == QtCloudServicesConstants::incomplete) {
-            Q_ASSERT(ereply->data().value(QtCloudServicesConstants::objectType).toString() == QtCloudServicesConstants::files);
-            uploadChunk(ereply, deviceState.first, deviceState.second);
-            return;
-        }
-
-        // should never get here unless upload was successful
-        Q_ASSERT(status == QtCloudServicesConstants::complete);
-        delete deviceState.first;
-
-        if (_connections.count() * 2 > _chunkedUploads.count()) {
-            _connections.removeAll(QMetaObject::Connection());
-        }
-    }
-
-    if (Q_UNLIKELY(ereply->delayFinishedSignal())) {
-        // delay emittion of finished signal for autotests
-        _delayedReplies.insert(ereply);
-    } else {
-        ereply->dataChanged();
-        QEnginioOperationPrivate::get(ereply)->emitFinished();
-        emitFinished(ereply);
-
-        if (gEnableEnginioDebugInfo) {
-            _requestData.remove(nreply);
-        }
-    }
-
-    if (Q_UNLIKELY(_delayedReplies.count())) {
-        finishDelayedReplies();
-    }
-
-#endif
-}
 
 
 
-void QEnginioConnectionObject::registerReply(QNetworkReply *aNetworkReply, QSharedPointer<QEnginioOperationObject> aOperation)
-{
-    aNetworkReply->setParent(aOperation.data());
-    iReplyOperationMap[aNetworkReply] = aOperation;
-}
 
-void QEnginioConnectionObject::unregisterReply(QNetworkReply *aNetworkReply)
-{
-    iReplyOperationMap.remove(aNetworkReply);
-}
 
-QNetworkRequest QEnginioConnectionObject::prepareRequest(const QString &aPath,
-        const QUrlQuery &aQuery,
-        const QJsonObject &aExtraHeaders)
-{
-    QUrl url, relativeUrl;
-    QByteArray requestId;
-    QNetworkRequest request;
 
-    if (!iEDS) {
-        qCritical() << tr("QEnginioConnectionObject not bound to QEnginioDataStoreObject.");
-        return QNetworkRequest();
-    }
-
-    relativeUrl.setPath(aPath);
-    url = iEDS->backendAddress().resolved(relativeUrl);
-
-    requestId = QUuid::createUuid().toByteArray();
-    // Remove unneeded pretty-formatting.
-    // before: "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
-    // after:  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    requestId.chop(1);      // }
-    requestId.remove(0, 1); // {
-    requestId.remove(23, 1);
-    requestId.remove(18, 1);
-    requestId.remove(13, 1);
-    requestId.remove(8, 1);
-
-    if (!aQuery.isEmpty()) {
-        url.setQuery(aQuery);
-    }
-
-    request.setUrl(url);
-
-    request.setRawHeader(QtCloudServicesConstants::X_Request_Id, requestId);
-    request.setRawHeader(QtCloudServicesConstants::Host, url.host().toLatin1());
-    request.setRawHeader(QtCloudServicesConstants::Accept_Encoding,
-                         QtCloudServicesConstants::Accept_Encoding_Any);
-    request.setRawHeader(QtCloudServicesConstants::User_Agent,
-                         QtCloudServicesConstants::User_Agent_Default);
-    request.setRawHeader(QtCloudServicesConstants::Enginio_Backend_Id,
-                         iEDS->backendId().toLatin1());
-
-    if (!aExtraHeaders.empty()) {
-        QJsonObject::const_iterator end = aExtraHeaders.constEnd();
-
-        for (QJsonObject::const_iterator i = aExtraHeaders.constBegin(); i != end; i++) {
-            QByteArray headerName = i.key().toUtf8();
-            QByteArray headerValue = i.value().toString().toUtf8();
-            request.setRawHeader(headerName, headerValue);
-        }
-    }
-
-    return request;
-}
 
 
 #if 0
@@ -633,90 +400,270 @@ QByteArray QEnginioConnectionPrivate::constructErrorMessage(const QByteArray &ms
 
 #endif
 
-QSharedPointer<QEnginioConnectionObject> QEnginioConnectionObject::get(QSharedPointer<QEnginioDataStorageObject> aEDS)
+/*
+** Private Implementation
+*/
+
+QEnginioConnectionPrivate::ReplyFinishedFunctor::ReplyFinishedFunctor(QEnginioConnection::dvar aConnection)
+    : iConnection(aConnection)
 {
-    QSharedPointer<QEnginioConnectionObject> connection;
-    connection = QSharedPointer<QEnginioConnectionObject>(new QEnginioConnectionObject(aEDS));
+}
+void QEnginioConnectionPrivate::ReplyFinishedFunctor::operator ()(QNetworkReply *aNetworkReply)
+{
+    QEnginioConnection::dvar connection;
 
-    if (connection->iNetworkManager) {
-        connection->iNetworkManagerConnection = QObject::connect(connection->iNetworkManager.data(),
-                                                &QNetworkAccessManager::finished,
-                                                QEnginioConnectionObject::ReplyFinishedFunctor(connection));
+    if (connection = iConnection.lock()) {
+        connection->replyFinished(aNetworkReply);
     }
-
-    return connection;
 }
 
-/*
-** QEnginioConnectionPrivate
-*/
+QThreadStorage < QWeakPointer<QNetworkAccessManager> > QEnginioConnectionPrivate::gNetworkManager;
+
 QEnginioConnectionPrivate::QEnginioConnectionPrivate()
 {
 }
 
-QSharedPointer<QEnginioConnectionObject> QEnginioConnectionPrivate::enginioConnectionObject() const
+QEnginioConnectionPrivate::QEnginioConnectionPrivate(const QEnginioDataStorage &aEnginioDataStorage)
+    : iEnginioDataStorage(aEnginioDataStorage)
 {
-    return iObject;
+    iNetworkManager = gNetworkManager.localData().toStrongRef();
+
+    if (!iNetworkManager) {
+        iNetworkManager = QSharedPointer<QNetworkAccessManager>(new QNetworkAccessManager());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) && !defined(QT_NO_SSL) && !defined(ENGINIO_VALGRIND_DEBUG)
+        iNetworkManager->connectToHostEncrypted(aEnginioDataStorage.backendAddress().host());
+#else
+# error "SSL Connection required."
+#endif
+        gNetworkManager.setLocalData(iNetworkManager);
+    }
 }
-void QEnginioConnectionPrivate::setEnginioConnectionObject(QSharedPointer<QEnginioConnectionObject> aObject)
+
+QEnginioConnectionPrivate::~QEnginioConnectionPrivate()
 {
-    iObject = aObject;
+    if (iNetworkManager) {
+        disconnect(iNetworkManagerConnection);
+    }
 }
 
 bool QEnginioConnectionPrivate::isValid() const
 {
-    if (iObject) {
-        return true; //  return iObject->isValid();
+    if (!iEnginioDataStorage) {
+        return false;
     }
 
-    return false;
+    return true;
 }
+
 QSharedPointer<QNetworkAccessManager> QEnginioConnectionPrivate::networkManager() const
 {
-    QSharedPointer<QNetworkAccessManager> nm;
-
-    if (iObject) {
-        nm = iObject->networkManager();
-    }
-
-    return nm;
+    return iNetworkManager;
 }
 
 QEnginioOperation QEnginioConnectionPrivate::customRequest(const QEnginioRequest &aRequest)
 {
-    if (iObject) {
-        return iObject->customRequest(iObject, aRequest);
+    QBuffer *buffer = 0;
+    QNetworkRequest request;
+    QEnginioOperation operation(*q<QEnginioConnection>(), aRequest);
+    QByteArray verb;
+    QNetworkReply *reply;
+
+    switch (aRequest.operation()) {
+    case QtCloudServices::RESTOperationGet:
+        verb = QtCloudServicesConstants::RESTOperationGet;
+        break;
+
+    case QtCloudServices::RESTOperationPost:
+        verb = QtCloudServicesConstants::RESTOperationPost;
+        break;
+
+    case QtCloudServices::RESTOperationPut:
+        verb = QtCloudServicesConstants::RESTOperationPut;
+        break;
+
+    case QtCloudServices::RESTOperationDelete:
+        verb = QtCloudServicesConstants::RESTOperationDelete;
+        break;
     }
 
-    return QEnginioOperation();
+    request = prepareRequest(aRequest.path(),
+                             aRequest.urlQuery(),
+                             aRequest.extraHeaders());
+
+    QJsonObject jsonPayload = aRequest.payload();
+
+    if (!jsonPayload.empty()) {
+        QByteArray payload;
+        payload = QJsonDocument(jsonPayload).toJson(QJsonDocument::Compact);
+        buffer = new QBuffer();
+        buffer->setData(payload);
+        buffer->open(QIODevice::ReadOnly);
+    }
+
+    reply = networkManager()->sendCustomRequest(request, verb, buffer);
+    operation.d<QEnginioOperation>()->setNetworkReply(reply);
+
+    if (buffer) {
+        buffer->setParent(reply);
+    }
+
+    return operation;
+}
+
+void QEnginioConnectionPrivate::replyFinished(QNetworkReply *aNetworkReply)
+{
+    QEnginioOperation operation;
+    operation = iReplyOperationMap.take(aNetworkReply);
+
+    if (!operation) {
+        return;
+    }
+
+    qDebug() << "Reply Finnished..";
+
+    operation.d<QEnginioOperation>()->operationFinished();
+
+#if 0
+
+    if (aNetworkReply->error() != QNetworkReply::NoError) {
+        QPair<QIODevice *, qint64> deviceState = _chunkedUploads.take(nreply);
+        delete deviceState.first;
+        emitError(ereply);
+    }
+
+    // continue chunked upload
+    else if (_chunkedUploads.contains(nreply)) {
+        QPair<QIODevice *, qint64> deviceState = _chunkedUploads.take(nreply);
+        QString status = ereply->data().value(QtCloudServicesConstants::status).toString();
+
+        if (status == QtCloudServicesConstants::empty || status == QtCloudServicesConstants::incomplete) {
+            Q_ASSERT(ereply->data().value(QtCloudServicesConstants::objectType).toString() == QtCloudServicesConstants::files);
+            uploadChunk(ereply, deviceState.first, deviceState.second);
+            return;
+        }
+
+        // should never get here unless upload was successful
+        Q_ASSERT(status == QtCloudServicesConstants::complete);
+        delete deviceState.first;
+
+        if (_connections.count() * 2 > _chunkedUploads.count()) {
+            _connections.removeAll(QMetaObject::Connection());
+        }
+    }
+
+    if (Q_UNLIKELY(ereply->delayFinishedSignal())) {
+        // delay emittion of finished signal for autotests
+        _delayedReplies.insert(ereply);
+    } else {
+        ereply->dataChanged();
+        QEnginioOperationPrivate::get(ereply)->emitFinished();
+        emitFinished(ereply);
+
+        if (gEnableEnginioDebugInfo) {
+            _requestData.remove(nreply);
+        }
+    }
+
+    if (Q_UNLIKELY(_delayedReplies.count())) {
+        finishDelayedReplies();
+    }
+
+#endif
 }
 
 
-/*
-** QEnginioConnection
-*/
+void QEnginioConnectionPrivate::registerReply(QNetworkReply *aNetworkReply, const QEnginioOperation &aOperation)
+{
+    aNetworkReply->setParent(aOperation.d<QEnginioOperation>().get());
+    iReplyOperationMap[aNetworkReply] = aOperation;
+}
 
+void QEnginioConnectionPrivate::unregisterReply(QNetworkReply *aNetworkReply)
+{
+    iReplyOperationMap.remove(aNetworkReply);
+}
+
+QNetworkRequest QEnginioConnectionPrivate::prepareRequest(const QString &aPath,
+        const QUrlQuery &aQuery,
+        const QJsonObject &aExtraHeaders)
+{
+    QUrl url, relativeUrl;
+    QByteArray requestId;
+    QNetworkRequest request;
+
+    if (!iEnginioDataStorage) {
+        qCritical() << tr("QEnginioConnectionObject not bound to QEnginioDataStoreObject.");
+        return QNetworkRequest();
+    }
+
+    relativeUrl.setPath(aPath);
+    url = iEnginioDataStorage.backendAddress().resolved(relativeUrl);
+
+    requestId = QUuid::createUuid().toByteArray();
+    // Remove unneeded pretty-formatting.
+    // before: "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
+    // after:  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    requestId.chop(1);      // }
+    requestId.remove(0, 1); // {
+    requestId.remove(23, 1);
+    requestId.remove(18, 1);
+    requestId.remove(13, 1);
+    requestId.remove(8, 1);
+
+    if (!aQuery.isEmpty()) {
+        url.setQuery(aQuery);
+    }
+
+    request.setUrl(url);
+
+    request.setRawHeader(QtCloudServicesConstants::X_Request_Id, requestId);
+    request.setRawHeader(QtCloudServicesConstants::Host, url.host().toLatin1());
+    request.setRawHeader(QtCloudServicesConstants::Accept_Encoding,
+                         QtCloudServicesConstants::Accept_Encoding_Any);
+    request.setRawHeader(QtCloudServicesConstants::User_Agent,
+                         QtCloudServicesConstants::User_Agent_Default);
+    request.setRawHeader(QtCloudServicesConstants::Enginio_Backend_Id,
+                         iEnginioDataStorage.backendId().toLatin1());
+
+    if (!aExtraHeaders.empty()) {
+        QJsonObject::const_iterator end = aExtraHeaders.constEnd();
+
+        for (QJsonObject::const_iterator i = aExtraHeaders.constBegin(); i != end; i++) {
+            QByteArray headerName = i.key().toUtf8();
+            QByteArray headerValue = i.value().toString().toUtf8();
+            request.setRawHeader(headerName, headerValue);
+        }
+    }
+
+    return request;
+}
+
+/*
+** Public Implementation
+*/
+QEnginioConnection::QEnginioConnection(const QEnginioDataStorage &aEnginioDataStorage)
+    : QCloudServicesObject(*new QEnginioConnectionPrivate(aEnginioDataStorage))
+{
+    QEnginioConnection::dvar pimpl = d<QEnginioConnection>();
+
+    if (pimpl->iNetworkManager) {
+        pimpl->iNetworkManagerConnection = QObject::connect(pimpl->iNetworkManager.data(),
+                                           &QNetworkAccessManager::finished,
+                                           QEnginioConnectionPrivate::ReplyFinishedFunctor(pimpl));
+    }
+}
 QEnginioConnection::QEnginioConnection(QObject *aParent)
     : QCloudServicesObject(*new QEnginioConnectionPrivate(), aParent)
 {
 }
 
-QEnginioConnection::QEnginioConnection(const QEnginioConnection &aOther, QObject *aParent)
-    : QCloudServicesObject(*new QEnginioConnectionPrivate(), aParent)
+QEnginioConnection::QEnginioConnection(const QEnginioConnection &aOther)
+    : QCloudServicesObject(aOther.d<QEnginioConnection>())
 {
-    *this = aOther;
 }
 QEnginioConnection & QEnginioConnection::operator=(const QEnginioConnection &aOther)
 {
-    QTC_D(QEnginioConnection);
-    QEnginioConnectionPrivate *other;
-
-    other = reinterpret_cast<QEnginioConnectionPrivate *>(QTC_D_PTR(&aOther));
-
-    if (other) {
-        d->setEnginioConnectionObject(other->enginioConnectionObject());
-    }
-
+    d<QEnginioConnection>()->setPIMPL(aOther.d<QEnginioConnection>());
     return *this;
 }
 
@@ -725,10 +672,18 @@ QEnginioConnection::~QEnginioConnection()
     // qDeleteAll(findChildren<QEnginioOperation *>());
 }
 
+bool QEnginioConnection::operator!() const
+{
+    return !isValid();
+}
+
 bool QEnginioConnection::isValid() const
 {
-    const QTC_D(QEnginioConnection);
-    return d->isValid();
+    if (isNull()) {
+        return false;
+    }
+
+    return d<QEnginioConnection>()->isValid();
 }
 
 /*!
@@ -739,8 +694,7 @@ and it is owned by them.
 */
 QSharedPointer<QNetworkAccessManager> QEnginioConnection::networkManager() const
 {
-    QTC_D(const QEnginioConnection);
-    return d->networkManager();
+    return d<const QEnginioConnection>()->networkManager();
 }
 
 
@@ -758,8 +712,7 @@ QSharedPointer<QNetworkAccessManager> QEnginioConnection::networkManager() const
 */
 QEnginioOperation QEnginioConnection::customRequest(const QEnginioRequest &aRequest)
 {
-    QTC_D(QEnginioConnection);
-    return d->customRequest(aRequest);
+    return d<QEnginioConnection>()->customRequest(aRequest);
 }
 
 
@@ -1027,7 +980,5 @@ QEnginioOperation QEnginioConnection::downloadUrl(const QJsonObject &object)
     */
     return QEnginioOperation();
 }
-
-
 
 QT_END_NAMESPACE

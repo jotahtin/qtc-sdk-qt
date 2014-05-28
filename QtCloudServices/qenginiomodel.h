@@ -117,8 +117,25 @@ private:
     // friend class EnginioModelPrivate;
 protected:
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    QEnginioModelPrivate *iPIMPL;
+    // QEnginioModelPrivate *iPIMPL;
 #endif
+public:
+    template<class T>
+    std::shared_ptr<typename T::private_type> d()
+    {
+        return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
+    }
+    template<class T>
+    const std::shared_ptr<typename T::private_type> d() const
+    {
+        return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
+    }
+protected:
+#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+    std::shared_ptr<QEnginioModelPrivate> iPIMPL;
+    // QCloudServicesObjectPrivate *iPIMPL;
+#endif
+
 };
 
 QT_END_NAMESPACE

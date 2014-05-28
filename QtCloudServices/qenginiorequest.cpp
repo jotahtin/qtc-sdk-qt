@@ -65,9 +65,9 @@ QEnginioRequest::QEnginioRequest(QObject *aParent)
 QEnginioRequest::QEnginioRequest(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent)
     : QCloudServicesObject(*new QEnginioRequestPrivate(), aParent)
 {
-    QTC_D(QEnginioRequest);
-    d->iOperation = aOperation;
-    d->iPath = aPath;
+    QEnginioRequest::dvar pimpl = d<QEnginioRequest>();
+    pimpl->iOperation = aOperation;
+    pimpl->iPath = aPath;
 }
 QEnginioRequest::QEnginioRequest(const QEnginioRequest &aOther)
     : QCloudServicesObject(*new QEnginioRequestPrivate())
@@ -77,47 +77,71 @@ QEnginioRequest::QEnginioRequest(const QEnginioRequest &aOther)
 
 QEnginioRequest& QEnginioRequest::operator=(const QEnginioRequest &aOther)
 {
-    QTC_D(QEnginioRequest);
-    QEnginioRequestPrivate *other;
+    QEnginioRequest::dvar pimpl = d<QEnginioRequest>();
+    QEnginioRequest::dvar other;
 
-    other = reinterpret_cast<QEnginioRequestPrivate *>(QTC_D_PTR(&aOther));
+    other = aOther.d<QEnginioRequest>();
 
     if (other) {
-        d->iOperation = other->iOperation;
-        d->iPath = other->iPath;
-        d->iUrlQuery = other->iUrlQuery;
-        d->iPayload = other->iPayload;
-        d->iExtraHeaders = other->iExtraHeaders;
-        d->iCallback = other->iCallback;
+        pimpl->iOperation = other->iOperation;
+        pimpl->iPath = other->iPath;
+        pimpl->iUrlQuery = other->iUrlQuery;
+        pimpl->iPayload = other->iPayload;
+        pimpl->iExtraHeaders = other->iExtraHeaders;
+        pimpl->iCallback = other->iCallback;
     }
 
     return *this;
 }
 
-QEnginioRequest &QEnginioRequest::urlQuery(const QUrlQuery &aUrlQuery)
+QtCloudServices::RESTOperation QEnginioRequest::operation() const
 {
-    QTC_D(QEnginioRequest);
-    d->iUrlQuery = aUrlQuery;
-    return *this;
+    return d<QEnginioRequest>()->iOperation;
 }
-QEnginioRequest& QEnginioRequest::payload(const QJsonObject &aPayload)
+QString QEnginioRequest::path() const
 {
-    QTC_D(QEnginioRequest);
-    d->iPayload = aPayload;
-    return *this;
+    return d<QEnginioRequest>()->iPath;
 }
 
-QEnginioRequest& QEnginioRequest::headers(const QJsonObject &aExtraHeaders)
+QEnginioCollection QEnginioRequest::enginioCollection() const
 {
-    QTC_D(QEnginioRequest);
-    d->iExtraHeaders = aExtraHeaders;
-    return *this;
+    return d<QEnginioRequest>()->iEnginioCollection;
+}
+void QEnginioRequest::setEnginioCollection(const QEnginioCollection &aEnginioCollection)
+{
+    d<QEnginioRequest>()->iEnginioCollection = aEnginioCollection;
+}
+
+QUrlQuery QEnginioRequest::urlQuery() const
+{
+    return d<QEnginioRequest>()->iUrlQuery;
+}
+void QEnginioRequest::setUrlQuery(const QUrlQuery &aUrlQuery)
+{
+    d<QEnginioRequest>()->iUrlQuery = aUrlQuery;
+}
+
+QJsonObject QEnginioRequest::payload() const
+{
+    return d<QEnginioRequest>()->iPayload;
+}
+void QEnginioRequest::setPayload(const QJsonObject &aPayload)
+{
+    d<QEnginioRequest>()->iPayload = aPayload;
+}
+
+QJsonObject QEnginioRequest::extraHeaders() const
+{
+    return d<QEnginioRequest>()->iExtraHeaders;
+}
+void QEnginioRequest::setExtraHeaders(const QJsonObject &aExtraHeaders)
+{
+    d<QEnginioRequest>()->iExtraHeaders = aExtraHeaders;
 }
 
 QEnginioRequest& QEnginioRequest::then(std::function<void(QEnginioOperation &)> aCallback)
 {
-    QTC_D(QEnginioRequest);
-    d->iCallback = aCallback;
+    d<QEnginioRequest>()->iCallback = aCallback;
     return *this;
 }
 

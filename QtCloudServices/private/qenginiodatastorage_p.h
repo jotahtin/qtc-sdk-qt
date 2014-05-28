@@ -56,46 +56,6 @@
 QT_BEGIN_NAMESPACE
 
 /*
-** QEnginioDataStorageObject
-*/
-class QEnginioDataStorageObject : public QObject {
-    Q_OBJECT;
-public:
-    QEnginioDataStorageObject(const QUrl &aBackendAddress, const QString &aBackendId);
-
-    QUrl backendAddress() const Q_REQUIRED_RESULT;
-    QString backendId() const Q_REQUIRED_RESULT;
-
-    QString username() const Q_REQUIRED_RESULT;
-    void setUsername(const QString &aUsername);
-
-    QString password() const Q_REQUIRED_RESULT;
-    void setPassword(const QString &aPassword);
-
-    QSharedPointer<QEnginioConnectionObject> reserveConnection(QSharedPointer<QEnginioDataStorageObject> aSelf) Q_REQUIRED_RESULT;
-    void releaseConnection(QSharedPointer<QEnginioConnectionObject> aConnection);
-
-    QSharedPointer<QEnginioCollectionObject> collection(const QString &aCollectionName,
-            QSharedPointer<QEnginioDataStorageObject> aSelf);
-
-Q_SIGNALS:
-    void usernameChanged(const QString &aUsername);
-    void passwordChanged(const QString &aPassword);
-public:
-    QString iBackendId;
-    QUrl iBackendAddress;
-
-    // Mutable objects
-    QMutex iLock;
-
-    QString iUsername;
-    QString iPassword;
-
-    QVector< QSharedPointer<QEnginioConnectionObject> > iConnectionPool;
-    QMap<QString, QSharedPointer<QEnginioCollectionObject> > iCollections;
-};
-
-/*
 ** QEnginioDataStoragePrivate
 */
 class QEnginioDataStoragePrivate : public QCloudServicesObjectPrivate {
@@ -103,6 +63,8 @@ class QEnginioDataStoragePrivate : public QCloudServicesObjectPrivate {
     friend class QEnginioCollectionPrivate;
 public:
     QEnginioDataStoragePrivate();
+    QEnginioDataStoragePrivate(const QUrl &aBackendAddress, const QString &aBackendId,
+                               QEnginioDataStoragePrivate *aPrevInstance = 0);
     ~QEnginioDataStoragePrivate();
 public:
     void setBackend(const QUrl &aBackendAddress, const QString &aBackendId);
@@ -119,17 +81,30 @@ public:
     QString password() const Q_REQUIRED_RESULT;
     void setPassword(const QString &aPassword);
 
-    QSharedPointer<QEnginioConnectionObject> reserveConnection() Q_REQUIRED_RESULT;
-    void releaseConnection(QSharedPointer<QEnginioConnectionObject> aConnection);
+    QEnginioConnection reserveConnection() Q_REQUIRED_RESULT;
+    void releaseConnection(const QEnginioConnection &aConnection);
 
-    QSharedPointer<QEnginioCollectionObject> collection(const QString &aCollectionName);
+    QEnginioCollection collection(const QString &aCollectionName);
 public:
     void bindForwarding(QEnginioDataStorage *aInstance);
     void unbindForwarding();
 public:
     QTC_DECLARE_PUBLIC(QEnginioDataStorage);
+Q_SIGNALS:
+    void usernameChanged(const QString &aUsername);
+    void passwordChanged(const QString &aPassword);
 protected:
-    QSharedPointer<QEnginioDataStorageObject> iObject;
+    QString iBackendId;
+    QUrl iBackendAddress;
+
+    // Mutable objects
+    QMutex iLock;
+
+    QString iUsername;
+    QString iPassword;
+
+    QVector< QEnginioConnection > iConnectionPool;
+    QMap<QString, QEnginioCollection > iCollections;
 
     bool iForwarding;
     QMetaObject::Connection iUsernameForwarding;

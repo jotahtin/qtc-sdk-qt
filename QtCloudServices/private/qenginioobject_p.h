@@ -52,17 +52,18 @@
 QT_BEGIN_NAMESPACE
 
 /*
-** QEnginioObjectObject
+** QEnginioObjectPrivate
 */
-class QEnginioCollectionObject;
-class QEnginioObjectObject : public QObject {
-    Q_OBJECT
-    friend class QEnginioCollectionObject;
+class QEnginioObjectPrivate : public QCloudServicesObjectPrivate {
+    QTC_DECLARE_PUBLIC(QEnginioObject)
+    friend class QEnginioCollectionPrivate;
 public:
-    QEnginioObjectObject();
-    QEnginioObjectObject(QSharedPointer<QEnginioCollectionObject> aCollection,
-                         QJsonObject aJsonObject);
-    ~QEnginioObjectObject();
+    QEnginioObjectPrivate();
+    QEnginioObjectPrivate(const QJsonObject &aJsonObject);
+    /*
+    QEnginioObjectPrivate(const QEnginioCollection &aEnginioCollection,
+                          const QJsonObject &aJsonObject);
+    					  */
 
     bool isValid() const Q_REQUIRED_RESULT;
 
@@ -76,17 +77,15 @@ public:
 
     const QString objectId() const Q_REQUIRED_RESULT;
     const QString objectType() const Q_REQUIRED_RESULT;
+
     const QTime createAt() const Q_REQUIRED_RESULT;
     const QEnginioUser creator() const Q_REQUIRED_RESULT;
     const QTime updatedAt() const Q_REQUIRED_RESULT;
     const QEnginioUser updater() const Q_REQUIRED_RESULT;
-private:
-    Q_DISABLE_COPY(QEnginioObjectObject)
-public:
-    static QSharedPointer<QEnginioObjectObject> get(QSharedPointer<QEnginioCollectionObject> aCollection,
-            QJsonObject aJsonObject = QJsonObject());
 protected:
-    QSharedPointer<QEnginioCollectionObject> iCollection;
+    void setEnginioCollection(const QEnginioCollection &aEnginioCollection);
+protected:
+    QEnginioCollection iEnginioCollection;
     QJsonObject iJsonObject;
 private:
     // Common Fields
@@ -94,38 +93,6 @@ private:
     QEnginioUser iCreator;
     QTime iUpdatedAt;
     QEnginioUser iUpdater;
-
-};
-
-/*
-** QEnginioObjectPrivate
-*/
-class QEnginioObjectPrivate : public QCloudServicesObjectPrivate {
-    QTC_DECLARE_PUBLIC(QEnginioObject)
-public:
-    QEnginioObjectPrivate();
-
-    bool isValid() const Q_REQUIRED_RESULT;
-
-    void insert(const QString &aKey, const QJsonValue &aValue);
-    void remove(const QString &aKey);
-    bool contains(const QString &aKey) const Q_REQUIRED_RESULT;
-    QJsonValue value(const QString &aKey) const Q_REQUIRED_RESULT;
-    QJsonValueRef valueRef(const QString &aKey)  Q_REQUIRED_RESULT;
-
-    const QJsonObject jsonObject() const Q_REQUIRED_RESULT;
-
-    const QString objectId() const Q_REQUIRED_RESULT;
-    const QTime createAt() const Q_REQUIRED_RESULT;
-    const QEnginioUser creator() const Q_REQUIRED_RESULT;
-    const QString objectType() const Q_REQUIRED_RESULT;
-    const QTime updatedAt() const Q_REQUIRED_RESULT;
-    const QEnginioUser updater() const Q_REQUIRED_RESULT;
-public:
-    QSharedPointer<QEnginioObjectObject> enginioObjectObject() const;
-    void setEnginioObjectObject(QSharedPointer<QEnginioObjectObject> aObject);
-private:
-    QSharedPointer<QEnginioObjectObject> iObject;
 };
 
 QT_END_NAMESPACE

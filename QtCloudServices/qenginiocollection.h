@@ -55,7 +55,12 @@ class QEnginioDataStorage;
 class QEnginioCollectionPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioCollection : public QCloudServicesObject {
     Q_OBJECT
-    friend class QEnginioDataStorage;
+    QTC_DECLARE_PRIVATE(QEnginioCollection)
+    friend class QEnginioDataStoragePrivate;
+protected:
+    // Constructor for valid connection.
+    QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
+                       const QString &aCollectionName);
 public:
     QEnginioCollection(QObject *aParent = 0);
     QEnginioCollection(const QEnginioCollection &aOther, QObject *aParent = 0);
@@ -72,20 +77,13 @@ public:
                                           QEnginioOperation::Callback aCallback);
     Q_INVOKABLE QEnginioOperation insert(const QEnginioObject &aObject,
                                          QEnginioOperation::Callback aCallback);
-    /*
-    Q_INVOKABLE QEnginioOperation insert(const QJsonObject &aObject,
-                                         QEnginioOperation::Callback aCallback);
-    */
     Q_INVOKABLE QEnginioOperation update(const QString &aObjectId,
                                          const QJsonObject &aObject,
                                          QEnginioOperation::Callback aCallback);
     Q_INVOKABLE QEnginioOperation remove(const QString &aObjectId,
                                          QEnginioOperation::Callback aCallback);
 
-public:
     QEnginioObject fromJsonObject(const QJsonObject &aJsonObject);
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioCollection)
 };
 
 QT_END_NAMESPACE

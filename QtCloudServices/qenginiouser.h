@@ -50,9 +50,11 @@ QT_BEGIN_NAMESPACE
 class QEnginioUserPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioUser : public QEnginioObject {
     Q_OBJECT
+    QTC_DECLARE_PRIVATE(QEnginioUser)
 public:
     QEnginioUser(QObject *aParent = 0);
     QEnginioUser(const QEnginioUser &aOther);
+    QEnginioUser(const QJsonObject &aJsonObject);
 
     QEnginioUser& operator=(const QEnginioUser &aOther);
 
@@ -60,10 +62,10 @@ public:
     const QString email() const Q_REQUIRED_RESULT;
     const QString firstName() const Q_REQUIRED_RESULT;
     const QString lastName() const Q_REQUIRED_RESULT;
+protected:
+    virtual void lazyInitialization();
 Q_SIGNALS:
     void objectChanged();
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioUser)
 };
 
 QT_END_NAMESPACE

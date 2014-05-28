@@ -305,8 +305,8 @@ public:
                              const QModelIndex &aParent);
 
 public:
-    QEnginioModelNodePrivate *nodeAt(const QModelIndex &aIndex);
-    QEnginioModelNodePrivate *getNode(const QModelIndex &aIndex) const;
+    QEnginioModelNode *nodeAt(const QModelIndex &aIndex);
+    QEnginioModelNode *getNode(const QModelIndex &aIndex) const;
 protected:
     QEnginioModelNode *iRoot;
 
@@ -939,6 +939,7 @@ public:
 
 public:
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+    /*
     inline QEnginioModel* pub_func()
     {
         return static_cast<QEnginioModel *>(iInterface);
@@ -947,6 +948,19 @@ public:
     {
         return static_cast<const QEnginioModel *>(iInterface);
     }
+    */
+public:
+    template<class T>
+    T* q()
+    {
+        return static_cast<T *>(this->iInterface);
+    }
+    template<class T>
+    const T* q() const
+    {
+        return static_cast<T *>(this->iInterface);
+    }
+
     QEnginioModel *iInterface;
 #endif
 };

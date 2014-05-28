@@ -66,8 +66,7 @@ QEnginioQuery::QEnginioQuery(QObject *aParent)
 QEnginioQuery::QEnginioQuery(const QJsonObject &aQuery, QObject *aParent)
     : QCloudServicesObject(*new QEnginioQueryPrivate(), aParent)
 {
-    QTC_D(QEnginioQuery);
-    d->iQuery = aQuery;
+    d<QEnginioQuery>()->iQuery = aQuery;
 }
 QEnginioQuery::QEnginioQuery(const QEnginioQuery &aOther)
     : QCloudServicesObject(*new QEnginioQueryPrivate())
@@ -77,15 +76,15 @@ QEnginioQuery::QEnginioQuery(const QEnginioQuery &aOther)
 
 QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther)
 {
-    QTC_D(QEnginioQuery);
-    QEnginioQueryPrivate *other;
+    QEnginioQuery::dvar pimpl = d<QEnginioQuery>();
+    QEnginioQuery::dvar other;
 
-    other = reinterpret_cast<QEnginioQueryPrivate *>(QTC_D_PTR(&aOther));
+    other = aOther.d<QEnginioQuery>();
 
     if (other) {
-        d->iQuery = other->iQuery;
-        d->iLimit = other->iLimit;
-        d->iOffset = other->iOffset;
+        pimpl->iQuery = other->iQuery;
+        pimpl->iLimit = other->iLimit;
+        pimpl->iOffset = other->iOffset;
     }
 
     return *this;
@@ -93,36 +92,28 @@ QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther)
 
 QEnginioQuery &QEnginioQuery::limit(int aLimit)
 {
-    QTC_D(QEnginioQuery);
-    d->iLimit = aLimit;
+    d<QEnginioQuery>()->iLimit = aLimit;
     return *this;
 }
 
 QEnginioQuery &QEnginioQuery::offset(int aOffset)
 {
-    QTC_D(QEnginioQuery);
-    d->iOffset = aOffset;
+    d<QEnginioQuery>()->iOffset = aOffset;
     return *this;
 }
 
 const QJsonObject &QEnginioQuery::query() const
 {
-    QTC_D(const QEnginioQuery);
-    return d->iQuery;
+    return d<const QEnginioQuery>()->iQuery;
 }
 
 int QEnginioQuery::limit() const
 {
-    QTC_D(const QEnginioQuery);
-    return d->iLimit;
+    return d<const QEnginioQuery>()->iLimit;
 }
 int QEnginioQuery::offset() const
 {
-    QTC_D(const QEnginioQuery);
-    return d->iOffset;
+    return d<const QEnginioQuery>()->iOffset;
 }
 
-
-
 QT_END_NAMESPACE
-

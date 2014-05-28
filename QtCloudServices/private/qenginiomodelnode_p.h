@@ -71,8 +71,8 @@ public:
     QEnginioModelNodePrivate();
     ~QEnginioModelNodePrivate();
 public:
-    QEnginioModelPrivate *model();
-    const QEnginioModelPrivate *model() const;
+    QEnginioModel *model();
+    const QEnginioModel *model() const;
 
     QList<QEnginioModelNode *>& childNodes();
     QEnginioModelNode *parentNode();
@@ -103,21 +103,21 @@ public:
     bool canFetchMore() const Q_REQUIRED_RESULT;
     void fetchMore(int row);
 
-    QEnginioOperation append(//QSharedPointer<QEnginioModelObject> aSelf,
-        const QEnginioObject &aObject);
+    QEnginioOperation append(QEnginioModelNode::dvar aSelf,
+                             const QEnginioObject &aObject);
 
 protected:
-    void setModel(QEnginioModelPrivate *aModel);
-    void setParentNode(QEnginioModelNodePrivate *aParentNode);
+    void setModel(QEnginioModel *aModel);
+    void setParentNode(QEnginioModelNode *aParentNode);
 public:
     void handleOperationReply(HandleOperationType aType,
                               QEnginioOperation aOperation);
 public:
     QTC_DECLARE_PUBLIC(QEnginioModelNode)
 private:
-    QEnginioModelPrivate *iModel;
+    QEnginioModel *iModel;
     QList<QEnginioModelNode *> iChildNodes;
-    QEnginioModelNodePrivate *iParentNode;
+    QEnginioModelNode *iParentNode;
 
     QEnginioObject iObject;
     QEnginioCollection iCollection; // QEnginioConnectionPrivate *_enginio;

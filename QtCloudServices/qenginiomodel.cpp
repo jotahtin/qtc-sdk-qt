@@ -71,23 +71,25 @@ QEnginioModelPrivate::QEnginioModelPrivate() //EnginioBaseModel *q_ptr)
     , _rolesCounter(QtCloudServices::SyncedRole)
 */
 {
+    iRoot->d<QEnginioModelNode>()->setModel(q<QEnginioModel>());
 }
 
 QEnginioModelPrivate::~QEnginioModelPrivate()
 {
     if (iRoot) {
         iRoot->deleteLater();
+        iRoot = nullptr;
     }
 }
 
 
 Qt::ItemFlags QEnginioModelPrivate::flags(const QModelIndex &aIndex) const
 {
-    const QEnginioModelNodePrivate *node;
+    const QEnginioModelNode *node;
     node = getNode(aIndex);
 
     if (node) {
-        return reinterpret_cast<QEnginioModelNode *>(QTC_Q_PTR(node))->flags();
+        return node->flags();
     }
 
     return 0;
@@ -140,7 +142,7 @@ void QEnginioModelPrivate::fetchMore(int row)
 
 QEnginioCollection QEnginioModelPrivate::collection(const QModelIndex &aParent) const
 {
-    QEnginioModelNodePrivate *node;
+    QEnginioModelNode *node;
 
     node = getNode(aParent);
 
@@ -149,19 +151,18 @@ QEnginioCollection QEnginioModelPrivate::collection(const QModelIndex &aParent) 
 void QEnginioModelPrivate::setCollection(const QEnginioCollection &aCollection,
         const QModelIndex &aParent)
 {
-    QEnginioModelNodePrivate *node;
+    QEnginioModelNode *node;
 
     node = getNode(aParent);
 
     node->setCollection(aCollection);
 
-    QTC_Q(QEnginioModel);
-    q->collectionChanged(aCollection);
+    q<QEnginioModel>()->collectionChanged(aCollection);
 }
 
 QEnginioQuery QEnginioModelPrivate::query(const QModelIndex &aParent)
 {
-    QEnginioModelNodePrivate *node;
+    QEnginioModelNode *node;
 
     node = getNode(aParent);
 
@@ -170,7 +171,7 @@ QEnginioQuery QEnginioModelPrivate::query(const QModelIndex &aParent)
 void QEnginioModelPrivate::setQuery(const QEnginioQuery &aQuery,
                                     const QModelIndex &aParent)
 {
-    QEnginioModelNodePrivate *node;
+    QEnginioModelNode *node;
 
     node = getNode(aParent);
 
@@ -180,27 +181,28 @@ void QEnginioModelPrivate::setQuery(const QEnginioQuery &aQuery,
 QEnginioOperation QEnginioModelPrivate::append(const QEnginioObject &aObject,
         const QModelIndex &aParent)
 {
-    QEnginioModelNodePrivate *node;
+    QEnginioModelNode *node;
 
     node = getNode(aParent);
 
     if (node) {
-        // return iObject->append(iObject, aObject);
+        return node->append(aObject);
     }
 
     return QEnginioOperation();
 }
 
-QEnginioModelNodePrivate *QEnginioModelPrivate::nodeAt(const QModelIndex &aIndex)
+QEnginioModelNode *QEnginioModelPrivate::nodeAt(const QModelIndex &aIndex)
 {
-    return (QEnginioModelNodePrivate *)aIndex.internalPointer();
+    return (QEnginioModelNode *)aIndex.internalPointer();
 }
-QEnginioModelNodePrivate *QEnginioModelPrivate::getNode(const QModelIndex &aIndex) const
+
+QEnginioModelNode *QEnginioModelPrivate::getNode(const QModelIndex &aIndex) const
 {
-    QEnginioModelNodePrivate *node = nullptr;
+    QEnginioModelNode *node;
 
     if (aIndex.isValid()) {
-        node = static_cast<QEnginioModelNodePrivate*>(aIndex.internalPointer());
+        node = static_cast<QEnginioModelNode*>(aIndex.internalPointer());
 
         if (node) {
             return node;
@@ -208,7 +210,7 @@ QEnginioModelNodePrivate *QEnginioModelPrivate::getNode(const QModelIndex &aInde
     }
 
     if (iRoot) {
-        node = reinterpret_cast<QEnginioModelNodePrivate*>(QTC_D_PTR(iRoot));
+        node = iRoot;
     }
 
     return node;
@@ -693,9 +695,10 @@ QEnginioModel::QEnginioModel(QObject *aParent)
 #endif
 {
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    iPIMPL->iInterface = this;
+    d<QEnginioModel>()->iInterface = this;
+    // iPIMPL->iInterface = this;
 #endif
-    QTC_D(QEnginioModel);
+    // QTC_D(QEnginioModel);
     // d->init();
 
     qRegisterMetaType<QtCloudServices::Role>();
@@ -707,18 +710,17 @@ Destroys the model.
 QEnginioModel::~QEnginioModel()
 {
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-
+    /*
     if (iPIMPL) {
         delete iPIMPL;
     }
-
+    */
 #endif
 }
 
 Qt::ItemFlags QEnginioModel::flags(const QModelIndex &aIndex) const
 {
-    QTC_D(const QEnginioModel);
-    return QAbstractListModel::flags(aIndex) | d->flags(aIndex);
+    return QAbstractListModel::flags(aIndex) | d<const QEnginioModel>()->flags(aIndex);
 }
 
 
@@ -730,13 +732,13 @@ The data returned will be JSON (for example a string for simple objects, or a JS
 */
 QVariant QEnginioModel::data(const QModelIndex &index, int role) const
 {
-    QTC_D(const QEnginioModel);
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
 
-    if (!index.isValid() || index.row() < 0 || index.row() >= d->rowCount()) {
+    if (!index.isValid() || index.row() < 0 || index.row() >= pimpl->rowCount()) {
         return QVariant();
     }
 
-    return d->data(index.row(), role);
+    return pimpl->data(index.row(), role);
 }
 
 /*!
@@ -745,9 +747,8 @@ QVariant QEnginioModel::data(const QModelIndex &index, int role) const
 */
 int QEnginioModel::rowCount(const QModelIndex &parent) const
 {
-    QTC_D(const QEnginioModel);
     Q_UNUSED(parent);
-    return d->rowCount();
+    return d<const QEnginioModel>()->rowCount();
 }
 
 /*!
@@ -756,9 +757,9 @@ int QEnginioModel::rowCount(const QModelIndex &parent) const
 */
 bool QEnginioModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    QTC_D(QEnginioModel);
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
 
-    if (unsigned(index.row()) >= unsigned(d->rowCount())) {
+    if (unsigned(index.row()) >= unsigned(pimpl->rowCount())) {
         return false;
     }
 
@@ -775,8 +776,7 @@ bool QEnginioModel::setData(const QModelIndex &index, const QVariant &value, int
 */
 void QEnginioModel::fetchMore(const QModelIndex &parent)
 {
-    QTC_D(QEnginioModel);
-    d->fetchMore(parent.row());
+    d<QEnginioModel>()->fetchMore(parent.row());
 }
 
 /*!
@@ -786,8 +786,7 @@ void QEnginioModel::fetchMore(const QModelIndex &parent)
 bool QEnginioModel::canFetchMore(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    QTC_D(const QEnginioModel);
-    return d->canFetchMore();
+    return d<const QEnginioModel>()->canFetchMore();
 }
 
 /*!
@@ -798,14 +797,13 @@ bool QEnginioModel::canFetchMore(const QModelIndex &parent) const
 */
 QEnginioCollection QEnginioModel::collection(const QModelIndex &aParent) const
 {
-    QTC_D(const QEnginioModel);
-    return d->collection(aParent);
+    return d<const QEnginioModel>()->collection(aParent);
 }
 
 void QEnginioModel::setCollection(const QEnginioCollection &aCollection,
                                   const QModelIndex &aParent)
 {
-    QTC_D(QEnginioModel);
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
 
     /*
     if (aCollection == d->collection()) {
@@ -813,7 +811,7 @@ void QEnginioModel::setCollection(const QEnginioCollection &aCollection,
     }
     */
 
-    d->setCollection(aCollection, aParent);
+    pimpl->setCollection(aCollection, aParent);
 }
 
 /*!
@@ -827,21 +825,20 @@ void QEnginioModel::setCollection(const QEnginioCollection &aCollection,
 */
 QEnginioQuery QEnginioModel::query(const QModelIndex &aParent)
 {
-    QTC_D(QEnginioModel);
-    return d->query(aParent);
+    return d<QEnginioModel>()->query(aParent);
 }
 
 void QEnginioModel::setQuery(const QEnginioQuery &query,
                              const QModelIndex &aParent)
 {
-    QTC_D(QEnginioModel);
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
     /*
     if (d->query() == query) {
     	return;
     }
     */
 
-    return d->setQuery(query, aParent);
+    return pimpl->setQuery(query, aParent);
 }
 
 /*!
@@ -850,7 +847,7 @@ void QEnginioModel::setQuery(const QEnginioQuery &query,
 */
 QEnginioOperation QEnginioModel::append(const QEnginioObject &aObject, const QModelIndex &aParent)
 {
-    QTC_D(QEnginioModel);
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
 
     /*
     if (Q_UNLIKELY(!d->enginio())) {
@@ -859,35 +856,20 @@ QEnginioOperation QEnginioModel::append(const QEnginioObject &aObject, const QMo
     }
     */
 
-    return d->append(aObject, aParent);
+    return pimpl->append(aObject, aParent);
 }
 
 QEnginioModelNode *QEnginioModel::nodeAt(const QModelIndex &aIndex)
 {
-    QTC_D(QEnginioModel);
-    QEnginioModelNodePrivate *node;
-
-    node = d->nodeAt(aIndex);
-
-    if (node) {
-        return reinterpret_cast<QEnginioModelNode *>(QTC_Q_PTR(node));
-    }
-
-    return NULL;
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
+    return pimpl->nodeAt(aIndex);
 }
 QEnginioModelNode *QEnginioModel::getNode(const QModelIndex &aIndex) const
 {
-    QTC_D(const QEnginioModel);
-    QEnginioModelNodePrivate *node;
-
-    node = d->getNode(aIndex);
-
-    if (node) {
-        return reinterpret_cast<QEnginioModelNode *>(QTC_Q_PTR(node));
-    }
-
-    return NULL;
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
+    return pimpl->getNode(aIndex);
 }
 
 QT_END_NAMESPACE
+
 

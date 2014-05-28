@@ -60,6 +60,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 
 class EnginioIdentity;
+class QEnginioDataStorage;
 class QEnginioConnectionPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioConnection : public QCloudServicesObject {
     Q_OBJECT
@@ -73,14 +74,19 @@ class QTCLOUDSERVICES_EXPORT QEnginioConnection : public QCloudServicesObject {
     Q_ENUMS(QtCloudServices::Operation); // TODO remove me QTBUG-33577
     Q_ENUMS(QtCloudServices::AuthenticationState); // TODO remove me QTBUG-33577
 
-    friend class QEnginioDataStorage;
+    friend class QEnginioDataStoragePrivate;
+protected:
+    // Constructor for valid connection.
+    QEnginioConnection(const QEnginioDataStorage &aEnginioDataStorage);
 public:
-    QEnginioConnection(QObject *aParent = 0); // From QEnginioConnection.h
-    QEnginioConnection(const QEnginioConnection &aOther, QObject *aParent = 0);
+    QEnginioConnection(QObject *aParent = 0);
+    QEnginioConnection(const QEnginioConnection &aOther);
     QEnginioConnection& operator=(const QEnginioConnection &aOther);
     ~QEnginioConnection();
 
-    bool isValid() const;
+    bool operator!() const;
+
+    virtual bool isValid() const;
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
     Q_INVOKABLE QEnginioOperation customRequest(const QEnginioRequest &aRequest);
@@ -107,8 +113,6 @@ public:
 
     Q_INVOKABLE QEnginioOperation uploadFile(const QJsonObject &associatedObject, const QUrl &file);
     Q_INVOKABLE QEnginioOperation downloadUrl(const QJsonObject &object);
-
-
 Q_SIGNALS:
 //    void backendIdChanged(const QByteArray &backendId);
 //    void serviceUrlChanged(const QUrl& url);

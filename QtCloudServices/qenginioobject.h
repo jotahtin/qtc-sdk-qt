@@ -51,14 +51,13 @@
 QT_BEGIN_NAMESPACE
 
 class QEnginioUser;
-class QEnginioCollectionObject;
 class QEnginioObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioObject : public QCloudServicesObject {
     Q_OBJECT
     Q_PROPERTY(QString objectId READ objectId NOTIFY objectChanged)
-    friend class QEnginioCollectionObject;
+    QTC_DECLARE_PRIVATE(QEnginioObject)
 protected:
-    QEnginioObject(QEnginioObjectPrivate &dd, QObject *aParent = 0);
+    QEnginioObject(QEnginioObject::dvar aPIMPL, QObject *aParent = 0);
 public:
     QEnginioObject(QObject *aParent = 0);
     QEnginioObject(const QEnginioObject &aOther);
@@ -66,7 +65,7 @@ public:
 
     QEnginioObject& operator=(const QEnginioObject &aOther);
 
-    bool isValid() const Q_REQUIRED_RESULT;
+    virtual bool isValid() const Q_REQUIRED_RESULT;
 
     QEnginioObject& insert(const QString &aKey, const QJsonValue &aValue);
     QEnginioObject& remove(const QString &aKey);
@@ -83,10 +82,10 @@ public:
     const QString objectType() const Q_REQUIRED_RESULT;
     const QTime updatedAt() const Q_REQUIRED_RESULT;
     const QEnginioUser updater() const Q_REQUIRED_RESULT;
+protected:
+    virtual void lazyInitialization();
 Q_SIGNALS:
     void objectChanged();
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioObject)
 };
 
 Q_DECLARE_TYPEINFO(QEnginioObject, Q_COMPLEX_TYPE);

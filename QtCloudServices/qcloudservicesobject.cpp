@@ -45,8 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
 QCloudServicesObjectPrivate::QCloudServicesObjectPrivate()
+    : iInterface(NULL)
 {
 
 }
@@ -54,38 +54,54 @@ QCloudServicesObjectPrivate::~QCloudServicesObjectPrivate()
 {
 
 }
-#endif
+
+void QCloudServicesObjectPrivate::setPIMPL(QCloudServicesObject::dvar aPIMPL)
+{
+    Q_ASSERT(iInterface);
+//   if (iInterface) {
+    aPIMPL->iInterface = iInterface;
+    iInterface->iPIMPL = aPIMPL;
+    /*
+    } else {
+    qCritical() << "setPIMPL failed.. no interface";
+    }
+    */
+}
 
 /*
 ** Public Interface
 */
-QCloudServicesObject::QCloudServicesObject()
+QCloudServicesObject::QCloudServicesObject(QObject *aParent)
+    : QObject(aParent)
 {
 }
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-QCloudServicesObject::QCloudServicesObject(QCloudServicesObjectPrivate & dd, QObject * parent)
-    : QObject(dd, parent)
-{
 
-}
-#else
 QCloudServicesObject::QCloudServicesObject(QCloudServicesObjectPrivate & dd, QObject * parent)
     : QObject(parent),
       iPIMPL(&dd)
 {
+
     iPIMPL->iInterface = this;
 }
-#endif
+QCloudServicesObject::QCloudServicesObject(QCloudServicesObject::dvar aPIMPL, QObject *parent)
+    : QObject(parent),
+      iPIMPL(aPIMPL)
+{
+    iPIMPL->iInterface = this;
+
+}
 
 QCloudServicesObject::~QCloudServicesObject()
 {
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
+}
 
-    if (iPIMPL) {
-        delete iPIMPL;
-    }
-
-#endif
+bool QCloudServicesObject::isNull() const
+{
+    return iPIMPL.get() == NULL;
+}
+bool QCloudServicesObject::isValid() const
+{
+    return !isNull();
 }
 
 QT_END_NAMESPACE

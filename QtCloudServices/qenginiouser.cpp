@@ -46,54 +46,14 @@
 QT_BEGIN_NAMESPACE
 
 /*
-** Shared Implementation
-*/
-QEnginioUserObject::QEnginioUserObject(QSharedPointer<QEnginioCollectionObject> aCollection,
-                                       QJsonObject aJsonObject)
-    : QEnginioObjectObject(aCollection, aJsonObject)
-{
-
-}
-QEnginioUserObject::~QEnginioUserObject()
-{
-
-}
-
-const QString QEnginioUserObject::username() const
-{
-    return iUsername;
-}
-const QString QEnginioUserObject::email() const
-{
-    return iEMail;
-}
-const QString QEnginioUserObject::firstName() const
-{
-    return iFirstName;
-}
-const QString QEnginioUserObject::lastName() const
-{
-    return iLastName;
-}
-
-QSharedPointer<QEnginioUserObject> QEnginioUserObject::get(QSharedPointer<QEnginioCollectionObject> aCollection,
-        QJsonObject aJsonObject)
-{
-    QSharedPointer<QEnginioUserObject> usr;
-    usr = QSharedPointer<QEnginioUserObject>(new QEnginioUserObject(aCollection, aJsonObject));
-
-
-    return usr;
-}
-
-
-
-
-/*
 ** Private Implementation
 */
-
 QEnginioUserPrivate::QEnginioUserPrivate()
+{
+
+}
+QEnginioUserPrivate::QEnginioUserPrivate(const QJsonObject &aJsonObject)
+    : QEnginioObjectPrivate(aJsonObject)
 {
 
 }
@@ -101,101 +61,90 @@ QEnginioUserPrivate::QEnginioUserPrivate()
 
 const QString QEnginioUserPrivate::username() const
 {
-    if (iObject) {
-        return iObject->username();
-    }
-
-    return QString();
+    return iUsername;
 }
 
 const QString QEnginioUserPrivate::email() const
 {
-    if (iObject) {
-        return iObject->email();
-    }
-
-    return QString();
+    return iEMail;
 }
 
 const QString QEnginioUserPrivate::firstName() const
 {
-    if (iObject) {
-        return iObject->firstName();
-    }
-
-    return QString();
+    return iFirstName;
 }
 
 const QString QEnginioUserPrivate::lastName() const
 {
-    if (iObject) {
-        return iObject->lastName();
-    }
-
-    return QString();
+    return iLastName;
 }
-
-QSharedPointer<QEnginioUserObject> QEnginioUserPrivate::enginioUserObject() const
-{
-    return iObject;
-}
-
-void QEnginioUserPrivate::setEnginioUserObject(QSharedPointer<QEnginioUserObject> aObject)
-{
-    iObject = aObject;
-}
-
 
 /*
 ** Public Interface
 */
 QEnginioUser::QEnginioUser(QObject *aParent)
-    : QEnginioObject(*new QEnginioUserPrivate(), aParent)
+    : QEnginioObject(aParent)
 {
 
 }
 QEnginioUser::QEnginioUser(const QEnginioUser &aOther)
-    : QEnginioObject(*new QEnginioUserPrivate())
+    : QEnginioObject(aOther.d<QEnginioUser>())
 {
-    *this = aOther;
+}
+
+QEnginioUser::QEnginioUser(const QJsonObject &aJsonObject)
+    : QEnginioObject(QEnginioUser::dvar(new QEnginioUserPrivate(aJsonObject)))
+{
+
 }
 
 QEnginioUser& QEnginioUser::operator=(const QEnginioUser &aOther)
 {
-    QTC_D(QEnginioUser);
-    QEnginioUserPrivate *other;
-
-    other = reinterpret_cast<QEnginioUserPrivate *>(QTC_D_PTR(&aOther));
-
-    if (other) {
-        d->setEnginioUserObject(other->enginioUserObject());
-    }
-
+    d<QEnginioUser>()->setPIMPL(aOther.d<QEnginioUser>());
     return *this;
 }
 
 const QString QEnginioUser::username() const
 {
-    QTC_D(const QEnginioUser);
-    return d->username();
+    if (isNull()) {
+        return QString();
+    }
+
+    return d<const QEnginioUser>()->username();
 }
 
 const QString QEnginioUser::email() const
 {
-    QTC_D(const QEnginioUser);
-    return d->email();
+    if (isNull()) {
+        return QString();
+    }
+
+    return d<const QEnginioUser>()->email();
 }
 
 const QString QEnginioUser::firstName() const
 {
-    QTC_D(const QEnginioUser);
-    return d->firstName();
+    if (isNull()) {
+        return QString();
+    }
+
+    return d<const QEnginioUser>()->firstName();
 }
 
 const QString QEnginioUser::lastName() const
 {
-    QTC_D(const QEnginioUser);
-    return d->lastName();
+    if (isNull()) {
+        return QString();
+    }
+
+    return d<const QEnginioUser>()->lastName();
+}
+
+void QEnginioUser::lazyInitialization()
+{
+    if (isNull()) {
+        iPIMPL = QEnginioUser::dvar(new QEnginioUserPrivate);
+    }
 }
 
 QT_END_NAMESPACE

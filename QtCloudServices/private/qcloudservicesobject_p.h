@@ -63,7 +63,26 @@ public:
     virtual ~QCloudServicesObjectPrivate();
 #endif
 
+    void setPIMPL(QCloudServicesObject::dvar aPIMPL);
+
+    template<class T>
+    typename T::dvar getThis()
+    {
+        return this->iInterface->d<T>();
+    }
 public:
+    template<class T>
+    T* q()
+    {
+        return static_cast<T *>(this->iInterface);
+    }
+    template<class T>
+    const T* q() const
+    {
+        return static_cast<T *>(this->iInterface);
+    }
+
+
 #if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
     QCloudServicesObject *iInterface;
 #endif

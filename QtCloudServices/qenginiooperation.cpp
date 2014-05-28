@@ -103,44 +103,62 @@ QT_BEGIN_NAMESPACE
 */
 
 /*
-** QEnginioOperationObject
+** QEnginioOperationPrivate
 */
-QEnginioOperationObject::QEnginioOperationObject(QSharedPointer<QEnginioConnectionObject> aConnection)
-    : iConnection(aConnection),
+QEnginioOperationPrivate::QEnginioOperationPrivate()
+    : iNetworkReply(NULL),
+      iDelay(false)
+{
+
+}
+QEnginioOperationPrivate::QEnginioOperationPrivate(const QEnginioConnection &aEnginioConnection,
+        const QEnginioRequest &aEnginioRequest)
+    : iEnginioConnection(aEnginioConnection),
+      iEnginioRequest(aEnginioRequest),
       iNetworkReply(NULL),
       iDelay(false)
 {
 }
 
-QEnginioOperationObject::~QEnginioOperationObject()
+QEnginioOperationPrivate::~QEnginioOperationPrivate()
 {
-    setNetworkReply(QSharedPointer<QEnginioOperationObject>(), NULL);
+    setNetworkReply(NULL);
 }
 
-bool QEnginioOperationObject::isError() const
+bool QEnginioOperationPrivate::isValid() const
+{
+    if (!iEnginioConnection) {
+        return false;
+    }
+
+    return true;
+}
+
+bool QEnginioOperationPrivate::isError() const
 {
     return errorCode() != QNetworkReply::NoError;
 }
-bool QEnginioOperationObject::isFinished() const
+bool QEnginioOperationPrivate::isFinished() const
 {
     return iNetworkReply->isFinished() && Q_LIKELY(!iDelay);
 }
-QNetworkReply::NetworkError QEnginioOperationObject::errorCode() const
+
+QNetworkReply::NetworkError QEnginioOperationPrivate::errorCode() const
 {
     return iNetworkReply->error();
 }
 
-int QEnginioOperationObject::backendStatus() const
+int QEnginioOperationPrivate::backendStatus() const
 {
     return iNetworkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).value<int>();
 }
 
-QString QEnginioOperationObject::requestId() const
+QString QEnginioOperationPrivate::requestId() const
 {
     return QString::fromUtf8(iNetworkReply->request().rawHeader(QtCloudServicesConstants::X_Request_Id));
 }
 
-QString QEnginioOperationObject::errorString() const
+QString QEnginioOperationPrivate::errorString() const
 {
     if (errorType() == QtCloudServices::BackendError) {
         return QString::fromUtf8(resultBytes());
@@ -149,7 +167,7 @@ QString QEnginioOperationObject::errorString() const
     return iNetworkReply->errorString();
 }
 
-QtCloudServices::ErrorType QEnginioOperationObject::errorType() const
+QtCloudServices::ErrorType QEnginioOperationPrivate::errorType() const
 {
     if (errorCode() == QNetworkReply::NoError) {
         return QtCloudServices::NoError;
@@ -162,12 +180,12 @@ QtCloudServices::ErrorType QEnginioOperationObject::errorType() const
     return QtCloudServices::BackendError;
 }
 
-QJsonObject QEnginioOperationObject::result() const
+QJsonObject QEnginioOperationPrivate::result() const
 {
     return iJsonObject;
 }
 
-QByteArray QEnginioOperationObject::resultBytes() const
+QByteArray QEnginioOperationPrivate::resultBytes() const
 {
     if (iData.isEmpty() && iNetworkReply->isFinished()) {
         iData = iNetworkReply->readAll();
@@ -175,11 +193,14 @@ QByteArray QEnginioOperationObject::resultBytes() const
 
     return iData;
 }
-int QEnginioOperationObject::resultObjectCount() const
+
+
+int QEnginioOperationPrivate::resultObjectCount() const
 {
     return iResultObjects.size();
 }
-QEnginioObject QEnginioOperationObject::resultObject() const
+
+QEnginioObject QEnginioOperationPrivate::resultObject() const
 {
     if (iResultObjects.size() == 1) {
         iResultObjects.first();
@@ -187,12 +208,18 @@ QEnginioObject QEnginioOperationObject::resultObject() const
 
     return QEnginioObject();
 }
-QList<QEnginioObject> QEnginioOperationObject::resultObjects() const
+
+QList<QEnginioObject> QEnginioOperationPrivate::resultObjects() const
 {
     return iResultObjects;
 }
 
-void QEnginioOperationObject::dumpDebugInfo() const
+QEnginioRequest QEnginioOperationPrivate::enginioRequest() const
+{
+    return iEnginioRequest;
+}
+
+void QEnginioOperationPrivate::dumpDebugInfo() const
 {
     static QHash<QNetworkAccessManager::Operation, QByteArray> operationNames;
     operationNames[QNetworkAccessManager::GetOperation] = "GET";
@@ -231,26 +258,22 @@ void QEnginioOperationObject::dumpDebugInfo() const
 #endif
 }
 
-void QEnginioOperationObject::setEnginioCollection(QSharedPointer<QEnginioCollectionObject> aEnginioCollection)
-{
-    iEnginioCollection = aEnginioCollection;
-}
-void QEnginioOperationObject::setEnginioRequest(const QEnginioRequest &aEnginioRequest)
+void QEnginioOperationPrivate::setEnginioRequest(const QEnginioRequest &aEnginioRequest)
 {
     iEnginioRequest = aEnginioRequest;
 }
 
-void QEnginioOperationObject::setNetworkReply(QSharedPointer<QEnginioOperationObject> aSelf,
-        QNetworkReply *aNetworkReply)
+void QEnginioOperationPrivate::setNetworkReply(QNetworkReply *aNetworkReply)
 {
     if (iNetworkReply != NULL) {
-        iConnection->unregisterReply(iNetworkReply);
+        iEnginioConnection.d<QEnginioConnection>()->unregisterReply(iNetworkReply);
 
         if (iNetworkReply->isFinished()) {
             iNetworkReply->deleteLater();
         } else {
             iNetworkReply->setParent(iNetworkReply->manager());
-            QObject::connect(iNetworkReply, &QNetworkReply::finished, iNetworkReply, &QNetworkReply::deleteLater);
+            QObject::connect(iNetworkReply, &QNetworkReply::finished,
+                             iNetworkReply, &QNetworkReply::deleteLater);
             iNetworkReply->abort();
         }
     }
@@ -258,17 +281,21 @@ void QEnginioOperationObject::setNetworkReply(QSharedPointer<QEnginioOperationOb
     iNetworkReply = aNetworkReply;
     iData = QByteArray();
 
-    if (iNetworkReply == NULL || !aSelf) {
+    if (!iNetworkReply) {
         return;
     }
 
-    iConnection->registerReply(aNetworkReply, aSelf);
+    iEnginioConnection.d<QEnginioConnection>()->registerReply(aNetworkReply, *q<QEnginioOperation>());
 }
 
-void QEnginioOperationObject::operationFinished(QSharedPointer<QEnginioOperationObject> aSelf)
+void QEnginioOperationPrivate::operationFinished()
 {
-    QEnginioRequestPrivate *enginioRequest;
-    enginioRequest = reinterpret_cast<QEnginioRequestPrivate *>(QTC_D_PTR(&iEnginioRequest));
+    QEnginioCollection enginioCollection;
+
+    enginioCollection = iEnginioRequest.enginioCollection();
+
+    QEnginioRequest::dvar enginioRequest;
+    enginioRequest = iEnginioRequest.d<QEnginioRequest>();
 
     if (!enginioRequest) {
         return;
@@ -288,159 +315,20 @@ void QEnginioOperationObject::operationFinished(QSharedPointer<QEnginioOperation
                 continue;
             }
 
-            if (!iEnginioCollection) {
-                qDebug() << "---- NEED RESOLVE...";
+            if (!enginioCollection) {
+                qDebug() << "---- NEED RESOLVE (PER OBJECT)...";
                 continue;
             }
 
-            iResultObjects.push_back(iEnginioCollection->fromJsonObject(iEnginioCollection,
-                                     (*i).toObject()));
+            iResultObjects.push_back(enginioCollection.fromJsonObject((*i).toObject()));
         }
     }
 
     if (enginioRequest->iCallback) {
-        QEnginioOperation operation;
-        QEnginioOperationPrivate *operationPrivate;
-        operationPrivate = reinterpret_cast<QEnginioOperationPrivate *>(QTC_D_PTR(&operation));
-
-        if (operationPrivate) {
-            operationPrivate->setEnginioOperationObject(aSelf);
-        }
-
-        enginioRequest->iCallback(operation);
+        enginioRequest->iCallback(*q<QEnginioOperation>());
     }
 }
 
-/*
-** QEnginioOperationPrivate
-*/
-QEnginioOperationPrivate::QEnginioOperationPrivate()
-{
-
-}
-QEnginioOperationPrivate::~QEnginioOperationPrivate()
-{
-}
-
-QSharedPointer<QEnginioOperationObject> QEnginioOperationPrivate::enginioOperationObject() const
-{
-    return iObject;
-}
-void QEnginioOperationPrivate::setEnginioOperationObject(QSharedPointer<QEnginioOperationObject> aObject)
-{
-    iObject = aObject;
-}
-
-bool QEnginioOperationPrivate::isValid() const
-{
-    if (iObject) {
-        return true; //  return iObject->isValid();
-    }
-
-    return false;
-}
-
-bool QEnginioOperationPrivate::isError() const
-{
-    if (iObject) {
-        return iObject->isError();
-    }
-
-    return false;
-}
-bool QEnginioOperationPrivate::isFinished() const
-{
-    if (iObject) {
-        return iObject->isFinished();
-    }
-
-    return false;
-}
-
-QNetworkReply::NetworkError QEnginioOperationPrivate::errorCode() const
-{
-    if (iObject) {
-        return iObject->errorCode();
-    }
-
-    return QNetworkReply::NetworkError::NoError;
-}
-
-int QEnginioOperationPrivate::backendStatus() const
-{
-    if (iObject) {
-        return iObject->backendStatus();
-    }
-
-    return 0;
-}
-
-QString QEnginioOperationPrivate::requestId() const
-{
-    if (iObject) {
-        return iObject->requestId();
-    }
-
-    return QString();
-}
-QString QEnginioOperationPrivate::errorString() const
-{
-    if (iObject) {
-        return iObject->errorString();
-    }
-
-    return QString();
-}
-
-QtCloudServices::ErrorType QEnginioOperationPrivate::errorType() const
-{
-    if (iObject) {
-        return iObject->errorType();
-    }
-
-    return QtCloudServices::ErrorType::NoError;
-}
-
-QJsonObject QEnginioOperationPrivate::result() const
-{
-    if (iObject) {
-        return iObject->result();
-    }
-
-    return QJsonObject();
-}
-
-int QEnginioOperationPrivate::resultObjectCount() const
-{
-    if (iObject) {
-        return iObject->resultObjectCount();
-    }
-
-    return 0;
-}
-QEnginioObject QEnginioOperationPrivate::resultObject() const
-{
-    if (iObject) {
-        return iObject->resultObject();
-    }
-
-    return QEnginioObject();
-}
-QList<QEnginioObject> QEnginioOperationPrivate::resultObjects() const
-{
-    if (iObject) {
-        return iObject->resultObjects();
-    }
-
-    return QList<QEnginioObject>();
-}
-
-void QEnginioOperationPrivate::dumpDebugInfo() const
-{
-    if (iObject) {
-        return iObject->dumpDebugInfo();
-    }
-}
 
 #if 0
 class QEnginioOperationPrivate: public QEnginioOperationPrivate {
@@ -568,15 +456,20 @@ QEnginioOperation::~QEnginioOperation()
 ** QEnginioOperation
 */
 
+QEnginioOperation::QEnginioOperation(const QEnginioConnection &aEnginioConnection,
+                                     const QEnginioRequest &aRequest)
+    : QCloudServicesObject(*new QEnginioOperationPrivate(aEnginioConnection, aRequest))
+{
+
+}
 QEnginioOperation::QEnginioOperation()
     : QCloudServicesObject(*new QEnginioOperationPrivate(), NULL)
 {
 
 }
 QEnginioOperation::QEnginioOperation(const QEnginioOperation &aOther)
-    : QCloudServicesObject(*new QEnginioOperationPrivate(), NULL)
+    : QCloudServicesObject(aOther.d<QEnginioOperation>())
 {
-    *this = aOther;
 }
 
 QEnginioOperation::~QEnginioOperation()
@@ -586,15 +479,7 @@ QEnginioOperation::~QEnginioOperation()
 
 QEnginioOperation& QEnginioOperation::operator=(const QEnginioOperation &aOther)
 {
-    QTC_D(QEnginioOperation);
-    QEnginioOperationPrivate *other;
-
-    other = reinterpret_cast<QEnginioOperationPrivate *>(QTC_D_PTR(&aOther));
-
-    if (other) {
-        d->setEnginioOperationObject(other->enginioOperationObject());
-    }
-
+    d<QEnginioOperation>()->setPIMPL(aOther.d<QEnginioOperation>());
     return *this;
 }
 
@@ -605,8 +490,7 @@ bool QEnginioOperation::operator!() const
 
 bool QEnginioOperation::isValid() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->isValid();
+    return d<const QEnginioOperation>()->isValid();
 }
 
 /*!
@@ -617,8 +501,7 @@ bool QEnginioOperation::isValid() const
 
 bool QEnginioOperation::isError() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->isError();
+    return d<const QEnginioOperation>()->isError();
 }
 
 /*!
@@ -629,8 +512,7 @@ bool QEnginioOperation::isError() const
 
 bool QEnginioOperation::isFinished() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->isFinished();
+    return d<const QEnginioOperation>()->isFinished();
 }
 
 /*!
@@ -640,24 +522,20 @@ This property holds the JSON data returned by the server after a successful requ
 */
 QJsonObject QEnginioOperation::result() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->result();
+    return d<const QEnginioOperation>()->result();
 }
 
 int QEnginioOperation::resultObjectCount() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->resultObjectCount();
+    return d<const QEnginioOperation>()->resultObjectCount();
 }
 QEnginioObject QEnginioOperation::resultObject() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->resultObject();
+    return d<const QEnginioOperation>()->resultObject();
 }
 QList<QEnginioObject> QEnginioOperation::resultObjects() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->resultObjects();
+    return d<const QEnginioOperation>()->resultObjects();
 }
 
 
@@ -669,8 +547,7 @@ QList<QEnginioObject> QEnginioOperation::resultObjects() const
 
 QtCloudServices::ErrorType QEnginioOperation::errorType() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->errorType();
+    return d<const QEnginioOperation>()->errorType();
 }
 
 /*!
@@ -680,8 +557,7 @@ This property holds the network error for the request.
 
 QNetworkReply::NetworkError QEnginioOperation::networkError() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->errorCode();
+    return d<const QEnginioOperation>()->errorCode();
 }
 
 /*!
@@ -692,8 +568,7 @@ Check \l{QEnginioOperation::isError()}{isError()} first to check if the reply is
 
 QString QEnginioOperation::errorString() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->errorString();
+    return d<const QEnginioOperation>()->errorString();
 }
 
 /*!
@@ -709,8 +584,7 @@ the origin of notifications.
 */
 QString QEnginioOperation::requestId() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->requestId();
+    return d<const QEnginioOperation>()->requestId();
 }
 
 /*!
@@ -720,24 +594,26 @@ QString QEnginioOperation::requestId() const
 */
 int QEnginioOperation::backendStatus() const
 {
-    QTC_D(const QEnginioOperation);
-    return d->backendStatus();
+    return d<const QEnginioOperation>()->backendStatus();
 }
 
+QEnginioRequest QEnginioOperation::enginioRequest() const
+{
+    return d<const QEnginioOperation>()->enginioRequest();
+}
 
 /*!
 \internal
 */
 void QEnginioOperation::dumpDebugInfo() const
 {
-    QTC_D(const QEnginioOperation);
-    d->dumpDebugInfo();
+    d<const QEnginioOperation>()->dumpDebugInfo();
 }
 
 
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug d, QEnginioOperation aReply)
+QDebug operator<<(QDebug d, const QEnginioOperation &aReply)
 {
     if (!aReply.isValid()) {
         d << "QEnginioOperation(null)";
