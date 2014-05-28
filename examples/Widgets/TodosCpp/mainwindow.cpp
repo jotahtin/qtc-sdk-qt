@@ -61,7 +61,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      iEnginioDataStorage(backendAddress("todo"), backendId("todo"))
+      iEnginioDataStorage(instanceAddress("todo"), backendId("todo"))
 {
     setWindowTitle(QStringLiteral("Enginio TODO example"));
 

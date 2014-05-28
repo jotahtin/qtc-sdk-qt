@@ -65,15 +65,15 @@ class QEnginioDataStoragePrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioDataStorage : public QCloudServicesObject {
     Q_OBJECT
     Q_PROPERTY(QString backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged)
-    Q_PROPERTY(QUrl backendAddress READ backendAddress WRITE setBackendAddress NOTIFY backendAddressChanged)
+    Q_PROPERTY(QUrl instanceAddress READ instanceAddress WRITE setInstanceAddress NOTIFY instanceAddressChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
     friend class QEnginioCollection;
 public:
     // Default Constructor
     QEnginioDataStorage(QObject *parent = 0);
-    QEnginioDataStorage(const QUrl &backendAddress, const QString &backendId, QObject *parent = 0);
-    QEnginioDataStorage(const QString &backendAddress, const QString &backendId, QObject *parent = 0);
+    QEnginioDataStorage(const QUrl &instanceAddress, const QString &backendId, QObject *parent = 0);
+    QEnginioDataStorage(const QString &instanceAddress, const QString &backendId, QObject *parent = 0);
     QEnginioDataStorage(const QEnginioDataStorage &aEnginioDataStorage);
     ~QEnginioDataStorage();
 
@@ -85,11 +85,11 @@ public:
     virtual bool isValid() const;
 
     // Backend Address & Identification
-    void setBackend(const QUrl &aBackendAddress, const QString &aBackendId);
+    void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
 
-    QUrl backendAddress() const Q_REQUIRED_RESULT;
-    void setBackendAddress(const QUrl &aBackendAddress);
-    void setBackendAddressString(const QString &aBackendAddress);
+    QUrl instanceAddress() const Q_REQUIRED_RESULT;
+    void setInstanceAddress(const QUrl &aInstanceAddress);
+    void setInstanceAddressString(const QString &aInstanceAddress);
 
     QString backendId() const Q_REQUIRED_RESULT;
     void setBackendId(const QString &aBackendId);
@@ -111,7 +111,7 @@ public:
     void releaseConnection(const QEnginioConnection &aConnection);
 Q_SIGNALS:
     void backendIdChanged(const QString &backendId);
-    void backendAddressChanged(const QUrl &backendAddress);
+    void instanceAddressChanged(const QUrl &instanceAddress);
     void backendChanged();
 
     void usernameChanged(const QString &aUsername);

@@ -43,11 +43,11 @@
 #include "backendhelper.h"
 #include "ui_helperdialog.h"
 
-const QString backendAddressKey = QStringLiteral("backendAddress");
+const QString instanceAddressKey = QStringLiteral("instanceAddress");
 const QString backendIdKey = QStringLiteral("backendId");
 const QString showAgainKey = QStringLiteral("showAgain");
 
-static QString gBackendAddress;
+static QString ginstanceAddress;
 static QString gBackendId;
 static QTime gBackendTime;
 
@@ -75,21 +75,21 @@ static void backendResolve(const QString &exampleName) {
         }
     }
 
-    if (askAgain || gBackendId.isEmpty() || gBackendAddress.isEmpty()) {
+    if (askAgain || gBackendId.isEmpty() || ginstanceAddress.isEmpty()) {
         Ui::Dialog dialog;
         QDialog d;
         dialog.setupUi(&d);
         dialog.exampleName->setText(exampleName);
 
-        dialog.backendAddress->setText("https://api.engin.io");
+        dialog.instanceAddress->setText("https://api.engin.io");
         dialog.backendId->setText(gBackendId);
 
         if (d.exec() == QDialog::Accepted) {
-            gBackendAddress = dialog.backendAddress->text();
+            ginstanceAddress = dialog.instanceAddress->text();
             gBackendId = dialog.backendId->text();
             gBackendTime = QTime::currentTime();
             askAgain = !dialog.askAgain->isChecked();
-            settings->setValue(backendAddressKey, gBackendAddress);
+            settings->setValue(instanceAddressKey, ginstanceAddress);
             settings->setValue(backendIdKey, gBackendId);
             settings->setValue(showAgainKey, askAgain);
         }
@@ -100,10 +100,10 @@ static void backendResolve(const QString &exampleName) {
 
 }
 
-QString backendAddress(const QString &exampleName)
+QString instanceAddress(const QString &exampleName)
 {
     backendResolve(exampleName);
-    return gBackendAddress;
+    return ginstanceAddress;
 }
 
 QString backendId(const QString &exampleName)

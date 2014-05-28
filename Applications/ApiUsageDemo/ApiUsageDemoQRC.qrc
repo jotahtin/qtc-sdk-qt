@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/ApiUsageDemo">
+        <file alias="Images/Icons/EdsLogo.png">Resources/Images/Icons/EdsLogo.png</file>
+        <file alias="Images/Icons/MwsLogo.png">Resources/Images/Icons/MwsLogo.png</file>
+    </qresource>
+</RCC>

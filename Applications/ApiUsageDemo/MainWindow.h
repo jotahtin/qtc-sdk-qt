@@ -1,28 +1,31 @@
-#ifndef APIUSAGEDEMO_H
-#define APIUSAGEDEMO_H
+#ifndef MainWindow_H
+#define MainWindow_H
 
 #include <QtWidgets/QMainWindow>
-#include "ui_apiusagedemo.h"
+#include "ui_MainWindow.h"
 
 #include <QtCloudServices/QEnginioDataStorage>
 
 #include <QtCloudServices/qenginioconnection.h>
 
-class ApiUsageDemo : public QMainWindow {
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    ApiUsageDemo(QWidget *parent = 0);
-    ~ApiUsageDemo();
+    MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
 public slots:
+    void doSwitchToEds();
     void doExecute();
+
+    void doSwitchToMws();
 public:
     void handleOperationReply(QEnginioOperation & op);
 private:
-    Ui::ApiUsageDemoClass ui;
+    Ui::MainWindowClass ui;
 private:
     QEnginioDataStorage iEnginioDataStorage;
 };
 
-#endif // APIUSAGEDEMO_H
+#endif // MainWindow_H

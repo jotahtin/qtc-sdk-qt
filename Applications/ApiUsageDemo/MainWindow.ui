@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ApiUsageDemoClass</class>
- <widget class="QMainWindow" name="ApiUsageDemoClass">
+ <class>MainWindowClass</class>
+ <widget class="QMainWindow" name="MainWindowClass">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
-    <height>708</height>
+    <width>811</width>
+    <height>704</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,9 +25,54 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QToolButton" name="toolButton">
+        <widget class="QToolButton" name="toolButtonEds">
          <property name="text">
-          <string>...</string>
+          <string>EDS</string>
+         </property>
+         <property name="icon">
+          <iconset resource="ApiUsageDemoQRC.qrc">
+           <normaloff>:/ApiUsageDemo/Images/Icons/EdsLogo.png</normaloff>:/ApiUsageDemo/Images/Icons/EdsLogo.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>64</width>
+           <height>64</height>
+          </size>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+1</string>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
+         </property>
+         <property name="autoRaise">
+          <bool>false</bool>
+         </property>
+         <property name="arrowType">
+          <enum>Qt::NoArrow</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonMws">
+         <property name="text">
+          <string>MWS</string>
+         </property>
+         <property name="icon">
+          <iconset resource="ApiUsageDemoQRC.qrc">
+           <normaloff>:/ApiUsageDemo/Images/Icons/MwsLogo.png</normaloff>:/ApiUsageDemo/Images/Icons/MwsLogo.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>64</width>
+           <height>64</height>
+          </size>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+2</string>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextUnderIcon</enum>
          </property>
         </widget>
        </item>
@@ -57,14 +102,18 @@
         <item>
          <widget class="QLabel" name="labelEnginioDataStorage">
           <property name="text">
-           <string>Enginio Data Storage - Object</string>
+           <string>Enginio Data Storage</string>
           </property>
          </widget>
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="2">
-           <widget class="QLineEdit" name="lineEditEdsBackendId"/>
+           <widget class="QLineEdit" name="lineEditEdsBackendId">
+            <property name="text">
+             <string>5379dea0698b3c1dc00cdf57</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="labelEdsBackendId">
@@ -74,7 +123,11 @@
            </widget>
           </item>
           <item row="1" column="2">
-           <widget class="QLineEdit" name="lineEditEdsBackendAddress"/>
+           <widget class="QLineEdit" name="lineEditEdsinstanceAddress">
+            <property name="text">
+             <string>https://api.engin.io</string>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="labelEdsInstanceAddress">
@@ -333,7 +386,90 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_2"/>
+      <widget class="QWidget" name="page_2">
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <item>
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Managed WebSocket</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelMwsGatewayId">
+            <property name="text">
+             <string>MWS_GATEWAY_ID</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLineEdit" name="lineEditMwsGateWayId">
+            <property name="text">
+             <string>5386110b1ba00f02f2000002</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLineEdit" name="lineEditMwsInstanceAddress">
+            <property name="text">
+             <string>https://mws-eu-1.qtc.io</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelMwsInstanceAddress">
+            <property name="text">
+             <string>MWS_INSTANCE_ADDRESS</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPlainTextEdit" name="plainTextEditMwsInput"/>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QPushButton" name="pushButtonMwsConnectOrDisconnect">
+              <property name="text">
+               <string>Connect</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButtonMwsExecute">
+              <property name="text">
+               <string>Execute</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="tableWidgetMwsOutput"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -343,7 +479,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>825</width>
+     <width>811</width>
      <height>21</height>
     </rect>
    </property>
@@ -381,13 +517,13 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="apiusagedemo.qrc"/>
+  <include location="ApiUsageDemoQRC.qrc"/>
  </resources>
  <connections>
   <connection>
    <sender>action_Quit</sender>
    <signal>triggered()</signal>
-   <receiver>ApiUsageDemoClass</receiver>
+   <receiver>MainWindowClass</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -403,7 +539,7 @@
   <connection>
    <sender>pushButtonExecute</sender>
    <signal>clicked()</signal>
-   <receiver>ApiUsageDemoClass</receiver>
+   <receiver>MainWindowClass</receiver>
    <slot>doExecute()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -416,8 +552,44 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>toolButtonEds</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindowClass</receiver>
+   <slot>doSwitchToEds()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>95</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>405</x>
+     <y>351</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButtonMws</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindowClass</receiver>
+   <slot>doSwitchToMws()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>405</x>
+     <y>351</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>doExecute()</slot>
+  <slot>doMwsConnect()</slot>
+  <slot>doMwsExecute()</slot>
+  <slot>doSwitchToEds()</slot>
+  <slot>doSwitchToMws()</slot>
  </slots>
 </ui>

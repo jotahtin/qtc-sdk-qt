@@ -35,6 +35,14 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
+    <ProjectReference Include="..\..\Examples\Widgets\TodosCpp\TodosCpp.vcxproj">
+      <Name>TodosCpp</Name>
+      <Project>{7bfb3a45-bd18-4973-8b16-c56abd5c5fc8}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
     <ProjectReference Include="..\..\Libraries\QtCloudServices\QtCloudServices.vcxproj">
       <Name>QtCloudServices</Name>
       <Project>{b12702ad-abfb-343a-a199-8e24837244a3}</Project>

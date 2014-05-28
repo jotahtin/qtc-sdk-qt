@@ -43,7 +43,7 @@
 
 #include <QtCore>
 
-QString backendAddress(const QString &exampleName);
+QString instanceAddress(const QString &exampleName);
 QString backendId(const QString &exampleName);
 
 #endif

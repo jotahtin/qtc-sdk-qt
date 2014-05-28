@@ -431,7 +431,7 @@ QEnginioConnectionPrivate::QEnginioConnectionPrivate(const QEnginioDataStorage &
     if (!iNetworkManager) {
         iNetworkManager = QSharedPointer<QNetworkAccessManager>(new QNetworkAccessManager());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) && !defined(QT_NO_SSL) && !defined(ENGINIO_VALGRIND_DEBUG)
-        iNetworkManager->connectToHostEncrypted(aEnginioDataStorage.backendAddress().host());
+        iNetworkManager->connectToHostEncrypted(aEnginioDataStorage.instanceAddress().host());
 #else
 # error "SSL Connection required."
 #endif
@@ -595,7 +595,7 @@ QNetworkRequest QEnginioConnectionPrivate::prepareRequest(const QString &aPath,
     }
 
     relativeUrl.setPath(aPath);
-    url = iEnginioDataStorage.backendAddress().resolved(relativeUrl);
+    url = iEnginioDataStorage.instanceAddress().resolved(relativeUrl);
 
     requestId = QUuid::createUuid().toByteArray();
     // Remove unneeded pretty-formatting.

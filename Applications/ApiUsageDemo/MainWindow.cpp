@@ -5,37 +5,41 @@
 #include <QJsonArray>
 #include <QJsonValue>
 
-#include "apiusagedemo.h"
+#include "MainWindow.h"
 
 #include <QtCloudServices/QEnginioOperation.h>
 
-ApiUsageDemo::ApiUsageDemo(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       iEnginioDataStorage("https://api.engin.io", "5379dea0698b3c1dc00cdf57")
 {
     ui.setupUi(this);
 
     ui.lineEditEdsBackendId->setText(iEnginioDataStorage.backendId());
-    ui.lineEditEdsBackendAddress->setText(iEnginioDataStorage.backendAddress().toString());
+    ui.lineEditEdsinstanceAddress->setText(iEnginioDataStorage.instanceAddress().toString());
 
     connect(ui.lineEditEdsBackendId, &QLineEdit::textChanged,
             &iEnginioDataStorage, &QEnginioDataStorage::setBackendId);
-    connect(ui.lineEditEdsBackendAddress, &QLineEdit::textChanged,
-            &iEnginioDataStorage, &QEnginioDataStorage::setBackendAddressString);
+    connect(ui.lineEditEdsinstanceAddress, &QLineEdit::textChanged,
+            &iEnginioDataStorage, &QEnginioDataStorage::setInstanceAddressString);
     connect(&iEnginioDataStorage, &QEnginioDataStorage::backendIdChanged,
             ui.lineEditEdsBackendId, &QLineEdit::setText);
-    connect(&iEnginioDataStorage, &QEnginioDataStorage::backendAddressChanged,
-    [ = ](const QUrl & backendAddress) {
-        this->ui.lineEditEdsBackendAddress->setText(backendAddress.toString());
+    connect(&iEnginioDataStorage, &QEnginioDataStorage::instanceAddressChanged,
+    [ = ](const QUrl & instanceAddress) {
+        this->ui.lineEditEdsinstanceAddress->setText(instanceAddress.toString());
     });
 }
 
-ApiUsageDemo::~ApiUsageDemo()
+MainWindow::~MainWindow()
 {
 
 }
 
-void ApiUsageDemo::doExecute()
+void MainWindow::doSwitchToEds()
+{
+    ui.stackedWidget->setCurrentIndex(0);
+}
+void MainWindow::doExecute()
 {
     QEnginioCollection collection;
     collection = iEnginioDataStorage.collection(ui.lineEditCollection->text());
@@ -71,14 +75,14 @@ void ApiUsageDemo::doExecute()
                         .limit(ui.spinBoxFindLimit->value())
                         .offset(ui.spinBoxFindOffset->value())
                         ,
-                        std::bind(std::mem_fn(&ApiUsageDemo::handleOperationReply), this,
+                        std::bind(std::mem_fn(&MainWindow::handleOperationReply), this,
                                   std::placeholders::_1));
 
         break;
 
     case 1: // findOne
         objectId = ui.lineEditFindOneObjectId->text();
-        collection.findOne(objectId, std::bind(std::mem_fn(&ApiUsageDemo::handleOperationReply), this,
+        collection.findOne(objectId, std::bind(std::mem_fn(&MainWindow::handleOperationReply), this,
                                                std::placeholders::_1));
 
         break;
@@ -102,7 +106,7 @@ void ApiUsageDemo::doExecute()
         }
 
         // collection.insert(object, [=](QEnginioOperation & op) { this->handleOperationReply(op); });
-        collection.insert(object, std::bind(std::mem_fn(&ApiUsageDemo::handleOperationReply), this,
+        collection.insert(object, std::bind(std::mem_fn(&MainWindow::handleOperationReply), this,
                                             std::placeholders::_1));
 
         break;
@@ -127,21 +131,26 @@ void ApiUsageDemo::doExecute()
         }
 
         collection.update(objectId,
-                          object, std::bind(std::mem_fn(&ApiUsageDemo::handleOperationReply), this,
+                          object, std::bind(std::mem_fn(&MainWindow::handleOperationReply), this,
                                             std::placeholders::_1));
 
         break;
 
     case 4: // remove
         objectId = ui.lineEditRemoveObjectId->text();
-        collection.remove(objectId, std::bind(std::mem_fn(&ApiUsageDemo::handleOperationReply), this,
+        collection.remove(objectId, std::bind(std::mem_fn(&MainWindow::handleOperationReply), this,
                                               std::placeholders::_1));
 
         break;
     }
 }
 
-void ApiUsageDemo::handleOperationReply(QEnginioOperation & op)
+void MainWindow::doSwitchToMws()
+{
+    ui.stackedWidget->setCurrentIndex(1);
+}
+
+void MainWindow::handleOperationReply(QEnginioOperation & op)
 {
     if (!op) {
         this->ui.plainTextEditOutput->insertPlainText(

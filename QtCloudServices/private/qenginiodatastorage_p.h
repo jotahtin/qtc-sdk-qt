@@ -63,13 +63,13 @@ class QEnginioDataStoragePrivate : public QCloudServicesObjectPrivate {
     friend class QEnginioCollectionPrivate;
 public:
     QEnginioDataStoragePrivate();
-    QEnginioDataStoragePrivate(const QUrl &aBackendAddress, const QString &aBackendId,
+    QEnginioDataStoragePrivate(const QUrl &aInstanceAddress, const QString &aBackendId,
                                QEnginioDataStoragePrivate *aPrevInstance = 0);
     ~QEnginioDataStoragePrivate();
 public:
-    void setBackend(const QUrl &aBackendAddress, const QString &aBackendId);
+    void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
 
-    QUrl backendAddress() const Q_REQUIRED_RESULT;
+    QUrl instanceAddress() const Q_REQUIRED_RESULT;
     QString backendId() const Q_REQUIRED_RESULT;
 
     QString username() const Q_REQUIRED_RESULT;
@@ -92,7 +92,7 @@ Q_SIGNALS:
     void passwordChanged(const QString &aPassword);
 protected:
     QString iBackendId;
-    QUrl iBackendAddress;
+    QUrl iInstanceAddress;
 
     // Mutable objects
     QMutex iLock;

@@ -54,10 +54,10 @@ QEnginioDataStoragePrivate::QEnginioDataStoragePrivate()
 {
 
 }
-QEnginioDataStoragePrivate::QEnginioDataStoragePrivate(const QUrl &aBackendAddress, const QString &aBackendId,
+QEnginioDataStoragePrivate::QEnginioDataStoragePrivate(const QUrl &aInstanceAddress, const QString &aBackendId,
         QEnginioDataStoragePrivate *aPrevInstance)
     : QCloudServicesObjectPrivate(),
-      iBackendAddress(aBackendAddress), iBackendId(aBackendId),
+      iInstanceAddress(aInstanceAddress), iBackendId(aBackendId),
       iForwarding(false)
 {
     qRegisterMetaType<QEnginioConnection*>();
@@ -86,9 +86,9 @@ QEnginioDataStoragePrivate::~QEnginioDataStoragePrivate()
     }
 }
 
-QUrl QEnginioDataStoragePrivate::backendAddress() const
+QUrl QEnginioDataStoragePrivate::instanceAddress() const
 {
-    return iBackendAddress;
+    return iInstanceAddress;
 }
 
 QString QEnginioDataStoragePrivate::backendId() const
@@ -207,17 +207,17 @@ QEnginioDataStorage::QEnginioDataStorage(QObject *aParent)
 {
 }
 
-QEnginioDataStorage::QEnginioDataStorage(const QUrl &backendAddress, const QString &backendId, QObject *aParent)
+QEnginioDataStorage::QEnginioDataStorage(const QUrl &instanceAddress, const QString &backendId, QObject *aParent)
     : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
 {
-    setBackendAddress(backendAddress);
+    setInstanceAddress(instanceAddress);
     setBackendId(backendId);
 }
 
-QEnginioDataStorage::QEnginioDataStorage(const QString &backendAddress, const QString &backendId, QObject *aParent)
+QEnginioDataStorage::QEnginioDataStorage(const QString &instanceAddress, const QString &backendId, QObject *aParent)
     : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
 {
-    setBackendAddress(QUrl(backendAddress));
+    setInstanceAddress(QUrl(instanceAddress));
     setBackendId(backendId);
 }
 
@@ -248,21 +248,21 @@ bool QEnginioDataStorage::isValid() const
         return false;
     }
 
-    if (backendAddress().isEmpty() || backendId().isEmpty()) {
+    if (instanceAddress().isEmpty() || backendId().isEmpty()) {
         return false;
     }
 
     return true;
 }
 
-void QEnginioDataStorage::setBackend(const QUrl &aBackendAddress, const QString &aBackendId)
+void QEnginioDataStorage::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId)
 {
     bool chgAddress, chgId;
     QEnginioDataStorage::dvar impl;
 
     impl = d<QEnginioDataStorage>();
 
-    chgAddress = (impl->backendAddress() != aBackendAddress);
+    chgAddress = (impl->instanceAddress() != aInstanceAddress);
     chgId = (impl->backendId() != aBackendId);
 
     if (!chgAddress && !chgId) {
@@ -271,13 +271,13 @@ void QEnginioDataStorage::setBackend(const QUrl &aBackendAddress, const QString 
 
     impl->unbindForwarding();
 
-    impl = QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate(aBackendAddress, aBackendId));
+    impl = QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate(aInstanceAddress, aBackendId));
     setPIMPL(impl);
 
     impl->bindForwarding(this);
 
     if (chgAddress) {
-        emit backendAddressChanged(aBackendAddress);
+        emit instanceAddressChanged(aInstanceAddress);
     }
 
     if (chgId) {
@@ -287,17 +287,17 @@ void QEnginioDataStorage::setBackend(const QUrl &aBackendAddress, const QString 
     emit backendChanged();
 }
 
-QUrl QEnginioDataStorage::backendAddress() const
+QUrl QEnginioDataStorage::instanceAddress() const
 {
-    return d<const QEnginioDataStorage>()->backendAddress();
+    return d<const QEnginioDataStorage>()->instanceAddress();
 }
-void QEnginioDataStorage::setBackendAddress(const QUrl &aBackendAddress)
+void QEnginioDataStorage::setInstanceAddress(const QUrl &aInstanceAddress)
 {
-    setBackend(aBackendAddress, backendId());
+    setBackend(aInstanceAddress, backendId());
 }
-void QEnginioDataStorage::setBackendAddressString(const QString &aBackendAddress)
+void QEnginioDataStorage::setInstanceAddressString(const QString &aInstanceAddress)
 {
-    setBackendAddress(QUrl(aBackendAddress));
+    setInstanceAddress(QUrl(aInstanceAddress));
 }
 
 QString QEnginioDataStorage::backendId() const
@@ -306,7 +306,7 @@ QString QEnginioDataStorage::backendId() const
 }
 void QEnginioDataStorage::setBackendId(const QString &aBackendId)
 {
-    setBackend(backendAddress(), aBackendId);
+    setBackend(instanceAddress(), aBackendId);
 }
 
 QString QEnginioDataStorage::username() const
