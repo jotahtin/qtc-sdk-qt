@@ -75,6 +75,34 @@ bool QEnginioObjectPrivate::isValid() const
     return true;
 }
 
+bool QEnginioObjectPrivate::isModified() const
+{
+    QJsonObject::const_iterator i;
+
+    for (i = iJsonObject.begin(); i != iJsonObject.end(); ++i) {
+        if (i.key() == QtCloudServicesConstants::id ||
+                i.key() == QtCloudServicesConstants::objectType) {
+            continue;
+        }
+
+        if (!iPersistentJsonObject.contains(i.key())) {
+            return true; // field added
+        }
+
+        if (iPersistentJsonObject.value(i.key()) != i.value()) {
+            return true; // field changed
+        }
+    }
+
+    for (i = iPersistentJsonObject.begin(); i != iPersistentJsonObject.end(); ++i) {
+        if (!iPersistentJsonObject.contains(i.key())) {
+            return true; // field removed
+        }
+    }
+
+    return false;
+}
+
 void QEnginioObjectPrivate::insert(const QString &aKey, const QJsonValue &aValue)
 {
     iJsonObject.insert(aKey, aValue);
@@ -126,11 +154,62 @@ const QEnginioUser QEnginioObjectPrivate::updater() const
     return iUpdater;
 }
 
+QEnginioOperation QEnginioObjectPrivate::save()
+{
+    if (!isModified()) {
+        return QEnginioOperation();
+    }
+
+    QJsonObject update;
+    QJsonObject::iterator i;
+
+    for (i = iJsonObject.begin(); i != iJsonObject.end(); ++i) {
+        if (i.key() == QtCloudServicesConstants::id ||
+                i.key() == QtCloudServicesConstants::objectType) {
+            update.insert(i.key(), i.value());
+            continue;
+        }
+
+        if (iPersistentJsonObject.contains(i.key()) &&
+                iPersistentJsonObject[i.key()] == i.value()) {
+            continue;
+        }
+
+        update.insert(i.key(), i.value());
+    }
+
+    QEnginioObject::dvar self = getThis<QEnginioObject>();
+    return iEnginioCollection.update(objectId(), update,
+    [ = ](QEnginioOperation & op) {
+        self->saveCompleted(op);
+    });
+}
+
 void QEnginioObjectPrivate::setEnginioCollection(const QEnginioCollection &aEnginioCollection)
 {
     iEnginioCollection = aEnginioCollection;
 }
 
+void QEnginioObjectPrivate::setUpdatedContent(const QJsonObject &aJsonObject)
+{
+    iJsonObject = aJsonObject;
+    markAsSynced();
+}
+
+void QEnginioObjectPrivate::markAsSynced()
+{
+    iPersistentJsonObject = iJsonObject;
+    emit objectChanged();
+}
+
+void QEnginioObjectPrivate::saveCompleted(QEnginioOperation & op)
+{
+    if (!op) {
+        emit operationFailed(op.errorString());
+    } else {
+        markAsSynced();
+    }
+}
 
 /*
 ** Public Interface
@@ -145,8 +224,10 @@ QEnginioObject::QEnginioObject(QObject *aParent)
 
 }
 QEnginioObject::QEnginioObject(const QEnginioObject &aOther)
-    : QCloudServicesObject(aOther.d<QEnginioObject>())
 {
+    if (!aOther.isNull()) {
+        setPIMPL(aOther.d<QEnginioObject>());
+    }
 }
 
 QEnginioObject::QEnginioObject(const QJsonObject &aJsonObject)
@@ -156,7 +237,12 @@ QEnginioObject::QEnginioObject(const QJsonObject &aJsonObject)
 
 QEnginioObject & QEnginioObject::operator=(const QEnginioObject &aOther)
 {
-    d<QEnginioObject>()->setPIMPL(aOther.d<QEnginioObject>());
+    if (!aOther.isNull()) {
+        setPIMPL(aOther.d<QEnginioObject>());
+    } else {
+        setPIMPL(nullptr);
+    }
+
     return *this;
 }
 
@@ -167,6 +253,24 @@ bool QEnginioObject::isValid() const
     }
 
     return d<const QEnginioObject>()->isValid();
+}
+
+bool QEnginioObject::isPersistent() const
+{
+    if (!isValid()) {
+        return false;
+    }
+
+    return !objectId().isEmpty();
+}
+
+bool QEnginioObject::isModified() const
+{
+    if (isNull()) {
+        return false;
+    }
+
+    return d<const QEnginioObject>()->isModified();
 }
 
 QEnginioObject & QEnginioObject::insert(const QString &aKey, const QJsonValue &aValue)
@@ -276,11 +380,34 @@ const QEnginioUser QEnginioObject::updater() const
     return d<const QEnginioObject>()->updater();
 }
 
+void QEnginioObject::save()
+{
+    if (isNull()) {
+        return;
+    }
+
+    d<const QEnginioObject>()->save();
+}
+
 void QEnginioObject::lazyInitialization()
 {
     if (isNull()) {
-        iPIMPL = QEnginioObject::dvar(new QEnginioObjectPrivate);
+        setPIMPL(QEnginioObject::dvar(new QEnginioObjectPrivate));
     }
+}
+
+void QEnginioObject::setPIMPL(QCloudServicesObject::dvar aPIMPL)
+{
+    QCloudServicesObject::setPIMPL(aPIMPL);
+
+    if (isNull()) {
+        return;
+    }
+
+    connect(d<QEnginioObject>().get(), SIGNAL(objectChanged()),
+            this, SIGNAL(objectChanged()));
+    connect(d<QEnginioObject>().get(), SIGNAL(operationFailed(QString)),
+            this, SIGNAL(operationFailed(QString)));
 }
 
 #ifndef QT_NO_DEBUG_STREAM

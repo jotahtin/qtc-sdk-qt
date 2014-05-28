@@ -66,6 +66,8 @@ public:
     QEnginioObject& operator=(const QEnginioObject &aOther);
 
     virtual bool isValid() const Q_REQUIRED_RESULT;
+    bool isPersistent() const Q_REQUIRED_RESULT;
+    bool isModified() const Q_REQUIRED_RESULT;
 
     QEnginioObject& insert(const QString &aKey, const QJsonValue &aValue);
     QEnginioObject& remove(const QString &aKey);
@@ -82,10 +84,14 @@ public:
     const QString objectType() const Q_REQUIRED_RESULT;
     const QTime updatedAt() const Q_REQUIRED_RESULT;
     const QEnginioUser updater() const Q_REQUIRED_RESULT;
+
+    void save();
 protected:
     virtual void lazyInitialization();
+    virtual void setPIMPL(QCloudServicesObject::dvar aPIMPL);
 Q_SIGNALS:
     void objectChanged();
+    void operationFailed(QString);
 };
 
 Q_DECLARE_TYPEINFO(QEnginioObject, Q_COMPLEX_TYPE);

@@ -42,53 +42,41 @@
 #ifndef QCLOUDSERVICES_QCLOUDSERVICES_OBJECT_P_H
 #define QCLOUDSERVICES_QCLOUDSERVICES_OBJECT_P_H
 
+#include <QList>
+
 #include <QtCloudServices/qcloudservicesobject.h>
 
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-# include <QtCore/private/qobject_p.h>
-#else
-class QCloudServicesObject;
-#endif
-
-class QCloudServicesObjectPrivate
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    : public QObjectPrivate
-#else
-    : public QObject
-#endif
-{
+class QCloudServicesObjectPrivate : public QObject {
+    Q_OBJECT
+    friend class QCloudServicesObject;
 public:
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
     QCloudServicesObjectPrivate();
     virtual ~QCloudServicesObjectPrivate();
-#endif
 
-    void setPIMPL(QCloudServicesObject::dvar aPIMPL);
+    // void setPIMPL(QCloudServicesObject::dvar aPIMPL);
 
     template<class T>
     typename T::dvar getThis()
     {
-        return this->iInterface->d<T>();
+        return this->iInterfaces.first()->d<T>();
     }
 public:
     template<class T>
     T* q()
     {
-        return static_cast<T *>(this->iInterface);
+        return static_cast<T *>(this->iInterfaces.first());
     }
     template<class T>
     const T* q() const
     {
-        return static_cast<T *>(this->iInterface);
+        return static_cast<T *>(this->iInterfaces.first());
     }
-
-
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    QCloudServicesObject *iInterface;
-#endif
+protected:
+    void addInterface(QCloudServicesObject *aInterface);
+    void removeInterface(QCloudServicesObject *aInterface);
+protected:
+    QMutex iLock;
+    QList<QCloudServicesObject*> iInterfaces;
 };
 
-
 #endif /* QCLOUDSERVICES_QCLOUDSERVICES_OBJECT_P_H */
-
-

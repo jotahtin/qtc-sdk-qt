@@ -52,31 +52,47 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QEnginioModelPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioModel : public QAbstractListModel {
+class QTCLOUDSERVICES_EXPORT QEnginioModel : public QAbstractItemModel {
     Q_OBJECT
-
     // Q_ENUMS(QtCloudServices::Operation) // TODO remove me QTBUG-33577
     // Q_PROPERTY(QtCloudServices::Operation operation READ operation WRITE setOperation NOTIFY operationChanged)
     // Q_PROPERTY(QEnginioConnection *client READ client WRITE setClient NOTIFY clientChanged)
     // Q_PROPERTY(QJsonObject query READ query WRITE setQuery NOTIFY queryChanged)
-
+    Q_DISABLE_COPY(QEnginioModel)
+    QTC_DECLARE_PRIVATE(QEnginioModel)
     friend class QEnginioModelNodePrivate;
 public:
     explicit QEnginioModel(QObject *aParent = 0);
     ~QEnginioModel();
 
+    //! QAbstractItemModel
     virtual Qt::ItemFlags flags(const QModelIndex &aIndex) const Q_DECL_OVERRIDE;
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    virtual QModelIndex index(int aRow, int aColumn, const QModelIndex &aParent = QModelIndex()) const;
+    virtual QModelIndex parent(const QModelIndex &aIndex) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
-    virtual void fetchMore(const QModelIndex &parent) Q_DECL_OVERRIDE;
-    virtual bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;
+    virtual int columnCount(const QModelIndex &) const Q_DECL_OVERRIDE;
+
+    virtual QVariant data(const QModelIndex &aIndex, int aRole = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    virtual bool setData(const QModelIndex &aIndex, const QVariant &aValue, int aRole = Qt::EditRole) Q_DECL_OVERRIDE;
+
+    virtual void fetchMore(const QModelIndex &aParent) Q_DECL_OVERRIDE;
+    virtual bool canFetchMore(const QModelIndex &aParent) const Q_DECL_OVERRIDE;
+
+    //! QEnginioModel
+    virtual QVariant enginioData(const QEnginioObject &aEnginioObject,
+                                 const QModelIndex &aIndex, int aRole = Qt::DisplayRole) const;
+    virtual bool setEnginioData(QEnginioObject &aEnginioObject,
+                                const QModelIndex &aIndex, const QVariant &aValue, int aRole = Qt::EditRole);
+
 
 #if 0
     virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
     void disableNotifications();
+#endif
+#if 0
+    Q_INVOKABLE QEnginioOperation setData(int row, const QVariant &value, const QString &role);
+    using EnginioBaseModel::setData;
 #endif
 
     QEnginioCollection collection(const QModelIndex &aParent = QModelIndex()) const Q_REQUIRED_RESULT;
@@ -87,21 +103,20 @@ public:
     void setQuery(const QEnginioQuery &aQuery,
                   const QModelIndex &aParent = QModelIndex());
 
-
+    void refresh(const QModelIndex &aParent = QModelIndex());
 
 #if 0
     QtCloudServices::Operation operation() const Q_REQUIRED_RESULT;
     void setOperation(QtCloudServices::Operation operation);
 #endif
+    Q_INVOKABLE QEnginioObject enginioObject(const QModelIndex &aIndex) const Q_REQUIRED_RESULT;
+
     Q_INVOKABLE QEnginioOperation append(const QEnginioObject &aObject,
                                          const QModelIndex &aParent = QModelIndex());
-#if 0
+    Q_INVOKABLE QEnginioOperation remove(const QModelIndex &aIndex);
 
-    Q_INVOKABLE QEnginioOperation remove(int row);
-    Q_INVOKABLE QEnginioOperation setData(int row, const QVariant &value, const QString &role);
-    using EnginioBaseModel::setData;
-#endif
-
+protected:
+    virtual QEnginioModelNode* nodeForEnginioObject(const QEnginioObject &aEnginioObject);
 protected:
     QEnginioModelNode *nodeAt(const QModelIndex &aIndex);
     QEnginioModelNode *getNode(const QModelIndex &aIndex) const;
@@ -109,16 +124,6 @@ Q_SIGNALS:
     void collectionChanged(const QEnginioCollection &aCollection);
     // void queryChanged(const QJsonObject &query);
     // void operationChanged(QtCloudServices::Operation operation);
-
-private:
-    Q_DISABLE_COPY(QEnginioModel)
-    QTC_DECLARE_PRIVATE(QEnginioModel)
-
-    // friend class EnginioModelPrivate;
-protected:
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    // QEnginioModelPrivate *iPIMPL;
-#endif
 public:
     template<class T>
     std::shared_ptr<typename T::private_type> d()
@@ -131,11 +136,7 @@ public:
         return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
     }
 protected:
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    std::shared_ptr<QEnginioModelPrivate> iPIMPL;
-    // QCloudServicesObjectPrivate *iPIMPL;
-#endif
-
+    QEnginioModel::dvar iPIMPL;
 };
 
 QT_END_NAMESPACE

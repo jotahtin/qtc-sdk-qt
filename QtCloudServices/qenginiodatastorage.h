@@ -112,6 +112,7 @@ public:
 Q_SIGNALS:
     void backendIdChanged(const QString &backendId);
     void backendAddressChanged(const QUrl &backendAddress);
+    void backendChanged();
 
     void usernameChanged(const QString &aUsername);
     void passwordChanged(const QString &aPassword);

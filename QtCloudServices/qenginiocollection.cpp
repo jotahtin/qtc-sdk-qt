@@ -228,13 +228,13 @@ void QEnginioCollectionPrivate::handleCompletedOperation(QEnginioOperation & op,
 */
 QEnginioCollection::QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
                                        const QString &aCollectionName)
-    : QCloudServicesObject(*new QEnginioCollectionPrivate(aEnginioDataStorage,
-                           aCollectionName))
+    : QCloudServicesObject(QEnginioCollection::dvar(new QEnginioCollectionPrivate(aEnginioDataStorage,
+                           aCollectionName)))
 {
 }
 
 QEnginioCollection::QEnginioCollection(QObject *aParent)
-    : QCloudServicesObject(*new QEnginioCollectionPrivate(), aParent)
+    : QCloudServicesObject(QEnginioCollection::dvar(new QEnginioCollectionPrivate), aParent)
 {
 }
 
@@ -244,7 +244,7 @@ QEnginioCollection::QEnginioCollection(const QEnginioCollection &aOther, QObject
 }
 QEnginioCollection & QEnginioCollection::operator=(const QEnginioCollection &aOther)
 {
-    d<QEnginioCollection>()->setPIMPL(aOther.d<QEnginioCollection>());
+    setPIMPL(aOther.d<QEnginioCollection>());
     return *this;
 }
 

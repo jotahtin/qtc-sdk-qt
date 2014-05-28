@@ -291,15 +291,7 @@ void QEnginioOperationPrivate::setNetworkReply(QNetworkReply *aNetworkReply)
 void QEnginioOperationPrivate::operationFinished()
 {
     QEnginioCollection enginioCollection;
-
     enginioCollection = iEnginioRequest.enginioCollection();
-
-    QEnginioRequest::dvar enginioRequest;
-    enginioRequest = iEnginioRequest.d<QEnginioRequest>();
-
-    if (!enginioRequest) {
-        return;
-    }
 
     iJsonObject = QJsonDocument::fromJson(resultBytes()).object();
 
@@ -316,15 +308,28 @@ void QEnginioOperationPrivate::operationFinished()
             }
 
             if (!enginioCollection) {
-                qDebug() << "---- NEED RESOLVE (PER OBJECT)...";
+                QJsonObject  jsonObject = (*i).toObject();
+                qDebug() << "---- NEED RESOLVE (PER OBJECT)..."
+                         << jsonObject.value(QtCloudServicesConstants::objectType);
+
                 continue;
             }
 
             iResultObjects.push_back(enginioCollection.fromJsonObject((*i).toObject()));
         }
+    } else if (!iJsonObject.isEmpty()) {
+        if (!enginioCollection) {
+            qDebug() << "---- NEED RESOLVE (PER OBJECT)..."
+                     << iJsonObject.value(QtCloudServicesConstants::objectType);
+        } else {
+            iResultObjects.push_back(enginioCollection.fromJsonObject(iJsonObject));
+        }
     }
 
-    if (enginioRequest->iCallback) {
+    QEnginioRequest::dvar enginioRequest;
+    enginioRequest = iEnginioRequest.d<QEnginioRequest>();
+
+    if (!!enginioRequest && enginioRequest->iCallback) {
         enginioRequest->iCallback(*q<QEnginioOperation>());
     }
 }
@@ -458,12 +463,12 @@ QEnginioOperation::~QEnginioOperation()
 
 QEnginioOperation::QEnginioOperation(const QEnginioConnection &aEnginioConnection,
                                      const QEnginioRequest &aRequest)
-    : QCloudServicesObject(*new QEnginioOperationPrivate(aEnginioConnection, aRequest))
+    : QCloudServicesObject(QEnginioOperation::dvar(new QEnginioOperationPrivate(aEnginioConnection, aRequest)))
 {
 
 }
 QEnginioOperation::QEnginioOperation()
-    : QCloudServicesObject(*new QEnginioOperationPrivate(), NULL)
+    : QCloudServicesObject(QEnginioOperation::dvar(new QEnginioOperationPrivate()))
 {
 
 }
@@ -477,9 +482,9 @@ QEnginioOperation::~QEnginioOperation()
 
 }
 
-QEnginioOperation& QEnginioOperation::operator=(const QEnginioOperation &aOther)
+QEnginioOperation & QEnginioOperation::operator=(const QEnginioOperation &aOther)
 {
-    d<QEnginioOperation>()->setPIMPL(aOther.d<QEnginioOperation>());
+    setPIMPL(aOther.d<QEnginioOperation>());
     return *this;
 }
 

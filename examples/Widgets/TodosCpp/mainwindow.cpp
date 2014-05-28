@@ -70,9 +70,10 @@ MainWindow::MainWindow(QWidget *parent)
     //![model]
     m_model = new TodosModel(this);
     m_model->setCollection(iEnginioDataStorage.collection("todos"));
+    m_model->refresh();
+
     /*
     m_model->setClient(m_client);
-
     QJsonObject query;
     query["objectType"] = QString::fromUtf8("objects.todos");
     m_model->setQuery(query);
@@ -129,10 +130,7 @@ void MainWindow::operationError(const QEnginioOperation &aOperation)
 void MainWindow::removeItem()
 {
     QModelIndex index = m_view->currentIndex();
-
-
-    // EnginioReply *reply = m_model->remove(index.row());
-    // QObject::connect(reply, &EnginioReply::finished, reply, &EnginioReply::deleteLater);
+    m_model->remove(index);
 }
 //![removeItem]
 

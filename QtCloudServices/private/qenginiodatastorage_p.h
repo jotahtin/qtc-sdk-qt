@@ -70,10 +70,7 @@ public:
     void setBackend(const QUrl &aBackendAddress, const QString &aBackendId);
 
     QUrl backendAddress() const Q_REQUIRED_RESULT;
-    void setBackendAddress(const QUrl &aBackendAddress);
-
     QString backendId() const Q_REQUIRED_RESULT;
-    void setBackendId(const QString &aBackendId);
 
     QString username() const Q_REQUIRED_RESULT;
     void setUsername(const QString &aUsername);

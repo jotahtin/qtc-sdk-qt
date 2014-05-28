@@ -53,11 +53,14 @@ TodosModel::TodosModel(QObject *parent)
 
 QVariant TodosModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (orientation == Qt::Horizontal && section == 0 && role == Qt::DisplayRole)
+    if (orientation == Qt::Horizontal && section == 0 && role == Qt::DisplayRole) {
         return QStringLiteral("Todo List");
+    }
+
     return QEnginioModel::headerData(section, orientation, role);
 }
 
+#if USE_ROLE_NAME
 //![data]
 QVariant TodosModel::data(const QModelIndex &index, int role) const
 {
@@ -74,8 +77,9 @@ QVariant TodosModel::data(const QModelIndex &index, int role) const
         return completed ? QColor("#999") : QColor("#333");
     }
 
-    if (role == CompletedRole)
+    if (role == CompletedRole) {
         return QEnginioModel::data(index, CompletedRole).value<QJsonValue>().toBool();
+    }
 
     // fallback to base class
     return QEnginioModel::data(index, role);
@@ -92,3 +96,55 @@ QHash<int, QByteArray> TodosModel::roleNames() const
     return roles;
 }
 //![roleNames]
+#else
+QVariant TodosModel::enginioData(const QEnginioObject &aEnginioObject,
+                                 const QModelIndex &aIndex, int aRole) const
+{
+    if (aRole == Qt::FontRole) {
+        bool completed = aEnginioObject["completed"].toBool();
+        QFont font;
+        font.setPointSize(20);
+        font.setStrikeOut(completed);
+        return font;
+    }
+
+    if (aRole == Qt::TextColorRole) {
+        bool completed = aEnginioObject["completed"].toBool();
+        return completed ? QColor("#999") : QColor("#333");
+    }
+
+    if (aRole == TodosModel::CompletedRole) {
+        return aEnginioObject["completed"].toBool();
+    }
+
+    if (aRole == Qt::DisplayRole) {
+        return aEnginioObject["title"];
+    }
+
+    return QVariant();
+}
+bool TodosModel::setEnginioData(QEnginioObject &aEnginioObject,
+                                const QModelIndex &aIndex, const QVariant &aValue, int aRole)
+{
+    if (!aEnginioObject.isPersistent()) {
+        return false;
+    }
+
+    if (aRole == Qt::EditRole) {
+        aEnginioObject["title"] = aValue.toString();
+        aEnginioObject.save();
+        return true;
+    }
+
+    if (aRole == TodosModel::CompletedRole) {
+        aEnginioObject["completed"] = aValue.toBool();
+        aEnginioObject.save();
+        return true;
+    }
+
+    return false;
+}
+
+
+
+#endif

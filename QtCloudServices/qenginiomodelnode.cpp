@@ -67,6 +67,10 @@ QEnginioModelNodePrivate::QEnginioModelNodePrivate()
 
 QEnginioModelNodePrivate::~QEnginioModelNodePrivate()
 {
+    if (iEnginoObject.isValid()) {
+        disconnect(iConnectionForObjectChange);
+    }
+
     qDeleteAll(iChildNodes);
 }
 
@@ -236,36 +240,21 @@ void QEnginioModelNodePrivate::setQuery(const QEnginioQuery &aQuery)
 
 void QEnginioModelNodePrivate::refresh()
 {
-    qDebug() << "Refresh Node....";
-}
-
-/*
-int QEnginioModelNodePrivate::rowCount() const
-{
-    return iData.count();
-}
-QVariant QEnginioModelNodePrivate::data(unsigned row, int role) const
-{
-    if (role == QtCloudServices::SyncedRole) {
-        Q_ASSERT(false);
-        //return _attachedData.isSynced(row);
+    if (!iCollection) {
+        return;
     }
 
-    const QJsonObject object = iData.at(row).toObject();
+    QEnginioModelNode::dvar self;
+    self = getThis<QEnginioModelNode>();
 
-    if (!object.isEmpty()) {
-        const QString roleName = iRoles.value(role);
+    QEnginioQuery query;
 
-        if (!roleName.isEmpty()) {
-            return object[roleName];
-        } else if (role == Qt::DisplayRole) {
-            return iData.at(row);
-        }
-    }
+    iCollection.find(query,
+    [ = ](QEnginioOperation & op) {
+        self->handleOperationReply(HandleOperationRefresh, op);
+    });
 
-    return QVariant();
 }
-*/
 
 bool QEnginioModelNodePrivate::canFetchMore() const
 {
@@ -300,68 +289,106 @@ void QEnginioModelNodePrivate::fetchMore(int row)
 #endif
 }
 
-QEnginioOperation QEnginioModelNodePrivate::append(QEnginioModelNode::dvar aSelf,
-        const QEnginioObject &aObject)
+QEnginioObject QEnginioModelNodePrivate::enginioObject() const
 {
-    QEnginioOperation op;
+    return iEnginoObject;
+}
 
+QEnginioOperation QEnginioModelNodePrivate::appendEnginioObject(const QEnginioObject &aObject)
+{
     if (!iCollection) {
-        return op;
+        return QEnginioOperation();
     }
 
-    op = iCollection.insert(aObject,
+    QEnginioModelNode::dvar self;
+    self = getThis<QEnginioModelNode>();
+
+    return iCollection.insert(aObject,
     [ = ](QEnginioOperation & op) {
-        aSelf->handleOperationReply(HandleOperationInsert, op);
+        self->handleOperationReply(HandleOperationInsert, op);
     });
+}
 
-#if 0
-    QJsonObject object(value);
-    QString temporaryId = QString::fromLatin1("tmp") + QUuid::createUuid().toString();
-    object[QtCloudServicesConstants::objectType] = queryData(QtCloudServicesConstants::objectType);
-    // TODO think about it, it means that not all queries are valid
+QEnginioOperation QEnginioModelNodePrivate::removeEnginioObject(int aIndex)
+{
+    QEnginioModelNode *node;
 
-    ObjectAdaptor<QJsonObject> aObject(object);
-    QNetworkReply *nreply = _enginio->create(aObject, _operation);
-    QEnginioOperation ereply = _enginio->createReply(nreply);
-    FinishedCreateRequest finishedRequest = { this, temporaryId, ereply };
-    QObject::connect(ereply, &QEnginioOperation::dataChanged, _replyConnectionConntext, finishedRequest);
-    object[QtCloudServicesConstants::id] = temporaryId;
-    const int row = _data.count();
-    AttachedData data(row, temporaryId);
-    data.ref = 1;
-    data.createReply = ereply;
+    node = child(aIndex);
 
-    if (!row) { // the first item need to update roles
-        q->beginResetModel();
-        _attachedData.insert(data);
-        _data.append(value);
-        syncRoles();
-        q->endResetModel();
-    } else {
-        q->beginInsertRows(QModelIndex(), _data.count(), _data.count());
-        _attachedData.insert(data);
-        _data.append(value);
-        q->endInsertRows();
+    if (!node || !node->enginioObject().isPersistent()) {
+        return QEnginioOperation();
     }
 
-    _attachedData.insertRequestId(ereply->requestId(), row);
-    return ereply;
-#endif
+    QEnginioModelNode::dvar self;
+    self = getThis<QEnginioModelNode>();
 
-    return op;
+    QString objectId = node->enginioObject().objectId();;
+    return iCollection.remove(objectId,
+    [ = ](QEnginioOperation & op) {
+        self->handleOperationReply(HandleOperationRemove, op, objectId);
+    });
 }
 
 void QEnginioModelNodePrivate::handleOperationReply(HandleOperationType aType,
-        QEnginioOperation aOperation)
+        QEnginioOperation aOperation,
+        const QString &aObjectId)
 {
     if (!aOperation) {
         // Signal error
         return;
     }
 
-    qDebug() << "Got reply";
+    if (aType == HandleOperationRefresh || aType == HandleOperationInsert) {
+        QList<QEnginioObject> objects;
+        QList<QEnginioObject>::iterator i;
+        objects = aOperation.resultObjects();
+
+        for (i = objects.begin(); i != objects.end(); ++i) {
+            updateOrAppendObjectNode(*i);
+        }
+    } else  if (aType == HandleOperationRemove) {
+        removeObjectNode(aObjectId);
+    }
 }
 
+void QEnginioModelNodePrivate::updateOrAppendObjectNode(const QEnginioObject &aObject)
+{
+    QEnginioModelNode *node;
+
+    QList<QEnginioModelNode *>::iterator i;
+
+    for (i = iChildNodes.begin(); i != iChildNodes.end(); ++i) {
+        if ((*i)->enginioObject().objectId() == aObject.objectId()) {
+            (*i)->d<QEnginioModelNode>()->setEnginioObject(aObject);
+            return;
+        }
+    }
+
+    node = model()->nodeForEnginioObject(aObject);
+    node->d<QEnginioModelNode>()->setEnginioObject(aObject);
+    node->setParent(this);
+
+    append(node);
+}
+void QEnginioModelNodePrivate::removeObjectNode(const QString &aObjectId)
+{
+    QEnginioModelNode *node = nullptr;
+
+    QList<QEnginioModelNode *>::iterator i;
+
+    for (i = iChildNodes.begin(); i != iChildNodes.end(); ++i) {
+        if ((*i)->enginioObject().objectId() == aObjectId) {
+            node = *i;
+            break;
+        }
+    }
+
+    if (!node) {
+        return;
+    }
+
+    removeAndDelete(node->childNumber());
+}
 
 void QEnginioModelNodePrivate::setModel(QEnginioModel *aModel)
 {
@@ -373,6 +400,26 @@ void QEnginioModelNodePrivate::setParentNode(QEnginioModelNode *aParentNode)
     iParentNode = aParentNode;
 }
 
+void QEnginioModelNodePrivate::setEnginioObject(const QEnginioObject &aEnginoObject)
+{
+    if (iEnginoObject.isValid()) {
+        disconnect(iConnectionForObjectChange);
+    }
+
+    iEnginoObject = aEnginoObject;
+
+    if (iEnginoObject.isValid()) {
+        iConnectionForObjectChange
+            = connect(&iEnginoObject, &QEnginioObject::objectChanged,
+                      this, &QEnginioModelNodePrivate::refreshEnginoObjectDisplay);
+    }
+}
+
+void QEnginioModelNodePrivate::refreshEnginoObjectDisplay()
+{
+    model()->dataChanged(index(), index());
+}
+
 /*
 ** Public Implementation
 */
@@ -381,7 +428,7 @@ void QEnginioModelNodePrivate::setParentNode(QEnginioModelNode *aParentNode)
 Constructs a new model with \a parent as QObject aParent.
 */
 QEnginioModelNode::QEnginioModelNode()
-    : QCloudServicesObject(*new QEnginioModelNodePrivate(), NULL)
+    : QCloudServicesObject(QEnginioModelNode::dvar(new QEnginioModelNodePrivate), NULL)
 {
 }
 
@@ -460,16 +507,16 @@ int QEnginioModelNode::columnCount() const
     return 1;
 }
 
-QVariant QEnginioModelNode::data(int /*aColumn*/, int /*aRole*/) const
+QVariant QEnginioModelNode::data(const QModelIndex &aIndex, int aRole) const
 {
-    return QVariant();
+    return model()->enginioData(enginioObject(), aIndex, aRole);
 }
 
-bool QEnginioModelNode::setData(int /*aColumn*/,
-                                const QVariant &/*aValue*/,
-                                int /*aRole*/)
+bool QEnginioModelNode::setData(const QModelIndex &aIndex,
+                                const QVariant &aValue,
+                                int aRole)
 {
-    return false;
+    return model()->setEnginioData(enginioObject(), aIndex, aValue, aRole);
 }
 
 QEnginioCollection QEnginioModelNode::collection() const
@@ -496,10 +543,19 @@ void QEnginioModelNode::refresh()
     return d<QEnginioModelNode>()->refresh();
 }
 
-QEnginioOperation QEnginioModelNode::append(const QEnginioObject &aObject)
+QEnginioObject QEnginioModelNode::enginioObject() const
 {
-    QEnginioModelNode::dvar pimpl = d<QEnginioModelNode>();
-    return pimpl->append(pimpl, aObject);
+    return d<QEnginioModelNode>()->enginioObject();
+}
+
+QEnginioOperation QEnginioModelNode::appendEnginioObject(const QEnginioObject &aObject)
+{
+    return d<QEnginioModelNode>()->appendEnginioObject(aObject);
+}
+
+QEnginioOperation QEnginioModelNode::removeEnginioObject(int aIndex)
+{
+    return d<QEnginioModelNode>()->removeEnginioObject(aIndex);
 }
 
 QT_END_NAMESPACE

@@ -39,6 +39,102 @@
 **
 ****************************************************************************/
 
+/*!
+\class QEnginioModel
+\since 5.3
+\inmodule enginio-qt
+\ingroup enginio-client
+\target EnginioModelCpp
+\brief EnginioModel represents data from Enginio as a \l QAbstractItemModel.
+
+EnginioModel is a \l QAbstractItemModel, together with a view it allows
+to show the result of a query in a convenient way. The model executes query, update
+and create operations asynchronously on an Enginio backend collection, which allows
+not only to read data from the cloud but also modify it.
+
+The simplest type of query is:
+\code
+{ "objectType": "objects.fruits" }
+\endcode
+
+Assigning such a query to the model results in downloading of all objects from the "objects.fruits"
+collection. It is possible to \l{EnginioModel::append()}{append} new objects, to
+\l{EnginioModel::setData()}{modify} or to \l{EnginioModel::remove()}{remove} them.
+
+The query has to result in a list of objects, each object becomes an item in the model. Properties
+of the items are used as role names.
+There are a few predefined role names that will always be available (\l{QtCloudServices::Role}{Role}).
+
+The operations are executed asynchronously, which means that user interface is not
+blocked while the model is initialized and updated. Every modification is divided in
+two steps; request and confirmation. For example when \l{EnginioModel::append()}{append}
+is called EnginioModel returns immediately as if the operation had succeeded. In
+the background it waits for confirmation from the backend and only then the operation is
+really finished. It may happen that operation fails, for example
+because of insufficient access rights, in that case the operation will be reverted.
+
+There are two, ways of tracking if an item state is the same in the model and backend.
+Each item has a role that returns a boolean \l{QtCloudServices::SyncedRole}{SyncedRole}, role name "_synced" which
+indicates whether the item is successfully updated on the server.
+This role can for example meant to be used for a busy indicator while a property is being updated.
+Alternatively the status of each \l{QEnginioOperation}{QEnginioOperation} returned by EnginioModel can be tracked.
+The operation is confirmed when the reply is \l{QEnginioOperation::isFinished()}{finished} without \l{QEnginioOperation::isError()}{error}.
+
+When a reply is finished it is the user's responsibility to delete it, it can be done
+by connecting the \l{QEnginioOperation::finished()}{finished} signal to \l{QObject::deleteLater()}{deleteLater}.
+\code
+QObject::connect(reply, &QEnginioOperation::finished, reply, &QEnginioOperation::deleteLater);
+\endcode
+\note it is not safe to use the delete operator directly in \l{QEnginioOperation::finished()}{finished}.
+
+\note QEnginioConnection emits the finished and error signals for the model, not the model itself.
+
+The \l{EnginioModel::query}{query} can contain one or more options:
+The "sort" option, to get presorted data:
+\code
+{
+"objectType": "objects.fruits",
+"sort": [{"sortBy":"price", "direction": "asc"}]
+}
+\endcode
+The "query" option is used for filtering:
+\code
+{
+"objectType": "objects.fruits",
+"query": {"name": {"$in": ["apple", "orange", "kiwi"]}}
+}
+\endcode
+The "limit" option to limit the amount of results:
+\code
+{
+"objectType": "objects.fruits",
+"limit": 10
+}
+\endcode
+The "offset" option to skip some results from the beginning of a result set:
+\code
+{
+"objectType": "objects.fruits",
+"offset": 10
+}
+\endcode
+The options are valid only during the initial model population and
+are not enforced in anyway when updating or otherwise modifying the model data.
+\l QSortFilterProxyModel can be used to do more advanced sorting and filtering on the client side.
+
+EnginioModel can not detect when a property of a result is computed by the backend.
+For example the "include" option to \l{EnginioModel::query}{query} fills in the original creator of
+and object with the full object representing the "creator".
+\code
+{
+"objectType": "objects.fruits",
+"include": {"creator": {}}
+}
+\endcode
+For the model the "creator" property is not longer a reference (as it is on the backend), but a full object.
+But while the full object is accessible, attempts to alter the object's data will fail.
+*/
+
 #include "stdafx.h"
 
 #include <QtCloudServices/qenginiomodel.h>
@@ -58,18 +154,17 @@
 
 QT_BEGIN_NAMESPACE
 
-
 /*
 ** Private Implementation
 */
-
-QEnginioModelPrivate::QEnginioModelPrivate() //EnginioBaseModel *q_ptr)
-    : iRoot(new QEnginioModelNode)
-/*
-, _operation()
-, _latestRequestedOffset(0)
-    , _rolesCounter(QtCloudServices::SyncedRole)
-*/
+QEnginioModelPrivate::QEnginioModelPrivate(QEnginioModel *aInterface) //EnginioBaseModel *q_ptr)
+    : iRoot(new QEnginioModelNode),
+      iInterface(aInterface)
+  /*
+  , _operation()
+  , _latestRequestedOffset(0)
+      , _rolesCounter(QtCloudServices::SyncedRole)
+  */
 {
     iRoot->d<QEnginioModelNode>()->setModel(q<QEnginioModel>());
 }
@@ -82,6 +177,15 @@ QEnginioModelPrivate::~QEnginioModelPrivate()
     }
 }
 
+QEnginioModel *QEnginioModelPrivate::model()
+{
+    return q<QEnginioModel>();
+}
+
+const QEnginioModel *QEnginioModelPrivate::model() const
+{
+    return q<QEnginioModel>();
+}
 
 Qt::ItemFlags QEnginioModelPrivate::flags(const QModelIndex &aIndex) const
 {
@@ -95,28 +199,96 @@ Qt::ItemFlags QEnginioModelPrivate::flags(const QModelIndex &aIndex) const
     return 0;
 }
 
-int QEnginioModelPrivate::rowCount() const
+QModelIndex QEnginioModelPrivate::index(int aRow, int aColumn, const QModelIndex &aParent) const
 {
-    /*
-    if (!iObject) {
+    if (aParent.isValid() && aParent.column() != 0) {
+        return QModelIndex();
+    }
+
+    QEnginioModelNode *parentNode = getNode(aParent);
+
+    if (parentNode == NULL) {
+        return QModelIndex();
+    }
+
+    QEnginioModelNode *childNode = parentNode->child(aRow);
+
+    if (childNode) {
+        return model()->createIndex(aRow, aColumn, childNode);
+    } else {
+        return QModelIndex();
+    }
+}
+QModelIndex QEnginioModelPrivate::parent(const QModelIndex &aIndex) const
+{
+    QEnginioModelNode *childNode, *parentNode = nullptr;
+
+    if (!aIndex.isValid()) {
+        return QModelIndex();
+    }
+
+    childNode = getNode(aIndex);
+
+    if (childNode != nullptr) {
+        parentNode = childNode->parentNode();
+    }
+
+    if (parentNode == NULL) {
+        return QModelIndex();
+    }
+
+    if (parentNode == iRoot) {
+        return QModelIndex();
+    }
+
+    return model()->createIndex(parentNode->childNumber(), 0, parentNode);
+}
+
+int QEnginioModelPrivate::rowCount(const QModelIndex &aParent) const
+{
+    QEnginioModelNode *parentNode = getNode(aParent);
+
+    if (parentNode == NULL) {
         return 0;
     }
 
-    return iObject->rowCount();
-    */
-    return 0;
+    return parentNode->childCount();
 }
-QVariant QEnginioModelPrivate::data(unsigned row, int role) const
+
+QVariant QEnginioModelPrivate::data(const QModelIndex &aIndex, int aRole) const
 {
-    /*
-    if (!iObject) {
+    QEnginioModelNode *node;
+
+    if (!aIndex.isValid()) {
         return QVariant();
     }
 
-    return iObject->data(row, role);
-    */
-    return QVariant();
+    node = getNode(aIndex);
+
+    if (node == nullptr) {
+        return QVariant();
+    }
+
+    return node->data(aIndex, aRole);
 }
+
+bool QEnginioModelPrivate::setData(const QModelIndex &aIndex, const QVariant &aValue, int aRole)
+{
+    QEnginioModelNode *node;
+
+    if (!aIndex.isValid()) {
+        return false;
+    }
+
+    node = getNode(aIndex);
+
+    if (node == nullptr) {
+        return false;
+    }
+
+    return node->setData(aIndex, aValue, aRole);
+}
+
 
 bool QEnginioModelPrivate::canFetchMore() const
 {
@@ -178,6 +350,30 @@ void QEnginioModelPrivate::setQuery(const QEnginioQuery &aQuery,
     node->setQuery(aQuery);
 }
 
+void QEnginioModelPrivate::refresh(const QModelIndex &aParent)
+{
+    QEnginioModelNode *node;
+
+    node = getNode(aParent);
+
+    if (node) {
+        node->refresh();
+    }
+}
+
+QEnginioObject QEnginioModelPrivate::enginioObject(const QModelIndex &aIndex) const
+{
+    QEnginioModelNode *node;
+
+    node = getNode(aIndex);
+
+    if (node) {
+        return node->enginioObject();
+    }
+
+    return QEnginioObject();
+}
+
 QEnginioOperation QEnginioModelPrivate::append(const QEnginioObject &aObject,
         const QModelIndex &aParent)
 {
@@ -186,7 +382,20 @@ QEnginioOperation QEnginioModelPrivate::append(const QEnginioObject &aObject,
     node = getNode(aParent);
 
     if (node) {
-        return node->append(aObject);
+        return node->appendEnginioObject(aObject);
+    }
+
+    return QEnginioOperation();
+}
+
+QEnginioOperation QEnginioModelPrivate::remove(const QModelIndex &aIndex)
+{
+    QEnginioModelNode *node, *parent;
+
+    node = getNode(aIndex);
+
+    if (node && (parent = node->parentNode())) {
+        return parent->removeEnginioObject(node->childNumber());
     }
 
     return QEnginioOperation();
@@ -220,103 +429,6 @@ QEnginioModelNode *QEnginioModelPrivate::getNode(const QModelIndex &aIndex) cons
 #if 0
 
 const int EnginioBaseModelPrivate::IncrementalModelUpdate = -2;
-
-/*!
-  \class EnginioModel
-  \since 5.3
-  \inmodule enginio-qt
-  \ingroup enginio-client
-  \target EnginioModelCpp
-  \brief EnginioModel represents data from Enginio as a \l QAbstractListModel.
-
-  EnginioModel is a \l QAbstractListModel, together with a view it allows
-  to show the result of a query in a convenient way. The model executes query, update
-  and create operations asynchronously on an Enginio backend collection, which allows
-  not only to read data from the cloud but also modify it.
-
-  The simplest type of query is:
-  \code
-  { "objectType": "objects.fruits" }
-  \endcode
-
-  Assigning such a query to the model results in downloading of all objects from the "objects.fruits"
-  collection. It is possible to \l{EnginioModel::append()}{append} new objects, to
-  \l{EnginioModel::setData()}{modify} or to \l{EnginioModel::remove()}{remove} them.
-
-  The query has to result in a list of objects, each object becomes an item in the model. Properties
-  of the items are used as role names.
-  There are a few predefined role names that will always be available (\l{QtCloudServices::Role}{Role}).
-
-  The operations are executed asynchronously, which means that user interface is not
-  blocked while the model is initialized and updated. Every modification is divided in
-  two steps; request and confirmation. For example when \l{EnginioModel::append()}{append}
-  is called EnginioModel returns immediately as if the operation had succeeded. In
-  the background it waits for confirmation from the backend and only then the operation is
-  really finished. It may happen that operation fails, for example
-  because of insufficient access rights, in that case the operation will be reverted.
-
-  There are two, ways of tracking if an item state is the same in the model and backend.
-  Each item has a role that returns a boolean \l{QtCloudServices::SyncedRole}{SyncedRole}, role name "_synced" which
-  indicates whether the item is successfully updated on the server.
-  This role can for example meant to be used for a busy indicator while a property is being updated.
-  Alternatively the status of each \l{QEnginioOperation}{QEnginioOperation} returned by EnginioModel can be tracked.
-  The operation is confirmed when the reply is \l{QEnginioOperation::isFinished()}{finished} without \l{QEnginioOperation::isError()}{error}.
-
-  When a reply is finished it is the user's responsibility to delete it, it can be done
-  by connecting the \l{QEnginioOperation::finished()}{finished} signal to \l{QObject::deleteLater()}{deleteLater}.
-  \code
-  QObject::connect(reply, &QEnginioOperation::finished, reply, &QEnginioOperation::deleteLater);
-  \endcode
-  \note it is not safe to use the delete operator directly in \l{QEnginioOperation::finished()}{finished}.
-
-  \note QEnginioConnection emits the finished and error signals for the model, not the model itself.
-
-  The \l{EnginioModel::query}{query} can contain one or more options:
-  The "sort" option, to get presorted data:
-  \code
-  {
-    "objectType": "objects.fruits",
-    "sort": [{"sortBy":"price", "direction": "asc"}]
-  }
-  \endcode
-  The "query" option is used for filtering:
-  \code
-  {
-    "objectType": "objects.fruits",
-    "query": {"name": {"$in": ["apple", "orange", "kiwi"]}}
-  }
-  \endcode
-  The "limit" option to limit the amount of results:
-  \code
-  {
-    "objectType": "objects.fruits",
-    "limit": 10
-  }
-  \endcode
-  The "offset" option to skip some results from the beginning of a result set:
-  \code
-  {
-    "objectType": "objects.fruits",
-    "offset": 10
-  }
-  \endcode
-  The options are valid only during the initial model population and
-  are not enforced in anyway when updating or otherwise modifying the model data.
-  \l QSortFilterProxyModel can be used to do more advanced sorting and filtering on the client side.
-
-  EnginioModel can not detect when a property of a result is computed by the backend.
-  For example the "include" option to \l{EnginioModel::query}{query} fills in the original creator of
-  and object with the full object representing the "creator".
-  \code
-  {
-    "objectType": "objects.fruits",
-    "include": {"creator": {}}
-  }
-  \endcode
-  For the model the "creator" property is not longer a reference (as it is on the backend), but a full object.
-  But while the full object is accessible, attempts to alter the object's data will fail.
-*/
-
 
 void EnginioBaseModelPrivate::receivedNotification(QJsonObject data)
 {
@@ -590,32 +702,6 @@ void EnginioModel::setOperation(QtCloudServices::Operation operation)
 }
 
 /*!
-  \include model-remove.qdocinc
-  \sa QEnginioConnection::remove()
-*/
-QEnginioOperation *EnginioModel::remove(int row)
-{
-    QTC_D(EnginioModel);
-
-    if (Q_UNLIKELY(!d->enginio())) {
-        qWarning("EnginioModel::remove(): Enginio client is not set");
-        return 0;
-    }
-
-#if 0
-
-    if (unsigned(row) >= unsigned(d->rowCount())) {
-        QEnginioConnectionPrivate *client = QEnginioConnectionPrivate::get(d->enginio());
-        QNetworkReply *nreply = new EnginioFakeReply(client, QEnginioConnectionPrivate::constructErrorMessage(QtCloudServicesConstants::EnginioModel_remove_row_is_out_of_range));
-        QEnginioOperation *ereply = new QEnginioOperation(client, nreply);
-        return ereply;
-    }
-
-#endif
-    return d->remove(row);
-}
-
-/*!
   Update a value on \a row of this model's local cache
   and send an update request to the Enginio backend.
 
@@ -688,16 +774,9 @@ void EnginioBaseModel::disableNotifications()
 Constructs a new model with \a parent as QObject parent.
 */
 QEnginioModel::QEnginioModel(QObject *aParent)
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    : QAbstractListModel(*new QEnginioModelPrivate(this), aParent)
-#else
-    : QAbstractListModel(aParent), iPIMPL(new QEnginioModelPrivate())
-#endif
+    : QAbstractItemModel(aParent), iPIMPL(new QEnginioModelPrivate(this))
 {
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    d<QEnginioModel>()->iInterface = this;
-    // iPIMPL->iInterface = this;
-#endif
+    // d<QEnginioModel>()->iInterface = this;
     // QTC_D(QEnginioModel);
     // d->init();
 
@@ -709,20 +788,35 @@ Destroys the model.
 */
 QEnginioModel::~QEnginioModel()
 {
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    /*
-    if (iPIMPL) {
-        delete iPIMPL;
-    }
-    */
-#endif
 }
 
 Qt::ItemFlags QEnginioModel::flags(const QModelIndex &aIndex) const
 {
-    return QAbstractListModel::flags(aIndex) | d<const QEnginioModel>()->flags(aIndex);
+    return QAbstractItemModel::flags(aIndex) | d<const QEnginioModel>()->flags(aIndex);
 }
 
+QModelIndex QEnginioModel::index(int aRow, int aColumn, const QModelIndex &aParent) const
+{
+    return d<const QEnginioModel>()->index(aRow, aColumn, aParent);
+}
+QModelIndex QEnginioModel::parent(const QModelIndex &aIndex) const
+{
+    return d<const QEnginioModel>()->parent(aIndex);
+}
+
+/*!
+\overload
+\internal
+*/
+int QEnginioModel::rowCount(const QModelIndex &aParent) const
+{
+    return d<const QEnginioModel>()->rowCount(aParent);
+}
+
+int QEnginioModel::columnCount(const QModelIndex &) const
+{
+    return 1;
+}
 
 /*!
 \overload
@@ -730,44 +824,18 @@ Use this function to access the model data at \a index.
 With the \l roleNames() function the mapping of JSON property names to data roles used as \a role is available.
 The data returned will be JSON (for example a string for simple objects, or a JSON Object).
 */
-QVariant QEnginioModel::data(const QModelIndex &index, int role) const
+QVariant QEnginioModel::data(const QModelIndex &aIndex, int aRole) const
 {
-    QEnginioModel::dvar pimpl = d<QEnginioModel>();
-
-    if (!index.isValid() || index.row() < 0 || index.row() >= pimpl->rowCount()) {
-        return QVariant();
-    }
-
-    return pimpl->data(index.row(), role);
+    return d<const QEnginioModel>()->data(aIndex, aRole);
 }
 
 /*!
 \overload
 \internal
 */
-int QEnginioModel::rowCount(const QModelIndex &parent) const
+bool QEnginioModel::setData(const QModelIndex &aIndex, const QVariant &aValue, int aRole)
 {
-    Q_UNUSED(parent);
-    return d<const QEnginioModel>()->rowCount();
-}
-
-/*!
-\overload
-\internal
-*/
-bool QEnginioModel::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    QEnginioModel::dvar pimpl = d<QEnginioModel>();
-
-    if (unsigned(index.row()) >= unsigned(pimpl->rowCount())) {
-        return false;
-    }
-
-#if 0
-    QEnginioOperation *reply = d->setData(index.row(), value, role);
-    QObject::connect(reply, &QEnginioOperation::dataChanged, reply, &QEnginioOperation::deleteLater);
-#endif
-    return true;
+    return d<const QEnginioModel>()->setData(aIndex, aValue, aRole);
 }
 
 /*!
@@ -788,6 +856,22 @@ bool QEnginioModel::canFetchMore(const QModelIndex &parent) const
     Q_UNUSED(parent);
     return d<const QEnginioModel>()->canFetchMore();
 }
+
+QVariant QEnginioModel::enginioData(const QEnginioObject &aEnginioObject,
+                                    const QModelIndex &aIndex, int aRole) const
+{
+    if (aRole == Qt::DisplayRole) {
+        return aEnginioObject.objectId();
+    }
+
+    return QVariant();
+}
+bool QEnginioModel::setEnginioData(QEnginioObject &aEnginioObject,
+                                   const QModelIndex &aIndex, const QVariant &aValue, int aRole)
+{
+    return false;
+}
+
 
 /*!
 \property EnginioModel::client
@@ -841,6 +925,16 @@ void QEnginioModel::setQuery(const QEnginioQuery &query,
     return pimpl->setQuery(query, aParent);
 }
 
+void QEnginioModel::refresh(const QModelIndex &aParent)
+{
+    d<QEnginioModel>()->refresh(aParent);
+}
+
+QEnginioObject QEnginioModel::enginioObject(const QModelIndex &aIndex) const
+{
+    return d<QEnginioModel>()->enginioObject(aIndex);
+}
+
 /*!
 \include model-append.qdocinc
 \sa QEnginioConnection::create()
@@ -859,6 +953,26 @@ QEnginioOperation QEnginioModel::append(const QEnginioObject &aObject, const QMo
     return pimpl->append(aObject, aParent);
 }
 
+/*!
+\include model-remove.qdocinc
+\sa QEnginioConnection::remove()
+*/
+QEnginioOperation QEnginioModel::remove(const QModelIndex &aIndex)
+{
+    QEnginioModel::dvar pimpl = d<QEnginioModel>();
+    /*
+    if (Q_UNLIKELY(!d->enginio())) {
+    	qWarning("EnginioModel::remove(): Enginio client is not set");
+    	return 0;
+    }
+    */
+    return pimpl->remove(aIndex);
+}
+
+QEnginioModelNode* QEnginioModel::nodeForEnginioObject(const QEnginioObject &aEnginioObject)
+{
+    return new QEnginioModelNode();
+}
 QEnginioModelNode *QEnginioModel::nodeAt(const QModelIndex &aIndex)
 {
     QEnginioModel::dvar pimpl = d<QEnginioModel>();

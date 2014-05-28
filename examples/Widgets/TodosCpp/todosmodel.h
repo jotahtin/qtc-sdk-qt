@@ -41,26 +41,39 @@
 #ifndef TODOSMODEL_H
 #define TODOSMODEL_H
 
-#include <QtCloudServices/qenginiomodel.h>
+#include <QtCloudServices/QEnginioModel>
+
+#define USE_ROLE_NAME 0
 
 //![definition]
-class TodosModel : public QEnginioModel
-{
+class TodosModel : public QEnginioModel {
     Q_OBJECT
 
 public:
-    enum Role
-    {
+    enum Role {
         TitleRole = QtCloudServices::CustomPropertyRole,
         CompletedRole
     };
+
 //![definition]
 
     explicit TodosModel(QObject *parent = 0);
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
+#if USE_ROLE_NAME
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     virtual QHash<int, QByteArray> roleNames() const Q_DECL_OVERRIDE;
+#else
+    virtual QVariant enginioData(const QEnginioObject &aEnginioObject,
+                                 const QModelIndex &aIndex,
+                                 int aRole = Qt::DisplayRole) const Q_DECL_OVERRIDE;
+    virtual bool setEnginioData(QEnginioObject &aEnginioObject,
+                                const QModelIndex &aIndex,
+                                const QVariant &aValue,
+                                int aRole = Qt::EditRole) Q_DECL_OVERRIDE;
+#endif
+
 };
 
 #endif // TODOSMODEL_H

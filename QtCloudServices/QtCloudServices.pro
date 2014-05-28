@@ -62,7 +62,8 @@ HEADERS += stdafx.h \
     private/qenginiomodel_p.h \
     private/qenginioobject_p.h \
     private/qenginiouser_p.h \
-    private/qenginiomodelnode_p.h
+    private/qenginiomodelnode_p.h \
+    QEnginioModel
 
 unix {
     target.path = /usr/lib

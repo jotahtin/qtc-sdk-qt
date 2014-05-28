@@ -58,38 +58,26 @@ QEnginioRequestPrivate::QEnginioRequestPrivate()
 ** Public Interface
 */
 QEnginioRequest::QEnginioRequest(QObject *aParent)
-    : QCloudServicesObject(*new QEnginioRequestPrivate(), aParent)
+    : QCloudServicesObject(QEnginioRequest::dvar(new QEnginioRequestPrivate), aParent)
 {
 
 }
 QEnginioRequest::QEnginioRequest(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent)
-    : QCloudServicesObject(*new QEnginioRequestPrivate(), aParent)
+    : QCloudServicesObject(QEnginioRequest::dvar(new QEnginioRequestPrivate), aParent)
 {
     QEnginioRequest::dvar pimpl = d<QEnginioRequest>();
     pimpl->iOperation = aOperation;
     pimpl->iPath = aPath;
 }
 QEnginioRequest::QEnginioRequest(const QEnginioRequest &aOther)
-    : QCloudServicesObject(*new QEnginioRequestPrivate())
+    : QCloudServicesObject(aOther.d<QEnginioRequest>())
 {
     *this = aOther;
 }
 
 QEnginioRequest& QEnginioRequest::operator=(const QEnginioRequest &aOther)
 {
-    QEnginioRequest::dvar pimpl = d<QEnginioRequest>();
-    QEnginioRequest::dvar other;
-
-    other = aOther.d<QEnginioRequest>();
-
-    if (other) {
-        pimpl->iOperation = other->iOperation;
-        pimpl->iPath = other->iPath;
-        pimpl->iUrlQuery = other->iUrlQuery;
-        pimpl->iPayload = other->iPayload;
-        pimpl->iExtraHeaders = other->iExtraHeaders;
-        pimpl->iCallback = other->iCallback;
-    }
+    setPIMPL(aOther.d<QEnginioRequest>());
 
     return *this;
 }

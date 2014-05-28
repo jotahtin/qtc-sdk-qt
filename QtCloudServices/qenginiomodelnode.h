@@ -85,8 +85,10 @@ public:
 
     virtual Qt::ItemFlags flags() const;
     virtual int columnCount() const;
-    virtual QVariant data(int aColumn, int aRole) const;
-    virtual bool setData(int aColumn, const QVariant &aValue, int aRole);
+    virtual QVariant data(const QModelIndex &aIndex, int aRole) const;
+    virtual bool setData(const QModelIndex &aIndex, const QVariant &aValue, int aRole);
+
+
 
     QEnginioCollection collection() const Q_REQUIRED_RESULT;
     void setCollection(const QEnginioCollection &aCollection);
@@ -96,7 +98,10 @@ public:
 
     void refresh();
 
-    QEnginioOperation append(const QEnginioObject &aObject);
+    QEnginioObject enginioObject() const Q_REQUIRED_RESULT;
+
+    QEnginioOperation appendEnginioObject(const QEnginioObject &aObject);
+    QEnginioOperation removeEnginioObject(int aIndex);
 Q_SIGNALS:
     void nodeModified();
 private:

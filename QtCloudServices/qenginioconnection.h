@@ -91,18 +91,11 @@ public:
 
     Q_INVOKABLE QEnginioOperation customRequest(const QEnginioRequest &aRequest);
 
-    // QByteArray backendId() const Q_REQUIRED_RESULT;
-    // void setBackendId(const QByteArray &backendId);
-
     EnginioIdentity *identity() const Q_REQUIRED_RESULT;
     void setIdentity(EnginioIdentity *identity);
     QtCloudServices::AuthenticationState authenticationState() const Q_REQUIRED_RESULT;
 
-    // QUrl serviceUrl() const Q_REQUIRED_RESULT;
-    // void setServiceUrl(const QUrl &serviceUrl);
-
     bool finishDelayedReplies();
-
 
     // From QEnginioConnection.h
     Q_INVOKABLE QEnginioOperation fullTextSearch(const QJsonObject &query);

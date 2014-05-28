@@ -519,8 +519,6 @@ void QEnginioConnectionPrivate::replyFinished(QNetworkReply *aNetworkReply)
         return;
     }
 
-    qDebug() << "Reply Finnished..";
-
     operation.d<QEnginioOperation>()->operationFinished();
 
 #if 0
@@ -642,7 +640,7 @@ QNetworkRequest QEnginioConnectionPrivate::prepareRequest(const QString &aPath,
 ** Public Implementation
 */
 QEnginioConnection::QEnginioConnection(const QEnginioDataStorage &aEnginioDataStorage)
-    : QCloudServicesObject(*new QEnginioConnectionPrivate(aEnginioDataStorage))
+    : QCloudServicesObject(QEnginioConnection::dvar(new QEnginioConnectionPrivate(aEnginioDataStorage)))
 {
     QEnginioConnection::dvar pimpl = d<QEnginioConnection>();
 
@@ -653,7 +651,7 @@ QEnginioConnection::QEnginioConnection(const QEnginioDataStorage &aEnginioDataSt
     }
 }
 QEnginioConnection::QEnginioConnection(QObject *aParent)
-    : QCloudServicesObject(*new QEnginioConnectionPrivate(), aParent)
+    : QCloudServicesObject(QEnginioConnection::dvar(new QEnginioConnectionPrivate()), aParent)
 {
 }
 
@@ -663,7 +661,7 @@ QEnginioConnection::QEnginioConnection(const QEnginioConnection &aOther)
 }
 QEnginioConnection & QEnginioConnection::operator=(const QEnginioConnection &aOther)
 {
-    d<QEnginioConnection>()->setPIMPL(aOther.d<QEnginioConnection>());
+    setPIMPL(aOther.d<QEnginioConnection>());
     return *this;
 }
 

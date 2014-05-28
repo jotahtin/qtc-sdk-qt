@@ -46,6 +46,7 @@
 
 #include "QtCloudServices/qenginioobject.h"
 #include "QtCloudServices/qenginiouser.h"
+#include "QtCloudServices/qenginiooperation.h"
 #include "QtCloudServices/private/qcloudservicesobject_p.h"
 #include "QtCloudServices/private/qenginiocollection_p.h"
 
@@ -55,17 +56,15 @@ QT_BEGIN_NAMESPACE
 ** QEnginioObjectPrivate
 */
 class QEnginioObjectPrivate : public QCloudServicesObjectPrivate {
+    Q_OBJECT
     QTC_DECLARE_PUBLIC(QEnginioObject)
     friend class QEnginioCollectionPrivate;
 public:
     QEnginioObjectPrivate();
     QEnginioObjectPrivate(const QJsonObject &aJsonObject);
-    /*
-    QEnginioObjectPrivate(const QEnginioCollection &aEnginioCollection,
-                          const QJsonObject &aJsonObject);
-    					  */
 
     bool isValid() const Q_REQUIRED_RESULT;
+    bool isModified() const Q_REQUIRED_RESULT;
 
     void insert(const QString &aKey, const QJsonValue &aValue);
     void remove(const QString &aKey);
@@ -82,11 +81,25 @@ public:
     const QEnginioUser creator() const Q_REQUIRED_RESULT;
     const QTime updatedAt() const Q_REQUIRED_RESULT;
     const QEnginioUser updater() const Q_REQUIRED_RESULT;
+
+    QEnginioOperation save();
 protected:
     void setEnginioCollection(const QEnginioCollection &aEnginioCollection);
+
+    // This called when content gets updated by notification
+    void setUpdatedContent(const QJsonObject &aJsonObject);
+
+    // Current state content is in sync with database
+    void markAsSynced();
+
+    void saveCompleted(QEnginioOperation & op);
 protected:
     QEnginioCollection iEnginioCollection;
     QJsonObject iJsonObject;
+    QJsonObject iPersistentJsonObject;
+Q_SIGNALS:
+    void objectChanged();
+    void operationFailed(QString aError);
 private:
     // Common Fields
     QTime iCreatedAt;

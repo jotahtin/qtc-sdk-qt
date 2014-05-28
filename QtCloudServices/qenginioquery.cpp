@@ -59,34 +59,23 @@ QEnginioQueryPrivate::QEnginioQueryPrivate()
 ** Public Interface
 */
 QEnginioQuery::QEnginioQuery(QObject *aParent)
-    : QCloudServicesObject(*new QEnginioQueryPrivate(), aParent)
+    : QCloudServicesObject(QEnginioQuery::dvar(new QEnginioQueryPrivate()), aParent)
 {
 
 }
 QEnginioQuery::QEnginioQuery(const QJsonObject &aQuery, QObject *aParent)
-    : QCloudServicesObject(*new QEnginioQueryPrivate(), aParent)
+    : QCloudServicesObject(QEnginioQuery::dvar(new QEnginioQueryPrivate()), aParent)
 {
     d<QEnginioQuery>()->iQuery = aQuery;
 }
 QEnginioQuery::QEnginioQuery(const QEnginioQuery &aOther)
-    : QCloudServicesObject(*new QEnginioQueryPrivate())
 {
-    *this = aOther;
+    setPIMPL(aOther.d<QEnginioQuery>());
 }
 
 QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther)
 {
-    QEnginioQuery::dvar pimpl = d<QEnginioQuery>();
-    QEnginioQuery::dvar other;
-
-    other = aOther.d<QEnginioQuery>();
-
-    if (other) {
-        pimpl->iQuery = other->iQuery;
-        pimpl->iLimit = other->iLimit;
-        pimpl->iOffset = other->iOffset;
-    }
-
+    setPIMPL(aOther.d<QEnginioQuery>());
     return *this;
 }
 

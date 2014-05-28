@@ -275,14 +275,21 @@ class QEnginioModelPrivate
 {
     Q_OBJECT
 public:
-    QEnginioModelPrivate();
+    QEnginioModelPrivate(QEnginioModel *aInterface);
     virtual ~QEnginioModelPrivate();
 
+    QEnginioModel *model();
+    const QEnginioModel *model() const;
+
     virtual Qt::ItemFlags flags(const QModelIndex &aIndex) const;
+    virtual QModelIndex index(int aRow, int aColumn, const QModelIndex &aParent = QModelIndex()) const;
+    virtual QModelIndex parent(const QModelIndex &aIndex) const;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+
     /*
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
-    virtual bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) Q_DECL_OVERRIDE;
     void fetchMore(const QModelIndex &parent) Q_DECL_OVERRIDE;
     bool canFetchMore(const QModelIndex &parent) const Q_DECL_OVERRIDE;
     */
@@ -301,8 +308,14 @@ public:
     void setQuery(const QEnginioQuery &aQuery,
                   const QModelIndex &aParent);
 
+    void refresh(const QModelIndex &aParent);
+
+    QEnginioObject enginioObject(const QModelIndex &aIndex) const;
+
     QEnginioOperation append(const QEnginioObject &aObject,
                              const QModelIndex &aParent);
+    QEnginioOperation remove(const QModelIndex &aIndex);
+
 
 public:
     QEnginioModelNode *nodeAt(const QModelIndex &aIndex);
@@ -543,53 +556,6 @@ public:
 #endif
         }
     };
-
-    QEnginioOperation remove(int row)
-    {
-        QJsonObject oldObject = _data.at(row).toObject();
-        QString id = oldObject[QtCloudServicesConstants::id].toString();
-
-        if (id.isEmpty()) {
-            return removeDelayed(row, oldObject);
-        }
-
-        return removeNow(row, oldObject, id);
-    }
-
-    QEnginioOperation removeDelayed(int row, const QJsonObject &oldObject)
-    {
-#if 0
-        // We are about to remove a not synced new item. The item do not have id yet,
-        // so we can not make a request now, we need to wait for finished signal.
-        QEnginioOperation ereply, createReply;
-        QString tmpId;
-        Q_ASSERT(oldObject[QtCloudServicesConstants::id].toString().isEmpty());
-        delayedOperation(row, &ereply, &tmpId, &createReply);
-        SwapNetworkReplyForRemove swapNetworkReply = {{ereply, this, oldObject, tmpId, q}, createReply};
-        QObject::connect(createReply, &QEnginioOperation::dataChanged, swapNetworkReply);
-        return ereply;
-#endif
-        return NULL;
-    }
-
-    QEnginioOperation removeNow(int row, const QJsonObject &oldObject, const QString &id)
-    {
-#if 0
-        Q_ASSERT(!id.isEmpty());
-        _attachedData.ref(id, row); // TODO if refcount is > 1 then do not emit dataChanged
-        ObjectAdaptor<QJsonObject> aOldObject(oldObject);
-        QNetworkReply *nreply = _enginio->remove(aOldObject, _operation);
-        QEnginioOperation ereply = _enginio->createReply(nreply);
-        FinishedRemoveRequest finishedRequest = { this, id, ereply };
-        QObject::connect(ereply, &QEnginioOperation::dataChanged, _replyConnectionConntext, finishedRequest);
-        _attachedData.insertRequestId(ereply->requestId(), row);
-        QVector<int> roles(1);
-        roles.append(QtCloudServices::SyncedRole);
-        emit q->dataChanged(q->index(row), q->index(row) , roles);
-        return ereply;
-#endif
-        return NULL;
-    }
 
     QEnginioOperation setValue(int row, const QString &role, const QVariant &value)
     {
@@ -938,18 +904,6 @@ public:
 #endif
 
 public:
-#if !QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    /*
-    inline QEnginioModel* pub_func()
-    {
-        return static_cast<QEnginioModel *>(iInterface);
-    }
-    inline const QEnginioModel* pub_func() const
-    {
-        return static_cast<const QEnginioModel *>(iInterface);
-    }
-    */
-public:
     template<class T>
     T* q()
     {
@@ -962,7 +916,6 @@ public:
     }
 
     QEnginioModel *iInterface;
-#endif
 };
 
 #if 0

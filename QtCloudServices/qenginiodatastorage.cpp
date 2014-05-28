@@ -86,28 +86,14 @@ QEnginioDataStoragePrivate::~QEnginioDataStoragePrivate()
     }
 }
 
-void QEnginioDataStoragePrivate::setBackend(const QUrl &aBackendAddress, const QString &aBackendId)
-{
-    setPIMPL(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate(aBackendAddress, aBackendId)));
-}
-
 QUrl QEnginioDataStoragePrivate::backendAddress() const
 {
     return iBackendAddress;
 }
 
-void QEnginioDataStoragePrivate::setBackendAddress(const QUrl &aBackendAddress)
-{
-    setBackend(aBackendAddress, backendId());
-}
-
 QString QEnginioDataStoragePrivate::backendId() const
 {
     return iBackendId;
-}
-void QEnginioDataStoragePrivate::setBackendId(const QString &aBackendId)
-{
-    setBackend(backendAddress(), aBackendId);
 }
 
 QString QEnginioDataStoragePrivate::username() const
@@ -216,20 +202,20 @@ void QEnginioDataStoragePrivate::unbindForwarding()
 /*
 ** Public Interface
 */
-QEnginioDataStorage::QEnginioDataStorage(QObject *parent)
-    : QCloudServicesObject(*new QEnginioDataStoragePrivate(), parent)
+QEnginioDataStorage::QEnginioDataStorage(QObject *aParent)
+    : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
 {
 }
 
-QEnginioDataStorage::QEnginioDataStorage(const QUrl &backendAddress, const QString &backendId, QObject *parent)
-    : QCloudServicesObject(*new QEnginioDataStoragePrivate(), parent)
+QEnginioDataStorage::QEnginioDataStorage(const QUrl &backendAddress, const QString &backendId, QObject *aParent)
+    : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
 {
     setBackendAddress(backendAddress);
     setBackendId(backendId);
 }
 
-QEnginioDataStorage::QEnginioDataStorage(const QString &backendAddress, const QString &backendId, QObject *parent)
-    : QCloudServicesObject(*new QEnginioDataStoragePrivate(), parent)
+QEnginioDataStorage::QEnginioDataStorage(const QString &backendAddress, const QString &backendId, QObject *aParent)
+    : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
 {
     setBackendAddress(QUrl(backendAddress));
     setBackendId(backendId);
@@ -248,7 +234,7 @@ QEnginioDataStorage::~QEnginioDataStorage()
 
 QEnginioDataStorage& QEnginioDataStorage::operator=(const QEnginioDataStorage &aEnginioDataStorage)
 {
-    d<QEnginioDataStorage>()->setPIMPL(aEnginioDataStorage.d<QEnginioDataStorage>());
+    setPIMPL(aEnginioDataStorage.d<QEnginioDataStorage>());
     return *this;
 }
 
@@ -284,7 +270,10 @@ void QEnginioDataStorage::setBackend(const QUrl &aBackendAddress, const QString 
     }
 
     impl->unbindForwarding();
-    impl->setBackend(aBackendAddress, aBackendId);
+
+    impl = QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate(aBackendAddress, aBackendId));
+    setPIMPL(impl);
+
     impl->bindForwarding(this);
 
     if (chgAddress) {
@@ -294,27 +283,17 @@ void QEnginioDataStorage::setBackend(const QUrl &aBackendAddress, const QString 
     if (chgId) {
         emit backendIdChanged(aBackendId);
     }
+
+    emit backendChanged();
 }
 
 QUrl QEnginioDataStorage::backendAddress() const
 {
     return d<const QEnginioDataStorage>()->backendAddress();
 }
-
 void QEnginioDataStorage::setBackendAddress(const QUrl &aBackendAddress)
 {
-    QEnginioDataStorage::dvar impl;
-    impl = d<QEnginioDataStorage>();
-
-    if (impl->backendAddress() == aBackendAddress) {
-        return;
-    }
-
-    impl->unbindForwarding();
-    impl->setBackendAddress(aBackendAddress);
-    impl->bindForwarding(this);
-
-    emit backendAddressChanged(aBackendAddress);
+    setBackend(aBackendAddress, backendId());
 }
 void QEnginioDataStorage::setBackendAddressString(const QString &aBackendAddress)
 {
@@ -325,21 +304,9 @@ QString QEnginioDataStorage::backendId() const
 {
     return d<const QEnginioDataStorage>()->backendId();
 }
-
 void QEnginioDataStorage::setBackendId(const QString &aBackendId)
 {
-    QEnginioDataStorage::dvar pimpl;
-    pimpl = d<QEnginioDataStorage>();
-
-    if (pimpl->backendId() == aBackendId) {
-        return;
-    }
-
-    pimpl->unbindForwarding();
-    pimpl->setBackendId(aBackendId);
-    pimpl->bindForwarding(this);
-
-    emit backendIdChanged(aBackendId);
+    setBackend(backendAddress(), aBackendId);
 }
 
 QString QEnginioDataStorage::username() const

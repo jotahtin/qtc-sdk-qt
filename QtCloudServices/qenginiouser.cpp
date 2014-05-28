@@ -100,7 +100,7 @@ QEnginioUser::QEnginioUser(const QJsonObject &aJsonObject)
 
 QEnginioUser& QEnginioUser::operator=(const QEnginioUser &aOther)
 {
-    d<QEnginioUser>()->setPIMPL(aOther.d<QEnginioUser>());
+    setPIMPL(aOther.d<QEnginioUser>());
     return *this;
 }
 
@@ -143,7 +143,7 @@ const QString QEnginioUser::lastName() const
 void QEnginioUser::lazyInitialization()
 {
     if (isNull()) {
-        iPIMPL = QEnginioUser::dvar(new QEnginioUserPrivate);
+        setPIMPL(QEnginioUser::dvar(new QEnginioUserPrivate));
     }
 }
 

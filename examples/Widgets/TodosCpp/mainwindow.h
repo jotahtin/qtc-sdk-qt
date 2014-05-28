@@ -45,6 +45,7 @@
 #include <QTreeView>
 
 #include <QtCloudServices/QEnginioDataStorage>
+#include <QtCloudServices/QEnginioModel>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -54,8 +55,7 @@ QT_END_NAMESPACE
 QT_USE_NAMESPACE
 
 class TodosModel;
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:

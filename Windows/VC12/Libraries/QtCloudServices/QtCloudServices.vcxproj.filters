@@ -221,6 +221,18 @@
     <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodelnode.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qcloudservicesobject_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qcloudservicesobject_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -228,9 +240,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\QtCloudServices\qtcloudservices_global.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\QtCloudServices\private\qcloudservicesobject_p.h">
-      <Filter>Header Files\private</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\QtCloudServices\private\enginioobjectadaptor_p.h">
       <Filter>Header Files\private</Filter>
@@ -319,6 +328,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\..\QtCloudServices\qenginiomodelnode.h">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\private\qcloudservicesobject_p.h">
+      <Filter>Header Files\private</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

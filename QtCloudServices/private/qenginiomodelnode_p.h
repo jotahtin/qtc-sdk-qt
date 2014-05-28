@@ -62,10 +62,13 @@ QT_BEGIN_NAMESPACE
 class QEnginioModelPrivate;
 class QEnginioModelNodePrivate : public QCloudServicesObjectPrivate {
     Q_OBJECT
+    QTC_DECLARE_PUBLIC(QEnginioModelNode)
     friend class QEnginioModelPrivate;
 public:
     enum HandleOperationType {
-        HandleOperationInsert
+        HandleOperationRefresh,
+        HandleOperationInsert,
+        HandleOperationRemove
     };
 public:
     QEnginioModelNodePrivate();
@@ -103,23 +106,32 @@ public:
     bool canFetchMore() const Q_REQUIRED_RESULT;
     void fetchMore(int row);
 
-    QEnginioOperation append(QEnginioModelNode::dvar aSelf,
-                             const QEnginioObject &aObject);
+    QEnginioObject enginioObject() const Q_REQUIRED_RESULT;
 
+    QEnginioOperation appendEnginioObject(const QEnginioObject &aObject);
+    QEnginioOperation removeEnginioObject(int aIndex);
+public:
+    void handleOperationReply(HandleOperationType aType,
+                              QEnginioOperation aOperation,
+                              const QString &aObjectId = QString());
+private:
+    void updateOrAppendObjectNode(const QEnginioObject &aObject);
+    void removeObjectNode(const QString &aObjectId);
 protected:
     void setModel(QEnginioModel *aModel);
     void setParentNode(QEnginioModelNode *aParentNode);
-public:
-    void handleOperationReply(HandleOperationType aType,
-                              QEnginioOperation aOperation);
-public:
-    QTC_DECLARE_PUBLIC(QEnginioModelNode)
+    void setEnginioObject(const QEnginioObject &aEnginoObject);
+private Q_SLOTS:
+    void refreshEnginoObjectDisplay();
 private:
     QEnginioModel *iModel;
     QList<QEnginioModelNode *> iChildNodes;
     QEnginioModelNode *iParentNode;
 
-    QEnginioObject iObject;
+    QEnginioObject iEnginoObject;
+    QMetaObject::Connection iConnectionForObjectChange;
+
+
     QEnginioCollection iCollection; // QEnginioConnectionPrivate *_enginio;
     QEnginioQuery iQuery;
 
