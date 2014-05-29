@@ -43,6 +43,7 @@
 #define QCLOUDSERVICES_QCLOUDSERVICES_OBJECT_P_H
 
 #include <QList>
+#include <QMutex>
 
 #include <QtCloudServices/qcloudservicesobject.h>
 
@@ -64,12 +65,12 @@ public:
     template<class T>
     T* q()
     {
-        return static_cast<T *>(this->iInterfaces.first());
+        return dynamic_cast<T *>(this->iInterfaces.first());
     }
     template<class T>
     const T* q() const
     {
-        return static_cast<T *>(this->iInterfaces.first());
+        return dynamic_cast<T *>(this->iInterfaces.first());
     }
 protected:
     void addInterface(QCloudServicesObject *aInterface);

@@ -47,6 +47,7 @@
 #include <QtCore/qscopedpointer.h>
 
 #include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qcloudservicesobject.h>
 #include <QtCloudServices/qenginiocollection.h>
 #include <QtCloudServices/qenginiomodelnode.h>
 
@@ -82,7 +83,7 @@ public:
     //! QEnginioModel
     virtual QVariant enginioData(const QEnginioObject &aEnginioObject,
                                  const QModelIndex &aIndex, int aRole = Qt::DisplayRole) const;
-    virtual bool setEnginioData(QEnginioObject &aEnginioObject,
+    virtual bool setEnginioData(QEnginioObject aEnginioObject,
                                 const QModelIndex &aIndex, const QVariant &aValue, int aRole = Qt::EditRole);
 
 
@@ -125,6 +126,7 @@ Q_SIGNALS:
     // void queryChanged(const QJsonObject &query);
     // void operationChanged(QtCloudServices::Operation operation);
 public:
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
     template<class T>
     std::shared_ptr<typename T::private_type> d()
     {
@@ -135,6 +137,18 @@ public:
     {
         return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
     }
+#else
+    template<class T>
+    QSharedPointer<typename T::private_type> d()
+    {
+        return qSharedPointerCast <typename T::private_type>(iPIMPL);
+    }
+    template<class T>
+    const QSharedPointer<typename T::private_type> d() const
+    {
+        return qSharedPointerCast <typename T::private_type>(iPIMPL);
+    }
+#endif
 protected:
     QEnginioModel::dvar iPIMPL;
 };

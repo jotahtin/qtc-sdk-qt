@@ -74,6 +74,7 @@ class QTCLOUDSERVICES_EXPORT QEnginioConnection : public QCloudServicesObject {
     Q_ENUMS(QtCloudServices::Operation); // TODO remove me QTBUG-33577
     Q_ENUMS(QtCloudServices::AuthenticationState); // TODO remove me QTBUG-33577
 
+    QTC_DECLARE_PRIVATE(QEnginioConnection)
     friend class QEnginioDataStoragePrivate;
 protected:
     // Constructor for valid connection.
@@ -119,9 +120,6 @@ Q_SIGNALS: // From QEnginioConnection.h
     void sessionTerminated() const;
     void finished(const QEnginioOperation &aReply);
     void error(const QEnginioOperation &aReply);
-
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioConnection)
 };
 
 QT_END_NAMESPACE

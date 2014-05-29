@@ -123,7 +123,7 @@ QVariant TodosModel::enginioData(const QEnginioObject &aEnginioObject,
 
     return QVariant();
 }
-bool TodosModel::setEnginioData(QEnginioObject &aEnginioObject,
+bool TodosModel::setEnginioData(QEnginioObject aEnginioObject,
                                 const QModelIndex &aIndex, const QVariant &aValue, int aRole)
 {
     if (!aEnginioObject.isPersistent()) {

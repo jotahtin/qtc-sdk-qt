@@ -240,7 +240,7 @@ QEnginioObject & QEnginioObject::operator=(const QEnginioObject &aOther)
     if (!aOther.isNull()) {
         setPIMPL(aOther.d<QEnginioObject>());
     } else {
-        setPIMPL(nullptr);
+        setPIMPL(QEnginioObject::dvar());
     }
 
     return *this;
@@ -403,11 +403,17 @@ void QEnginioObject::setPIMPL(QCloudServicesObject::dvar aPIMPL)
     if (isNull()) {
         return;
     }
-
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
     connect(d<QEnginioObject>().get(), SIGNAL(objectChanged()),
             this, SIGNAL(objectChanged()));
     connect(d<QEnginioObject>().get(), SIGNAL(operationFailed(QString)),
             this, SIGNAL(operationFailed(QString)));
+#else
+    connect(d<QEnginioObject>().data(), SIGNAL(objectChanged()),
+            this, SIGNAL(objectChanged()));
+    connect(d<QEnginioObject>().data(), SIGNAL(operationFailed(QString)),
+            this, SIGNAL(operationFailed(QString)));
+#endif
 }
 
 #ifndef QT_NO_DEBUG_STREAM

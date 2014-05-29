@@ -70,7 +70,8 @@ HEADERS += stdafx.h \
     QEnginioDataStorage \
     QEnginioConnection \
     QEnginioCollection \
-    QManagedWebSocket
+    QManagedWebSocket \
+    QEnginioOperation
 
 unix {
     target.path = /usr/lib

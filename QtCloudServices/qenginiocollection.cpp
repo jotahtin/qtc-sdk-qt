@@ -206,8 +206,9 @@ QEnginioOperation QEnginioCollectionPrivate::remove(const QString &aObjectId,
 QEnginioObject QEnginioCollectionPrivate::fromJsonObject(const QJsonObject &aJsonObject)
 {
     QEnginioObject obj(aJsonObject);
+    QEnginioCollection col(getThis<QEnginioCollection>());
 
-    obj.d<QEnginioObject>()->setEnginioCollection(*q<QEnginioCollection>());
+    obj.d<QEnginioObject>()->setEnginioCollection(col);
 
     return obj;
 }
@@ -226,6 +227,10 @@ void QEnginioCollectionPrivate::handleCompletedOperation(QEnginioOperation & op,
 /*
 ** QEnginioCollection
 */
+QEnginioCollection::QEnginioCollection(QEnginioCollection::dvar aPIMPL)
+{
+    setPIMPL(aPIMPL);
+}
 QEnginioCollection::QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
                                        const QString &aCollectionName)
     : QCloudServicesObject(QEnginioCollection::dvar(new QEnginioCollectionPrivate(aEnginioDataStorage,

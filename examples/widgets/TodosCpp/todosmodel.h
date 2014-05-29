@@ -68,7 +68,7 @@ public:
     virtual QVariant enginioData(const QEnginioObject &aEnginioObject,
                                  const QModelIndex &aIndex,
                                  int aRole = Qt::DisplayRole) const Q_DECL_OVERRIDE;
-    virtual bool setEnginioData(QEnginioObject &aEnginioObject,
+    virtual bool setEnginioData(QEnginioObject aEnginioObject,
                                 const QModelIndex &aIndex,
                                 const QVariant &aValue,
                                 int aRole = Qt::EditRole) Q_DECL_OVERRIDE;

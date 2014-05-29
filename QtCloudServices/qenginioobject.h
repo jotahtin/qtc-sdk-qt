@@ -51,11 +51,13 @@
 QT_BEGIN_NAMESPACE
 
 class QEnginioUser;
+class QEnginioCollection;
 class QEnginioObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioObject : public QCloudServicesObject {
     Q_OBJECT
     Q_PROPERTY(QString objectId READ objectId NOTIFY objectChanged)
     QTC_DECLARE_PRIVATE(QEnginioObject)
+    friend class QEnginioCollectionPrivate;
 protected:
     QEnginioObject(QEnginioObject::dvar aPIMPL, QObject *aParent = 0);
 public:

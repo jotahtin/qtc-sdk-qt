@@ -42,18 +42,34 @@
 #ifndef QCLOUDSERVICES_QCLOUDSERVICES_OBJECT_H
 #define QCLOUDSERVICES_QCLOUDSERVICES_OBJECT_H
 
-#include <memory>
+#define QCLOUDSERVICES_USE_STD_SHARED_PTR 0
 
 #include <QObject>
 
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
+# include <memory>
+#else
+# include <QSharedPointer>
+# include <QWeakPointer>
+#endif
+
 #include <QtCloudServices/qtcloudservices_global.h>
 
-#define QTC_DECLARE_PRIVATE(Class) \
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
+# define QTC_DECLARE_PRIVATE(Class) \
 	public: \
-	typedef std::shared_ptr<Class##Private> dvar; \
+    friend class Class##Private; \
+    typedef std::shared_ptr<Class##Private> dvar; \
 	typedef std::weak_ptr<Class##Private> wvar; \
-	typedef Class##Private private_type; \
-	friend class Class##Private;
+    typedef Class##Private private_type;
+#else
+# define QTC_DECLARE_PRIVATE(Class) \
+    public: \
+    friend class Class##Private; \
+    typedef QSharedPointer<Class##Private> dvar; \
+    typedef QWeakPointer<Class##Private> wvar; \
+    typedef Class##Private private_type;
+#endif
 
 
 #define QTC_DECLARE_PUBLIC(Class) \
@@ -78,6 +94,7 @@ public:
     bool isNull() const Q_REQUIRED_RESULT;
     virtual bool isValid() const Q_REQUIRED_RESULT;
 public:
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
     template<class T>
     std::shared_ptr<typename T::private_type> d()
     {
@@ -90,6 +107,20 @@ public:
         Q_ASSERT(iPIMPL);
         return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
     }
+#else
+    template<class T>
+    QSharedPointer<typename T::private_type> d()
+    {
+        Q_ASSERT(iPIMPL);
+        return qSharedPointerCast<typename T::private_type>(iPIMPL);
+    }
+    template<class T>
+    const QSharedPointer<typename T::private_type> d() const
+    {
+        Q_ASSERT(iPIMPL);
+        return qSharedPointerCast<typename T::private_type>(iPIMPL);
+    }
+#endif
 protected:
     virtual void setPIMPL(QCloudServicesObject::dvar aPIMPL);
 private:

@@ -412,9 +412,15 @@ void QEnginioConnectionPrivate::ReplyFinishedFunctor::operator ()(QNetworkReply 
 {
     QEnginioConnection::dvar connection;
 
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
     if (connection = iConnection.lock()) {
         connection->replyFinished(aNetworkReply);
     }
+#else
+    if (connection = iConnection.toStrongRef()) {
+        connection->replyFinished(aNetworkReply);
+    }
+#endif
 }
 
 QThreadStorage < QWeakPointer<QNetworkAccessManager> > QEnginioConnectionPrivate::gNetworkManager;
@@ -572,7 +578,11 @@ void QEnginioConnectionPrivate::replyFinished(QNetworkReply *aNetworkReply)
 
 void QEnginioConnectionPrivate::registerReply(QNetworkReply *aNetworkReply, const QEnginioOperation &aOperation)
 {
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
     aNetworkReply->setParent(aOperation.d<QEnginioOperation>().get());
+#else
+    aNetworkReply->setParent(aOperation.d<QEnginioOperation>().data());
+#endif
     iReplyOperationMap[aNetworkReply] = aOperation;
 }
 

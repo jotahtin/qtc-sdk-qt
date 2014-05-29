@@ -45,7 +45,7 @@
 #include <QObject>
 #include <QSharedPointer>
 
-#include <QtCloudServices/QCloudServicesObject.h>
+#include <QtCloudServices/qcloudservicesobject.h>
 #include <QtCloudServices/qenginiooperation.h>
 #include <QtCloudServices/qenginioquery.h>
 
@@ -59,6 +59,7 @@ class QTCLOUDSERVICES_EXPORT QEnginioCollection : public QCloudServicesObject {
     friend class QEnginioDataStoragePrivate;
 protected:
     // Constructor for valid connection.
+    QEnginioCollection(QEnginioCollection::dvar aPIMPL);
     QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
                        const QString &aCollectionName);
 public:

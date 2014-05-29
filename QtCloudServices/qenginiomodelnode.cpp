@@ -47,7 +47,7 @@
 #include <QtCore/qjsonarray.h>
 
 #include <QtCloudServices/qenginiomodel.h>
-#include <QtCloudServices/QEnginioOperation.h>
+#include <QtCloudServices/qenginiooperation.h>
 
 #include <QtCloudServices/private/qenginioconnection_p.h>
 #include <QtCloudServices/private/qenginiomodel_p.h>

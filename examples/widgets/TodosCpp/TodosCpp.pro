@@ -4,7 +4,7 @@ TARGET = Todos
 TEMPLATE = app
 
 include(../../../QtCloudServices.pri)
-include(../../Common/backendhelper/backendhelper.pri)
+include(../../Common/backendhelper/BackendHelper.pri)
 
 SOURCES += \
     main.cpp\

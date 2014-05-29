@@ -49,7 +49,7 @@
 #include <QtCore/qjsondocument.h>
 #include <QtNetwork/qnetworkreply.h>
 
-#include <QtCloudServices/QEnginioOperation.h>
+#include <QtCloudServices/qenginiooperation.h>
 
 #include <QtCloudServices/private/qenginioconnection_p.h>
 #include <QtCloudServices/private/qenginiocollection_p.h>

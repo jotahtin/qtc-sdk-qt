@@ -113,7 +113,11 @@ QCloudServicesObject::~QCloudServicesObject()
 
 bool QCloudServicesObject::isNull() const
 {
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
     return iPIMPL.get() == NULL;
+#else
+    return iPIMPL.data() == NULL;
+#endif
 }
 bool QCloudServicesObject::isValid() const
 {

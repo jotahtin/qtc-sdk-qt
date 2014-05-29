@@ -1,13 +1,13 @@
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qdebug.h>
 
-#include <QJSonParseError>
+#include <QJsonParseError>
 #include <QJsonArray>
 #include <QJsonValue>
 
 #include "MainWindow.h"
 
-#include <QtCloudServices/QEnginioOperation.h>
+#include <QtCloudServices/QEnginioOperation>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),

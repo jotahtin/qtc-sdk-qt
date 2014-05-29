@@ -43,7 +43,7 @@
 #define ENGINIOFAKEREPLY_P_H
 
 #include <QtCloudServices/qtcloudservices_global.h>
-#include <QtCloudServices/QEnginioOperation.h>
+#include <QtCloudServices/qenginiooperation.h>
 
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qbytearray.h>

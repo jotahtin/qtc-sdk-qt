@@ -138,7 +138,7 @@ But while the full object is accessible, attempts to alter the object's data wil
 #include "stdafx.h"
 
 #include <QtCloudServices/qenginiomodel.h>
-#include <QtCloudServices/QEnginioOperation.h>
+#include <QtCloudServices/qenginiooperation.h>
 
 #include <QtCloudServices/private/qenginioconnection_p.h>
 #include <QtCloudServices/private/qenginiomodel_p.h>
@@ -860,15 +860,21 @@ bool QEnginioModel::canFetchMore(const QModelIndex &parent) const
 QVariant QEnginioModel::enginioData(const QEnginioObject &aEnginioObject,
                                     const QModelIndex &aIndex, int aRole) const
 {
+    Q_UNUSED(aIndex)
+
     if (aRole == Qt::DisplayRole) {
         return aEnginioObject.objectId();
     }
 
     return QVariant();
 }
-bool QEnginioModel::setEnginioData(QEnginioObject &aEnginioObject,
+bool QEnginioModel::setEnginioData(QEnginioObject aEnginioObject,
                                    const QModelIndex &aIndex, const QVariant &aValue, int aRole)
 {
+    Q_UNUSED(aEnginioObject)
+    Q_UNUSED(aIndex)
+    Q_UNUSED(aValue)
+
     return false;
 }
 

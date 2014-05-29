@@ -54,10 +54,9 @@
 #include <QStringBuilder>
 
 #include <QtCloudServices/qenginioconnection.h>
-#include <QtCloudServices/QEnginioOperation.h>
+#include <QtCloudServices/qenginiooperation.h>
 #include <QtCloudServices/private/enginiobackendconnection_p.h>
 #include <QtCloudServices/private/qenginioconnection_p.h>
-
 
 #define CRLF QLatin1String("\r\n")
 
