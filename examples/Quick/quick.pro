@@ -1,7 +1,9 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    ImageGallery \
-    SocialTodos \
     Todos \
-    Users \
+    ImageGallery \
+    SocialTodos
+
+#
+#    Users \

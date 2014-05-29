@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QENGINIODATASTORAGE_H
-#define QCLOUDSERVICES_QENGINIODATASTORAGE_H
+#ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKET_H
+#define QCLOUDSERVICES_QMANAGEDWEBSOCKET_H
 
 #include <QObject>
 #include <QUrl>
@@ -53,84 +53,43 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-
-QtCloudServices (lib/dll)
-   QEnginioDataStorage (EDS)  - QEds
-   QEdsCollection
-   QManagedWebSocket (MWS)
-*/
-
-class QEnginioDataStoragePrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioDataStorage : public QCloudServicesObject {
+class QManagedWebSocketPrivate;
+class QTCLOUDSERVICES_EXPORT QManagedWebSocket : public QCloudServicesObject {
     Q_OBJECT
-    Q_PROPERTY(QString backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged)
-    Q_PROPERTY(QUrl instanceAddress READ instanceAddress WRITE setInstanceAddress NOTIFY instanceAddressChanged)
-    Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
-    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
-    QTC_DECLARE_PRIVATE(QEnginioDataStorage)
-    friend class QEnginioCollection;
+    QTC_DECLARE_PRIVATE(QManagedWebSocket)
 public:
     // Default Constructor
-    QEnginioDataStorage(QObject *parent = 0);
-    QEnginioDataStorage(const QUrl &instanceAddress, const QString &backendId, QObject *parent = 0);
-    QEnginioDataStorage(const QString &instanceAddress, const QString &backendId, QObject *parent = 0);
-    QEnginioDataStorage(const QEnginioDataStorage &aEnginioDataStorage);
-    ~QEnginioDataStorage();
+    QManagedWebSocket(QObject *aParent = 0);
+    QManagedWebSocket(const QUrl &aInstanceAddress, const QString &aGatewayId, QObject *parent = 0);
+    QManagedWebSocket(const QString &aInstanceAddress, const QString &aGatewayId, QObject *parent = 0);
+    QManagedWebSocket(const QManagedWebSocket &aManagedWebSocket);
+    ~QManagedWebSocket();
 
     // Assignment
-    QEnginioDataStorage& operator=(const QEnginioDataStorage &aEnginioDataStorage);
+    QManagedWebSocket& operator=(const QManagedWebSocket &aManagedWebSocket);
 
     // IsValid
     bool operator!() const;
     virtual bool isValid() const;
 
     // Backend Address & Identification
-    void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
+    void setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId);
 
     QUrl instanceAddress() const Q_REQUIRED_RESULT;
     void setInstanceAddress(const QUrl &aInstanceAddress);
     void setInstanceAddressString(const QString &aInstanceAddress);
 
-    QString backendId() const Q_REQUIRED_RESULT;
-    void setBackendId(const QString &aBackendId);
-
-    // Authentication
-    QString username() const Q_REQUIRED_RESULT;
-    QString password() const Q_REQUIRED_RESULT;
-
+    QString gatewayId() const Q_REQUIRED_RESULT;
+    void setGatewayId(const QString &aGatewayId);
 public Q_SLOTS:
-    void setUsername(const QString &aUsername);
-    void setPassword(const QString &aPassword);
-
-public:
-    // Access Storage Resources (Collections)
-    QEnginioCollection collection(const QString &collectionName);
-
-    // Get Plain connection
-    QEnginioConnection reserveConnection();
-    void releaseConnection(const QEnginioConnection &aConnection);
+    void connect();
+    void disconnect();
 Q_SIGNALS:
-    void backendIdChanged(const QString &backendId);
+    void gatewayChanged();
+    void gatewayIdChanged(const QString &backendId);
     void instanceAddressChanged(const QUrl &instanceAddress);
-    void backendChanged();
-
-    void usernameChanged(const QString &aUsername);
-    void passwordChanged(const QString &aPassword);
-
-    //
-    void operationError(const QEnginioOperation &aOperation);
-
-    // What are these
-Q_SIGNALS:
-//	void dataChanged();
-//	void aboutToDestroy();
-//protected:
-//	virtual void prepareSessionToken(QEnginioConnectionPrivate *enginio) Q_DECL_OVERRIDE;
-//	virtual void removeSessionToken(QEnginioConnectionPrivate *enginio) Q_DECL_OVERRIDE;
-
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QENGINIODATASTORAGE_H */
+#endif /* QCLOUDSERVICES_QMANAGEDWEBSOCKET_H */

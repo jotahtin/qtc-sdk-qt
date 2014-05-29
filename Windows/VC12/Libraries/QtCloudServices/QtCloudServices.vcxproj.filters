@@ -39,6 +39,12 @@
     <Filter Include="Header Files\alias">
       <UniqueIdentifier>{da7acdc0-16d2-4699-a2b4-7b3921470990}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\plugin">
+      <UniqueIdentifier>{d1ea6e3b-98a5-47b4-b51c-2cef66d09da1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\plugin">
+      <UniqueIdentifier>{6019de13-f562-4391-894e-b10b7d801dca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -233,6 +239,30 @@
     <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject_p.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\QtCloudServices\qmanagedwebsocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qmanagedwebsocket.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qmanagedwebsocket_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qmanagedwebsocket_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qmanagedwebsocket.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\QtCloudServices\plugin\qcloudservicesplugin.cpp">
+      <Filter>Source Files\plugin</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qcloudservicesplugin_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qcloudservicesplugin_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -331,6 +361,15 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\..\QtCloudServices\private\qcloudservicesobject_p.h">
       <Filter>Header Files\private</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\qmanagedwebsocket.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\private\qmanagedwebsocket_p.h">
+      <Filter>Header Files\private</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\QtCloudServices\plugin\qcloudservicesplugin_p.h">
+      <Filter>Header Files\plugin</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

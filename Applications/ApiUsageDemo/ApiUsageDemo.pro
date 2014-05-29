@@ -14,11 +14,11 @@ TARGET = ApiUsageDemo
 TEMPLATE = app
 
 
-SOURCES += main.cpp apiusagedemo.cpp
+SOURCES += main.cpp MainWindow.cpp
 
-HEADERS  += apiusagedemo.h
+HEADERS  += MainWindow.h
 
-FORMS    += apiusagedemo.ui
+FORMS    += MainWindow.ui
 
 CONFIG += mobility
 MOBILITY = 

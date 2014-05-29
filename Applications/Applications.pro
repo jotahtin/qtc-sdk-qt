@@ -1,4 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    ApiUsageDemo
+    ApiUsageDemo \
+    QuickUsageDemo \
+    CleanQuick

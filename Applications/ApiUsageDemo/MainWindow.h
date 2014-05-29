@@ -5,8 +5,7 @@
 #include "ui_MainWindow.h"
 
 #include <QtCloudServices/QEnginioDataStorage>
-
-#include <QtCloudServices/qenginioconnection.h>
+#include <QtCloudServices/QManagedWebSocket>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -26,6 +25,7 @@ private:
     Ui::MainWindowClass ui;
 private:
     QEnginioDataStorage iEnginioDataStorage;
+    QManagedWebSocket iManagedWebSocket;
 };
 
 #endif // MainWindow_H
