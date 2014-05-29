@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 
 qtHaveModule(widgets) {
-    SUBDIRS += Widgets
+    SUBDIRS += widgets
     qtHaveModule(quick) {
-      SUBDIRS += Quick
+      SUBDIRS += quick
     }
 }

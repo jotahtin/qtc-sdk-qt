@@ -47,7 +47,7 @@
 #include <QtQml/qqmlnetworkaccessmanagerfactory.h>
 #include <QtQml/qqmlengine.h>
 
-
+#include "QtCloudServices/qtcloudservices.h"
 #include "QtCloudServices/plugin/qcloudservicesplugin_p.h"
 
 /*
@@ -107,6 +107,11 @@ void QCloudServicesPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
 
 void QCloudServicesPlugin::registerTypes(const char *uri)
 {
+    qDebug() << "Register Types: " << uri;
+
+    Q_ASSERT(uri == QLatin1String("QtCloudServices"));
+    qmlRegisterUncreatableType<QtCloudServices>(uri, 1, 0, "QtCloudServices", "QtCloudServices is an enum container and can not be constructed");
+
     // @uri Enginio
     /*
     qmlRegisterUncreatableType<Enginio>(uri, 1, 0, "Enginio", "Enginio is an enum container and can not be constructed");

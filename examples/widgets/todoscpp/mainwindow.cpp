@@ -54,7 +54,7 @@
 
 // To get the backend right, we use a helper class in the example.
 // Usually one would just insert the backend information below.
-#include "examples/Common/BackendHelper/backendhelper.h"
+#include "examples/common/backendhelper/backendhelper.h"
 
 #include "mainwindow.h"
 #include "todosmodel.h"

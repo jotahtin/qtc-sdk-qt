@@ -6,8 +6,10 @@
 
 include(../QtCloudServices.pri)
 
-QT       += network websockets
+QT       += network websockets qml
 QT       -= gui
+
+CONFIG   += plugin
 
 TARGET = QtCloudServices
 TEMPLATE = lib
@@ -30,7 +32,8 @@ SOURCES += \
     qenginioobject.cpp \
     qenginiouser.cpp \
     qenginiomodelnode.cpp \
-    qmanagedwebsocket.cpp
+    qmanagedwebsocket.cpp \
+    plugin/qcloudservicesplugin.cpp
 
 HEADERS += stdafx.h \
     qtcloudservices.h\
@@ -71,7 +74,8 @@ HEADERS += stdafx.h \
     QEnginioConnection \
     QEnginioCollection \
     QManagedWebSocket \
-    QEnginioOperation
+    QEnginioOperation \
+    plugin/qcloudservicesplugin_p.h
 
 unix {
     target.path = /usr/lib
