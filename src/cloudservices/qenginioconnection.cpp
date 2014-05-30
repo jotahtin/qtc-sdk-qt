@@ -58,14 +58,6 @@
 #endif
 
 /*!
-\module enginio-client
-\title Enginio Client Interface
-
-This interface provides access to the Enginio service through a set of C++ classes
-based on Qt.
-*/
-
-/*!
 \class QEnginioConnection
 \since 5.3
 \inmodule enginio-qt

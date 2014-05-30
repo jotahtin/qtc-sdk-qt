@@ -2,7 +2,7 @@
 #define MainWindow_H
 
 #include <QtWidgets/QMainWindow>
-#include "ui_MainWindow.h"
+#include "ui_mainwindow.h"
 
 #include <QtCloudServices/QEnginioDataStorage>
 #include <QtCloudServices/QManagedWebSocket>

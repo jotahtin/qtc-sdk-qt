@@ -48,7 +48,7 @@
 #include <QtQml/qqmlengine.h>
 
 #include "QtCloudServices/qtcloudservices.h"
-#include "QtCloudServices/plugin/qcloudservicesplugin_p.h"
+#include "qqmlcloudservices_p.h"
 
 /*
 

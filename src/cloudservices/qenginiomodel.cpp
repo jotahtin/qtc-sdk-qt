@@ -42,7 +42,7 @@
 /*!
 \class QEnginioModel
 \since 5.3
-\inmodule enginio-qt
+\inmodule QtCloudServices
 \ingroup enginio-client
 \target EnginioModelCpp
 \brief EnginioModel represents data from Enginio as a \l QAbstractItemModel.

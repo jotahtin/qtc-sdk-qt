@@ -19,9 +19,13 @@ qtHaveModule(quick) {
 #    src_qtmultimediaquicktools.depends = multimedia
 
     src_imports.subdir = imports
-    src_imports.depends = multimedia src_qtmultimediaquicktools
+    src_imports.depends = cloudservices
 
-#    SUBDIRS += \
-#        src_qtmultimediaquicktools \
-#        src_imports
+# src_qtmultimediaquicktools
+
+    SUBDIRS += \
+        src_imports
+
+#        src_qtmultimediaquicktools
+
 }

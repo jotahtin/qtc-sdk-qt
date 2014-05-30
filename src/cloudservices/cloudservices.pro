@@ -29,7 +29,8 @@ SOURCES += \
     qenginioobject.cpp \
     qenginiouser.cpp \
     qenginiomodelnode.cpp \
-    qmanagedwebsocket.cpp
+    qmanagedwebsocket.cpp \
+    qtcloudservices.cpp
 
 HEADERS += \
     stdafx.h \

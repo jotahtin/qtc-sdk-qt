@@ -1,38 +1,24 @@
-QT += qml quick network multimedia-private qtmultimediaquicktools-private
+QT += qml quick network cloudservices-private
+
+QMAKE_DOCS = $$PWD/doc/qtcloudservicesqml.qdocconf
+OTHER_FILES += \
+    doc/qtcloudservicesqml.qdocconf \
+    doc/qtcloudservicesqml_plugin.qdoc \
+    qmldir
+
+include(../../src.pri)
+
+# qtmultimediaquicktools-private
 
 HEADERS += \
-        qdeclarativeaudio_p.h \
-        qdeclarativemediametadata_p.h \
-        qdeclarativeradio_p.h \
-        qdeclarativeradiodata_p.h \
-        qdeclarativecamera_p.h \
-        qdeclarativecameracapture_p.h \
-        qdeclarativecamerarecorder_p.h \
-        qdeclarativecameraexposure_p.h \
-        qdeclarativecameraflash_p.h \
-        qdeclarativecamerafocus_p.h \
-        qdeclarativecameraimageprocessing_p.h \
-        qdeclarativecamerapreviewprovider_p.h \
-        qdeclarativetorch_p.h
+        qqmlcloudservices_p.h
 
 SOURCES += \
-        multimedia.cpp \
-        qdeclarativeaudio.cpp \
-        qdeclarativeradio.cpp \
-        qdeclarativeradiodata.cpp \
-        qdeclarativecamera.cpp \
-        qdeclarativecameracapture.cpp \
-        qdeclarativecamerarecorder.cpp \
-        qdeclarativecameraexposure.cpp \
-        qdeclarativecameraflash.cpp \
-        qdeclarativecamerafocus.cpp \
-        qdeclarativecameraimageprocessing.cpp \
-        qdeclarativecamerapreviewprovider.cpp \
-        qdeclarativetorch.cpp
+        qqmlcloudservices.cpp
 
-QML_FILES += \
-    Video.qml
+# QML_FILES += \
+#    Video.qml
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
+# DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 
 load(qml_plugin)

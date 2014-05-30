@@ -45,6 +45,43 @@
 #include "QtCloudServices/private/qenginiocollection_p.h"
 #include "QtCloudServices/private/qenginioconnection_p.h"
 
+/*!
+\class QEnginioDataStorage
+\since 5.3
+\inmodule QtCloudServices
+\ingroup EnginioDataStorage
+\target QEnginioDataStorage
+\brief QEnginioDataStorage handles all communication with the Enginio server
+
+Plah...
+
+The Enginio server supports several separate "backends" with each account.
+By setting the \l{QEnginioConnection::backendId}{backendId} a backend is chosen.
+After setting the ID interaction with the server is possible.
+The information about the backend is available on the Enginio Dashboard
+after logging in to \l {http://engin.io}{Enginio}.
+\code
+QEnginioConnection *client = new QEnginioConnection(parent);
+client->setBackendId(QByteArrayLiteral("YOUR_BACKEND_ID"));
+\endcode
+
+The basic functions used to interact with the backend are
+\l create(), \l query(), \l remove() and \l update().
+It is possible to do a fulltext search on the server using \l fullTextSearch().
+For file handling \l downloadUrl() and \l uploadFile() are provided.
+The functions are asynchronous, which means that they are not blocking
+and the result of them will be delivered together with QEnginioOperation::finished()
+signal.
+
+\note After the request has finished, it is the responsibility of the
+user to delete the QEnginioOperation object at an appropriate time.
+Do not directly delete it inside the slot connected to finished().
+You can use the \l{QObject::deleteLater()}{deleteLater()} function.
+
+In order to make queries that return an array of data more convenient
+a model is provided by \l {EnginioModelCpp}{EnginioModel}.
+*/
+
 QT_BEGIN_NAMESPACE
 
 /*

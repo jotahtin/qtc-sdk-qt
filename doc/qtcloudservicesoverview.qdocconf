@@ -1,9 +1,9 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
-include(enginio_global.qdocconf)
+include(qtcloudservices_global.qdocconf)
 
-project = QtEnginioOverview
-description = Enginio Client Library
+project = QtCloudServicesOverview
+description = QtCloudServices Support Libraries
 url = http://qt-project.org/doc/qt-$QT_VER
 version = $QT_VERSION
 
@@ -12,20 +12,20 @@ headerdirs += .
 
 imagedirs += images
 
-depends += qtcore qtgui qtwidgets qtnetwork qtdoc qtenginio qtenginioqml
+depends += qtcore qtgui qtwidgets qtnetwork qtdoc qtcloudservices qtcloudservicesqml
 
-qhp.projects            = QtEnginioOverview
+qhp.projects            = QtCloudServicesOverview
 
-qhp.QtEnginioOverview.file                = qtenginiooverview.qhp
-qhp.QtEnginioOverview.namespace           = org.qt-project.qtenginiooverview.$QT_VERSION_TAG
-qhp.QtEnginioOverview.virtualFolder       = enginiooverview
-qhp.QtEnginioOverview.indexTitle          = Enginio Manual
+qhp.QtCloudServicesOverview.file                = qtcloudservicesoverview.qhp
+qhp.QtCloudServicesOverview.namespace           = org.qt-project.qtcloudservicesoverview.$QT_VERSION_TAG
+qhp.QtCloudServicesOverview.virtualFolder       = qtcloudservicesoverview
+qhp.QtCloudServicesOverview.indexTitle          = QtCloudServices Manual
 
-qhp.QtEnginioOverview.filterAttributes    = enginio $QT_VERSION
-qhp.QtEnginioOverview.customFilters.Qt.name = Enginio $QT_VERSION
-qhp.QtEnginioOverview.customFilters.Qt.filterAttributes = enginio $QT_VERSION
+qhp.QtCloudServicesOverview.filterAttributes    = qtcloudservices $QT_VERSION
+qhp.QtCloudServicesOverview.customFilters.Qt.name = QtCloudServices $QT_VERSION
+qhp.QtCloudServicesOverview.customFilters.Qt.filterAttributes = qtcloudservices $QT_VERSION
 
-qhp.QtEnginioOverview.subprojects                   = manual
-qhp.QtEnginioOverview.subprojects.manual.title      = Enginio Manual
-qhp.QtEnginioOverview.subprojects.manual.indexTitle = Enginio Manual
-qhp.QtEnginioOverview.subprojects.manual.type       = manual
+qhp.QtCloudServicesOverview.subprojects                   = manual
+qhp.QtCloudServicesOverview.subprojects.manual.title      = QtCloudServices Manual
+qhp.QtCloudServicesOverview.subprojects.manual.indexTitle = QtCloudServices Manual
+qhp.QtCloudServicesOverview.subprojects.manual.type       = manual

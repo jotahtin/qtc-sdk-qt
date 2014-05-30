@@ -26,42 +26,44 @@
 ****************************************************************************/
 
 /*!
-\page enginio-index.html
-\contentspage {enginio-index.html}{Contents}
-\nextpage Enginio Installation and Prerequisites
+\page qtcloudservices-index.html
+\contentspage {qtcloudservices-index.html}{Contents}
+\nextpage QtCloudServices Installation and Prerequisites
 
-\title Enginio Manual
+\title QtCloudServices Manual
 
-Enginio is a Backend-as-a-Service solution to ease backend development for any connected and data-driven application.
+QtCloudServices is a Backend-as-a-Service solution to ease backend development for any connected and data-driven application.
 
 \section1 Tutorials
 
 To get started quickly, follow the mini-tutorial using Qt Quick or C++.
 \list
-\li \l {Enginio Installation and Prerequisites}
-\li \l {Getting Started with Enginio using Qt Quick}
-\li \l {Getting Started with Enginio using C++}
+\li \l {QtCloudServices Installation and Prerequisites}
+\li \l {Getting Started with QtCloudServices using Qt Quick}
+\li \l {Getting Started with QtCloudServices using Qt C++}
+\li \l {Getting Started with QtCloudServices using Plain C++}
 \endlist
 
 \section1 Reference documentation and examples:
 \list
-\li \l {Enginio C++ Classes and Examples}
-\li \l {Enginio QML Types and Examples}
+\li \l {QtCloudServices Qt C++ Classes and Examples}
+\li \l {QtCloudServices Qt QML Types and Examples}
+\li \l {QtCloudServices Plain C++ Classes and Examples}
 \endlist
 
 \section1 Overview
 
-When using Enginio (with Qt Quick or C++), the API is following a general pattern that will be helpful to understand.
+When using QtCloudServices (with Qt Quick or C++), the API is following a general pattern that will be helpful to understand.
 This section gives a short, high-level overview of the concepts used throughout the library.
 
-The Qt library is a client-side library to communicate with the server at \l {http://engin.io}.
+The Qt library is a client-side library to communicate with the server at \l {https://qtcloudservices.com}.
 Several backends can exist for each account on the server.
 For all communication with the server, the backend is determined by its ID.
-When shipping an application built with Enginio, the backend id will be the same for all users of that application.
+When shipping an application built with EngioDataStore, the backend id will be the same for all users of that application.
 
 \section2 Objects
 
-Enginio provides several types of objects: "custom objects", "users", "user groups", "files" and more.
+EngioDataStore provides several types of objects: "custom objects", "users", "user groups", "files" and more.
 All communication with the backend uses JSON. When writing QML, JSON can simply be written inline.
 On the C++ side, \l QJsonObject and \l QJsonValue are used.
 

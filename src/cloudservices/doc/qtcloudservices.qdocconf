@@ -1,9 +1,9 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
-include(../../../doc/enginio_global.qdocconf)
+include(../../../doc/qtcloudservices_global.qdocconf)
 
-project = QtEnginio
-description = Client library for Enginio
+project = QtCloudServices
+description = Client library for QtCloudServices
 url = http://qt-project.org/doc/qt-$QT_VER
 version = $QT_VERSION
 
@@ -18,36 +18,37 @@ outputdir = ./html
 outputformats = HTML
 
 exampledirs += \
-               ../../../examples/enginio/widgets \
-               ../../../tests/auto \
+               ../../../examples/cloudservices/widgets
+
+#               ../../../tests/auto \
 
 # Specify example install dir under QT_INSTALL_EXAMPLES
-examplesinstallpath = enginio/widgets
+examplesinstallpath = cloudservices/widgets
 
-depends += qtcore qtgui qtwidgets qtnetwork qtenginiooverview
+depends += qtcore qtgui qtwidgets qtnetwork qtcloudservicesoverview
 
-qhp.projects            = QtEnginio
+qhp.projects            = QtCloudServices
 
-qhp.QtEnginio.file                = qtenginio.qhp
-qhp.QtEnginio.namespace           = org.qt-project.qtenginio.$QT_VERSION_TAG
-qhp.QtEnginio.virtualFolder       = qtenginio
-qhp.QtEnginio.indexTitle          = Enginio C++ Classes and Examples
-qhp.QtEnginio.indexRoot           =
+qhp.QtCloudServices.file                = qtcloudservices.qhp
+qhp.QtCloudServices.namespace           = org.qt-project.qtcloudservices.$QT_VERSION_TAG
+qhp.QtCloudServices.virtualFolder       = qtcloudservices
+qhp.QtCloudServices.indexTitle          = Qt CloudServices
+qhp.QtCloudServices.indexRoot           =
 
-qhp.QtEnginio.filterAttributes    = qtenginio $QT_VERSION
-qhp.QtEnginio.customFilters.Qt.name = Enginio $QT_VERSION
-qhp.QtEnginio.customFilters.Qt.filterAttributes = qtenginio $QT_VERSION
+qhp.QtCloudServices.filterAttributes    = qtcloudservices $QT_VERSION
+qhp.QtCloudServices.customFilters.Qt.name = QtCloudServices $QT_VERSION
+qhp.QtCloudServices.customFilters.Qt.filterAttributes = qtcloudservices $QT_VERSION
 
-qhp.QtEnginio.subprojects         = classes examples
+qhp.QtCloudServices.subprojects         = classes examples
 
-qhp.QtEnginio.subprojects.classes.title = C++ Classes
-qhp.QtEnginio.subprojects.classes.indexTitle = Enginio C++ Classes and Examples
-qhp.QtEnginio.subprojects.classes.selectors = class
-qhp.QtEnginio.subprojects.classes.sortPages = true
+qhp.QtCloudServices.subprojects.classes.title = C++ Classes
+qhp.QtCloudServices.subprojects.classes.indexTitle = QtCloudServices C++ Classes and Examples
+qhp.QtCloudServices.subprojects.classes.selectors = class
+qhp.QtCloudServices.subprojects.classes.sortPages = true
 
-qhp.QtEnginio.subprojects.examples.title = Examples
-qhp.QtEnginio.subprojects.examples.indexTitle = Enginio C++ Classes and Examples
-qhp.QtEnginio.subprojects.examples.selectors = fake:example
-qhp.QtEnginio.subprojects.examples.sortPages = true
+qhp.QtCloudServices.subprojects.examples.title = Examples
+qhp.QtCloudServices.subprojects.examples.indexTitle = QtCloudServices C++ Classes and Examples
+qhp.QtCloudServices.subprojects.examples.selectors = fake:example
+qhp.QtCloudServices.subprojects.examples.sortPages = true
 
-navigation.landingpage = "Enginio C++ Classes and Examples"
+navigation.landingpage = "QtCloudServices C++ Classes and Examples"

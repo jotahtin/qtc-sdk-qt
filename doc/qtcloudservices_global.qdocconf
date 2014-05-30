@@ -1,2 +1,2 @@
-navigation.homepage = "Enginio Manual"
-buildversion = "Enginio $QT_VERSION Reference Documentation"
+navigation.homepage = "QtCloudServices Manual"
+buildversion = "QtCloudServices $QT_VERSION Reference Documentation"
