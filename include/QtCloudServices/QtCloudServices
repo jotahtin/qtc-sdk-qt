@@ -1,0 +1,19 @@
+#ifndef QT_QTCLOUDSERVICES_MODULE_H
+#define QT_QTCLOUDSERVICES_MODULE_H
+#include <QtCloudServices/QtCloudServicesDepends>
+#include "qcloudservicesobject.h"
+#include "qenginiocollection.h"
+#include "qenginioconnection.h"
+#include "qenginiodatastorage.h"
+#include "qenginiomodel.h"
+#include "qenginiomodelnode.h"
+#include "qenginioobject.h"
+#include "qenginiooperation.h"
+#include "qenginioquery.h"
+#include "qenginiorequest.h"
+#include "qenginiouser.h"
+#include "qmanagedwebsocket.h"
+#include "qtcloudservices.h"
+#include "stdafx.h"
+#include "qtcloudservicesversion.h"
+#endif
