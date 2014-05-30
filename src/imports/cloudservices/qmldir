@@ -1,0 +1,4 @@
+module QtCloudServices
+plugin cloudservices
+typeinfo plugins.qmltypes
+classname QtCloudServicesModule
