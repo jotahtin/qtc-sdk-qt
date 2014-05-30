@@ -41,162 +41,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_chunkdevice_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_chunkdevice_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_enginiobackendconnection_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_enginiobackendconnection_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_enginiodummyreply_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_enginiodummyreply_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_enginiofakereply_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_enginiofakereply_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qcloudservicesobject_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qcloudservicesobject_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiocollection_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiocollection_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioconnection_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginioconnection_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiodatastorage_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiodatastorage_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodel_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodel_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodelnode_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodelnode_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiooperation_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiooperation_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qmanagedwebsocket_p.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qmanagedwebsocket_p.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qcloudservicesobject.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qcloudservicesobject.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiocollection.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiocollection.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioconnection.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginioconnection.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiodatastorage.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiodatastorage.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodel.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodel.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodelnode.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodelnode.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiooperation.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiooperation.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioquery.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginioquery.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiorequest.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiorequest.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiouser.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qenginiouser.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qmanagedwebsocket.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qmanagedwebsocket.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_qtcloudservices.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_qtcloudservices.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\cloudservices\enginiobackendconnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -245,112 +89,263 @@
     <ClCompile Include="..\..\..\..\src\cloudservices\qmanagedwebsocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_chunkdevice_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_chunkdevice_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_enginiobackendconnection_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_enginiobackendconnection_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_enginiodummyreply_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_enginiodummyreply_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_enginiofakereply_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_enginiofakereply_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qcloudservicesobject.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qcloudservicesobject.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qcloudservicesobject_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qcloudservicesobject_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiocollection.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiocollection.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiocollection_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiocollection_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioconnection.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioconnection.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioconnection_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioconnection_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiodatastorage.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiodatastorage.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiodatastorage_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiodatastorage_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodel_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodel_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodelnode.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodelnode.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiomodelnode_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiomodelnode_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioobject_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioobject_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiooperation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiooperation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiooperation_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiooperation_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginioquery.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginioquery.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiorequest.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiorequest.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qenginiouser.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qenginiouser.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qmanagedwebsocket.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qmanagedwebsocket.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qmanagedwebsocket_p.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qmanagedwebsocket_p.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qtcloudservices.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qtcloudservices.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\QtCloudServices\QEnginioCollection" />
-    <ClInclude Include="..\..\..\..\QtCloudServices\QEnginioDataStorage" />
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\enginioobjectadaptor_p.h">
+    <ClInclude Include="..\..\..\..\src\cloudservices\enginioobjectadaptor_p.h">
       <Filter>Header Files\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qcloudservicesconstants_p.h">
+    <ClInclude Include="..\..\..\..\src\cloudservices\qcloudservicesconstants_p.h">
       <Filter>Header Files\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginioquery_p.h">
+    <ClInclude Include="..\..\..\..\src\cloudservices\qenginioquery_p.h">
       <Filter>Header Files\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiorequest_p.h">
+    <ClInclude Include="..\..\..\..\src\cloudservices\qenginiorequest_p.h">
       <Filter>Header Files\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiouser_p.h">
+    <ClInclude Include="..\..\..\..\src\cloudservices\qenginiouser_p.h">
       <Filter>Header Files\private</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\qcollectionobject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\QtCloudServices\qtcloudservices_global.h">
+    <ClInclude Include="..\..\..\..\src\cloudservices\qtcloudservices_global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\chunkdevice_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\chunkdevice_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\enginiobackendconnection_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\enginiobackendconnection_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\enginiodummyreply_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\enginiodummyreply_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\enginiofakereply_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\enginiofakereply_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qcloudservicesobject_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qcloudservicesobject_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiocollection_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiocollection_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginioconnection_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginioconnection_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiodatastorage_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiodatastorage_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiomodel_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiomodel_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiomodelnode_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiomodelnode_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginioobject_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginioobject_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qenginiooperation_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiooperation_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\1.0.0\QtCloudServices\private\qmanagedwebsocket_p.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qmanagedwebsocket_p.h">
       <Filter>Header Files\private</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qcloudservicesobject.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qtcloudservices.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiocollection.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qmanagedwebsocket.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginioconnection.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiouser.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiodatastorage.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiorequest.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiomodel.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginioquery.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiomodelnode.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiooperation.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginioobject.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginioobject.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiooperation.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiomodelnode.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginioquery.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiomodel.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiorequest.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiodatastorage.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qenginiouser.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginioconnection.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qmanagedwebsocket.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qenginiocollection.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\..\include\QtCloudServices\qtcloudservices.h">
+    <CustomBuild Include="..\..\..\..\src\cloudservices\qcloudservicesobject.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

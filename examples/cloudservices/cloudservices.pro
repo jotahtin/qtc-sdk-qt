@@ -6,3 +6,7 @@ qtHaveModule(widgets) {
       SUBDIRS += quick
     }
 }
+
+SUBDIRS += \
+    cloud-console \
+    cloud-notebook

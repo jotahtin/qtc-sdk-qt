@@ -5,7 +5,7 @@
     <Product Id="*" Name="$(var.ProductName)" Language="1033" Version="$(var.ProductVersion)" Manufacturer="Digia Plc" UpgradeCode="$(var.UpgradeCode)">
         <Package InstallerVersion="405" Compressed="yes" InstallScope="perMachine" Description="QtCloudServices" Manufacturer="Digia Plc" Platform="x86" />
         <Feature Id="Complete" Title="QtCloudServices SDK" Level="1" Description="QtCloudServices SDK" Display="expand" ConfigurableDirectory="INSTALLFOLDER">
-            <ComponentRef Id="ApiUsageDemoExecutable" />
+            <ComponentRef Id="CloudConsoleExecutable" />
             <ComponentRef Id="QtCloudServicesDll" />
             <ComponentRef Id="Qt5Libraries" />
             <ComponentRef Id="ProgramMenuDir" />
@@ -39,10 +39,10 @@
             <Directory Id="ProgramFilesFolder">
                 <Directory Id="Digia_Folder" Name="Digia">
                     <Directory Id="INSTALLFOLDER" Name="QtCloudServices">
-                        <Component Id="ApiUsageDemoExecutable" Guid="3AE5EE5A-D21C-4719-AAD6-23D230F2227C">
-                            <File DiskId="1" Id="ApiUsageDemoEXE" Name="ApiUsageDemo.exe" Source="$(var.ApiUsageDemo.TargetPath)" />
-                            <Shortcut Id="startApiUsageDemo" Name="ApiUsageDemo" Directory="ProgramMenuDir" WorkingDirectory="INSTALLFOLDER" Icon="ApiUsageDemo.ico" IconIndex="0" Advertise="yes">
-                                <Icon Id="ApiUsageDemo.ico" SourceFile="ApiUsageDemo.ico" />
+                        <Component Id="CloudConsoleExecutable" Guid="3AE5EE5A-D21C-4719-AAD6-23D230F2227C">
+                            <File DiskId="1" Id="CloudConsoleEXE" Name="CloudConsole.exe" Source="$(var.CloudConsole.TargetPath)" />
+                            <Shortcut Id="startCloudConsole" Name="CloudConsole" Directory="ProgramMenuDir" WorkingDirectory="INSTALLFOLDER" Icon="CloudConsole.ico" IconIndex="0" Advertise="yes">
+                                <Icon Id="CloudConsole.ico" SourceFile="CloudConsole.ico" />
                             </Shortcut>
                         </Component>
                         <Component Id="QtCloudServicesDll" Guid="FCF9EEE4-D703-463E-980E-C7BD911BF99B">

@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    todos-cpp
+    todos-cpp    
 
 #    image-gallery-cpp \
 #    cloudaddressbook

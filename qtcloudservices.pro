@@ -29,3 +29,6 @@ contains(CONFIG, coverage) {
 contains(DEFINES, ENGINIO_VALGRIND_DEBUG) {
   warning("ENGINIO_VALGRIND_DEBUG is enabled, ssl cipher will be hardcoded, DO NOT USE IT IN PRODUCTION")
 }
+
+RESOURCES += \
+    examples/cloudservices/cloud-console/cloudconsole.qrc

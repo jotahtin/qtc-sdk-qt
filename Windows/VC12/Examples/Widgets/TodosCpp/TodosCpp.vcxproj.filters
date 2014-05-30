@@ -35,10 +35,41 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\examples\Widgets\TodosCpp\main.cpp">
+    <CustomBuild Include="..\..\..\..\..\examples\cloudservices\common\backendhelper\helperdialog.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\..\examples\cloudservices\common\backendhelper\qmlbackendhelper.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\..\examples\cloudservices\widgets\todos-cpp\mainwindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\..\examples\cloudservices\widgets\todos-cpp\todosmodel.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_helperdialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\examples\cloudservices\common\backendhelper\backendhelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\examples\cloudservices\common\backendhelper\backendhelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\examples\Widgets\TodosCpp\mainwindow.cpp">
+    <ClCompile Include="GeneratedFiles\qrc_qmlbackendhelper.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\examples\cloudservices\widgets\todos-cpp\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\examples\cloudservices\widgets\todos-cpp\mainwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\examples\cloudservices\widgets\todos-cpp\todosmodel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_mainwindow.cpp">
@@ -53,30 +84,15 @@
     <ClCompile Include="GeneratedFiles\Release\moc_todosmodel.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\examples\Common\BackendHelper\backendhelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\examples\Widgets\TodosCpp\todosmodel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\..\..\examples\Widgets\TodosCpp\mainwindow.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\..\..\examples\Widgets\TodosCpp\todosmodel.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\..\..\examples\Common\BackendHelper\helperdialog.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
+    <None Include="..\..\..\..\..\examples\cloudservices\common\backendhelper\BackendHelper.qml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\examples\Common\BackendHelper\backendhelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_helperdialog.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
+    <Image Include="..\..\..\..\..\examples\cloudservices\common\images\enginio.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
