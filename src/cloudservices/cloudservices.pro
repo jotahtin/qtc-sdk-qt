@@ -2,7 +2,7 @@ TARGET   = QtCloudServices
 QT      += network websockets qml
 QT      -= gui
 DEFINES += QTCLOUDSERVICES_LIBRARY
-MODULE   = qtcloudservices
+MODULE   = cloudservices
 
 QMAKE_DOCS = $$PWD/doc/qtcloudservices.qdocconf
 OTHER_FILES += \
