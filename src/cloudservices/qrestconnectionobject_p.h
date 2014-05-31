@@ -39,39 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QRESTCONNECTION_OBJECT_H
-#define QCLOUDSERVICES_QRESTCONNECTION_OBJECT_H
+#ifndef QCLOUDSERVICES_QRESTCONNECTION_OBJECT_P_H
+#define QCLOUDSERVICES_QRESTCONNECTION_OBJECT_P_H
 
-#include <QObject>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qurl.h>
-#include <QtCore/qjsonobject.h>
+#include <QtCore/private/qobject_p.h>
 
-#include <QtCloudServices/qrestrequestobject.h>
-#include <QtCloudServices/qrestoperationobject.h>
+#include <QtCloudServices/qtcloudservices_global.h>
 
 QT_BEGIN_NAMESPACE
 
 class QRestEndpointObject;
-class QRestConnectionObjectPrivate;
-class QTCLOUDSERVICES_EXPORT QRestConnectionObject : public QObject {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QRestConnectionObject)
+class QRestConnectionShared;
+class QTCLOUDSERVICES_EXPORT QRestConnectionObjectPrivate : public QObjectPrivate {
+    Q_DECLARE_PUBLIC(QRestConnectionObject)
+private:
+    Q_DISABLE_COPY(QRestConnectionObjectPrivate)
 public:
-    QRestConnectionObject(const QRestEndpointObject *aRestEndpointObject,
-                          QObject *aParent = 0);
+    // Constructor for valid connection.
+    QRestConnectionObjectPrivate(const QRestEndpointObject *aRestEndpointObject);
+    ~QRestConnectionObjectPrivate();
 
     virtual bool isValid() const;
+
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
-    Q_INVOKABLE QRestOperationObject *restRequest(const QRestRequestObject *aRequest);
-Q_SIGNALS:
-    void finished(const QRestOperation aOperation);
-    void error(const QRestOperation aOperation);
+    QRestOperationObject *restRequest(const QRestRequestObject *aRequest);
+private:
+    QSharedPointer<QRestOperationShared> iShared;
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QRESTCONNECTION_OBJECT_H */
+#endif /* QCLOUDSERVICES_QRESTCONNECTION_OBJECT_P_H */

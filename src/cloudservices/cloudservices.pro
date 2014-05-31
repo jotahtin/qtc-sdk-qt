@@ -7,7 +7,8 @@ MODULE   = cloudservices
 QMAKE_DOCS = $$PWD/doc/qtcloudservices.qdocconf
 OTHER_FILES += \
     doc/qtcloudservices.qdocconf \
-    doc/qtcloudservices_client.qdoc
+    doc/qtcloudservices_client.qdoc \
+    doc/Notes.txt
 
 include(../src.pri)
 
@@ -113,4 +114,5 @@ HEADERS += \
     qenginiooperationobject_p.h \
     qenginiooperationshared_p.h \
     qenginioconnectionshared_p.h \
-    qenginioconnectionobject_p.h
+    qenginioconnectionobject_p.h \
+    qrestconnectionobject_p.h

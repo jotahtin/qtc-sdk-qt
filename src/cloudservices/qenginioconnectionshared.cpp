@@ -41,593 +41,944 @@
 
 #include "stdafx.h"
 
-#include <QtCore/QTimerEvent>
-#include <QtCore/qbytearray.h>
-#include <QtCore/qcryptographichash.h>
-#include <QtCore/QtEndian>
-#include <QtCore/qjsonarray.h>
-#include <QtCore/qjsonvalue.h>
-#include <QtCore/qregularexpression.h>
-#include <QtCore/qstring.h>
-#include <QtCore/quuid.h>
-#include <QtNetwork/qtcpsocket.h>
-#include <QStringBuilder>
+#include <QtNetwork/qnetworkreply.h>
 
-#include <QtCloudServices/qenginioconnection.h>
-#include <QtCloudServices/qenginiooperation.h>
-#include <QtCloudServices/private/enginiobackendconnection_p.h>
+#include <QtCloudServices/qenginiomodel.h>
+#include <QtCloudServices/qenginiodatastorage.h>
+
 #include <QtCloudServices/private/qenginioconnection_p.h>
+#include <QtCloudServices/private/qenginiooperation_p.h>
+#include <QtCloudServices/private/qenginiorequest_p.h>
+#include <QtCloudServices/private/chunkdevice_p.h>
 
-#define CRLF QLatin1String("\r\n")
+
+#if defined(ENGINIO_VALGRIND_DEBUG)
+#include <QtNetwork/qsslcipher.h>
+#include <QtNetwork/qsslconfiguration.h>
+#endif
+
+/*!
+\class QEnginioConnection
+\since 5.3
+\inmodule enginio-qt
+\ingroup enginio-client
+\target QEnginioConnectionCpp
+\brief QEnginioConnection handles all communication with the Enginio server
+
+The Enginio server supports several separate "backends" with each account.
+By setting the \l{QEnginioConnection::backendId}{backendId} a backend is chosen.
+After setting the ID interaction with the server is possible.
+The information about the backend is available on the Enginio Dashboard
+after logging in to \l {http://engin.io}{Enginio}.
+\code
+QEnginioConnection *client = new QEnginioConnection(parent);
+client->setBackendId(QByteArrayLiteral("YOUR_BACKEND_ID"));
+\endcode
+
+The basic functions used to interact with the backend are
+\l create(), \l query(), \l remove() and \l update().
+It is possible to do a fulltext search on the server using \l fullTextSearch().
+For file handling \l downloadUrl() and \l uploadFile() are provided.
+The functions are asynchronous, which means that they are not blocking
+and the result of them will be delivered together with QEnginioOperation::finished()
+signal.
+
+\note After the request has finished, it is the responsibility of the
+user to delete the QEnginioOperation object at an appropriate time.
+Do not directly delete it inside the slot connected to finished().
+You can use the \l{QObject::deleteLater()}{deleteLater()} function.
+
+In order to make queries that return an array of data more convenient
+a model is provided by \l {EnginioModelCpp}{EnginioModel}.
+*/
+
+/*!
+\class QEnginioConnection
+\since 5.3
+\inmodule enginio-qt
+\ingroup enginio-client
+\brief QEnginioConnection keeps track of the authenticated connection to the server.
+
+You should never use QEnginioConnection explicitly, instead use the derrived
+QEnginioConnection.
+\sa QEnginioConnection
+*/
+
+/*!
+\namespace Enginio
+\inmodule enginio-qt
+\brief The Enginio namespace provides enums used throughout Enginio.
+*/
+
+/*!
+\fn void QEnginioConnection::error(QEnginioOperation *reply)
+\brief This signal is emitted when a request to the backend returns an error.
+
+The \a reply contains the details about the error that occured.
+\sa QEnginioOperation
+*/
+
+/*!
+\fn void QEnginioConnection::finished(QEnginioOperation *reply)
+\brief This signal is emitted when a request to the backend finishes.
+
+The \a reply contains the data returned. This signal is emitted for both, successful requests and failed ones.
+
+From this moment on ownership of the \a reply is moved from QEnginioConnection, therefore it is the developer's
+responsibility to delete the \a reply after this signal is handled. That can be achieved
+by calling the \l{QObject::deleteLater()}{deleteLater()} method of the \a reply.
+\sa QEnginioOperation
+*/
+
+/*!
+\property QEnginioConnection::authenticationState
+\brief The state of the authentication.
+
+Enginio provides convenient user management.
+The authentication state reflects whether the current user is authenticated.
+\sa QtCloudServices::AuthenticationState identity EnginioOAuth2Authentication
+*/
+
+/*!
+\fn QEnginioConnection::sessionAuthenticated(QEnginioOperation *reply) const
+\brief Emitted when a user logs in.
+
+The signal is emitted after a user was successfully logged into the backend. From that
+point on, all communication with the backend will be using these credentials.
+The \a reply contains the information about the login and the user. The details may be different
+depending on the authentication method used, but a typical reply look like this:
+\code
+{
+"access_token": "...",              // oauth2 access token
+"refresh_token": "...",             // oauth2 refresh token
+"token_type": "bearer",             // oauth2 token type
+"expires_in": 28799,                // oautth2 token expiry date
+"enginio_data": {
+"user": {
+"id": "...",                    // this user Id
+"createdAt": "...",             // when the user was created
+"creator": {                    // who created the user
+"id": "creatorId",
+"objectType": "users"
+},
+"email": "user@user.com",       // the user's email address
+"firstName": "John",            // the user's first name
+"lastName": "Foo",              // the user's last name
+"objectType": "users",
+"updatedAt": "2013-11-25T14:54:58.957Z",
+"username": "JohnFoo"           // the user's login
+},
+"usergroups": []                  // usergroups to which the user belongs
+}
+}
+\endcode
+
+\note The \a reply will be deleted automatically after this signal, so it can not be
+stored.
+
+\sa sessionAuthenticationError(), QEnginioOperation, EnginioOAuth2Authentication
+*/
+
+/*!
+\fn QEnginioConnection::sessionAuthenticationError(QEnginioOperation *reply) const
+\brief Emitted when a user login fails.
+
+The \a reply contains the details about why the login failed.
+\sa sessionAuthenticated(), QEnginioOperation QEnginioConnection::identity() EnginioOAuth2Authentication
+
+\note The \a reply will be deleted automatically after this signal, so it can not be
+stored.
+*/
+
+/*!
+\fn QEnginioConnection::sessionTerminated() const
+\brief Emitted when a user logs out.
+\sa QEnginioConnection::identity() EnginioOAuth2Authentication
+*/
+
+/*!
+\enum QtCloudServices::Operation
+
+Enginio has a unified API for several \c operations.
+For example when using query(), the default is \c ObjectOperation,
+which means that the query will return objects from the database.
+When passing in UserOperation instead, the query will return
+users.
+
+\value ObjectOperation Operate on objects
+\value AccessControlOperation Operate on the ACL
+\value FileOperation Operate with files
+\value UserOperation Operate on users
+\value UsergroupOperation Operate on groups
+\value UsergroupMembersOperation Operate on group members
+
+\omitvalue SessionOperation
+\omitvalue SearchOperation
+\omitvalue FileChunkUploadOperation
+\omitvalue FileGetDownloadUrlOperation
+*/
+
+/*!
+\enum QtCloudServices::AuthenticationState
+
+This enum describes the state of the user authentication.
+\value NotAuthenticated No attempt to authenticate was made
+\value Authenticating Authentication request has been sent to the server
+\value Authenticated Authentication was successful
+\value AuthenticationFailure Authentication failed
+
+\sa QEnginioConnection::authenticationState
+*/
 
 QT_BEGIN_NAMESPACE
 
-const static int NIL = 0x00;
-const static int FIN = 0x80;
-const static int MSB = 0x80;
-const static int MSK = 0x80;
-const static int OPC = 0x0F;
-const static int LEN = 0x7F;
 
-const static int ThirtySeconds = 30000;
-const static int TwoMinutes = 120000;
-const static quint64 DefaultHeaderLength = 2;
-const static quint64 LargePayloadHeaderLength = 8;
-const static quint64 MaskingKeyLength = 4;
-const static quint64 NormalPayloadMarker = 126;
-const static quint64 LargePayloadMarker = 127;
-const static quint64 NormalPayloadLengthLimit = 0xFFFF;
 
-namespace {
 
-    const QString HttpResponseStatus(QStringLiteral("HTTP/1\\.1\\s([0-9]{3})\\s"));
-    const QString SecWebSocketAcceptHeader(QStringLiteral("Sec-WebSocket-Accept:\\s(.{28})\r\n"));
-    const QString UpgradeHeader(QStringLiteral("Upgrade:\\s(.+)\r\n"));
-    const QString ConnectionHeader(QStringLiteral("Connection:\\s(.+)\r\n"));
 
-    QString gBase64EncodedSha1VerificationKey;
 
-    void computeBase64EncodedSha1VerificationKey(const QByteArray &base64Key)
-    {
-        // http://tools.ietf.org/html/rfc6455#section-4.2.2 §5./ 4.
-        QByteArray webSocketMagicString(QByteArrayLiteral("258EAFA5-E914-47DA-95CA-C5AB0DC85B11"));
-        webSocketMagicString.prepend(base64Key);
-        gBase64EncodedSha1VerificationKey = QString::fromUtf8(QCryptographicHash::hash(webSocketMagicString, QCryptographicHash::Sha1).toBase64());
-    }
 
-    const QByteArray generateBase64EncodedUniqueKey()
-    {
-        return QUuid::createUuid().toRfc4122().toBase64();
-    }
 
-    QByteArray generateMaskingKey()
-    {
-        // The masking key is a 32-bit value chosen at random by the client.
-        QByteArray uuid = QUuid::createUuid().toRfc4122();
-        QByteArray key = uuid.left(MaskingKeyLength);
 
-        for (int octet = MaskingKeyLength; octet < uuid.size(); ++octet) {
-            int index = octet % key.size();
-            key[index] = key[index] ^ uuid[octet];
-        }
+#if 0
 
-        return key;
-    }
+QTCLOUDSERVICES_EXPORT bool gEnableEnginioDebugInfo = !qEnvironmentVariableIsSet("ENGINIO_DEBUG_INFO");
 
-    void maskData(QByteArray &data, const QByteArray &maskingKey )
-    {
-        // Client-to-Server Masking.
-        // http://tools.ietf.org/html/rfc6455#section-5.3
+QEnginioConnectionPrivate::QEnginioConnectionPrivate()
+    : QCloudServicesObjectPrivate(),
 
-        for (int octet = 0; octet < data.size(); ++octet) {
-            data[octet] = data[octet] ^ maskingKey[octet % maskingKey.size()];
-        }
-    }
-
-    int extractResponseStatus(QString responseString)
-    {
-        const QRegularExpression re(HttpResponseStatus);
-        QRegularExpressionMatch match = re.match(responseString);
-        return match.captured(1).toInt();
-    }
-
-    const QString extractResponseHeader(QString pattern, QString responseString, bool ignoreCase = true)
-    {
-        const QRegularExpression re(pattern);
-        QRegularExpressionMatch match = re.match(responseString);
-
-        if (ignoreCase) {
-            return match.captured(1).toLower();
-        }
-
-        return match.captured(1);
-    }
-
-    const QByteArray constructOpeningHandshake(const QUrl& url)
-    {
-        // http://tools.ietf.org/html/rfc6455#section-4.1 §2./ 7.
-        // The request must include a header field with the name
-        // Sec-WebSocket-Key. The value of this header field must be a
-        // nonce consisting of a randomly selected 16-byte value that has
-        // been base64-encoded.
-        // The nonce must be selected randomly for each connection.
-
-        const QByteArray secWebSocketKeyBase64 = generateBase64EncodedUniqueKey();
-        computeBase64EncodedSha1VerificationKey(secWebSocketKeyBase64);
-
-        const QString request =  QLatin1String("GET ") % url.path(QUrl::FullyEncoded) % QChar::fromLatin1('?')
-                                 % url.query(QUrl::FullyEncoded) % QLatin1String(" HTTP/1.1") % CRLF %
-
-                                 QLatin1String("Host: ") % url.host(QUrl::FullyEncoded) % QChar::fromLatin1(':')
-                                 % QString::number(url.port(8080)) % CRLF %
-
-                                 QLatin1String("Upgrade: websocket") % CRLF %
-                                 QLatin1String("Connection: upgrade") % CRLF %
-                                 QLatin1String("Sec-WebSocket-Key: ") % QString::fromUtf8(secWebSocketKeyBase64) % CRLF %
-                                 QLatin1String("Sec-WebSocket-Version: 13") % CRLF % CRLF;
-
-        return request.toUtf8();
-    }
-
-    const QByteArray constructFrameHeader(bool isFinalFragment
-                                          , int opcode
-                                          , quint64 payloadLength
-                                          , const QByteArray &maskingKey
-                                         )
-    {
-        QByteArray frameHeader(DefaultHeaderLength, 0);
-
-        // FIN, x, x, x, Opcode
-        frameHeader[0] = frameHeader[0] | (isFinalFragment ? FIN : NIL) | opcode;
-
-        // Masking bit
-        frameHeader[1] = frameHeader[1] | MSK;
-
-        // Payload length. Small payload.
-        if (payloadLength < NormalPayloadMarker) {
-            frameHeader[1] = frameHeader[1] | payloadLength;
-        } else {
-            if (payloadLength > NormalPayloadLengthLimit) {
-                frameHeader[1] = frameHeader[1] | LargePayloadMarker;
-                quint64 lengthBigEndian = qToBigEndian<quint64>(payloadLength);
-                QByteArray lengthBytesBigEndian(reinterpret_cast<char*>(&lengthBigEndian), LargePayloadHeaderLength);
-
-                if (lengthBytesBigEndian[0] & MSB) {
-                    qDebug() << "\t ERROR: Payload too large!" << payloadLength;
-                    return QByteArray();
-                }
-
-                frameHeader.append(lengthBytesBigEndian);
-            } else {
-                frameHeader[1] = frameHeader[1] | NormalPayloadMarker;
-                quint16 lengthBigEndian = qToBigEndian<quint16>(payloadLength);
-                frameHeader.append(reinterpret_cast<char*>(&lengthBigEndian), DefaultHeaderLength);
-            }
-        }
-
-        // Masking-key
-        frameHeader.append(maskingKey);
-
-        return frameHeader;
-    }
-
-} // namespace
-
-/*!
-    \brief Class to establish a stateful connection to a backend.
-    The communication is based on the WebSocket protocol.
-    \sa connectToBackend
-
-    \internal
-*/
-
-EnginioBackendConnection::EnginioBackendConnection(QObject *parent)
-    : QObject(parent)
-    , _protocolOpcode(ContinuationFrameOp)
-    , _protocolDecodeState(HandshakePending)
-    , _sentCloseFrame(false)
-    , _isFinalFragment(false)
-    , _isPayloadMasked(false)
-    , _payloadLength(0)
-    , _tcpSocket(new QTcpSocket(this))
+      _identity(),
+      _serviceUrl(QtCloudServicesConstants::apiEnginIo),
+      _networkManager(),
+      _uploadChunkSize(512 * 1024),
+      _authenticationState(QtCloudServices::NotAuthenticated)
 {
-    _tcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    _tcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    assignNetworkManager();
 
-    QObject::connect(_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onSocketConnectionError(QAbstractSocket::SocketError)));
-    QObject::connect(_tcpSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
-    QObject::connect(_tcpSocket, SIGNAL(readyRead()), this, SLOT(onSocketReadyRead()));
+#if defined(ENGINIO_VALGRIND_DEBUG)
+    QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
+    conf.setCiphers(QList<QSslCipher>() << QSslCipher(QStringLiteral("ECDHE-RSA-DES-CBC3-SHA"), QSsl::SslV3));
+    _request.setSslConfiguration(conf);
+#endif
+
+    _request.setHeader(QNetworkRequest::ContentTypeHeader,
+                       QStringLiteral("application/json"));
 }
 
-void EnginioBackendConnection::onEnginioFinished(QEnginioOperation *reply)
+void QEnginioConnectionPrivate::init()
 {
-#if 0
-    struct ReplyScope {
-        QEnginioOperation *_reply;
-        ReplyScope(QEnginioOperation *r) : _reply(r) { }
-        ~ReplyScope()
-        {
-            _reply->deleteLater();
+    QObject::connect(static_cast<QEnginioConnection*>(QTC_Q_PTR(this)), &QEnginioConnection::sessionTerminated, AuthenticationStateTrackerFunctor(this));
+    QObject::connect(static_cast<QEnginioConnection*>(QTC_Q_PTR(this)), &QEnginioConnection::sessionAuthenticated, AuthenticationStateTrackerFunctor(this, QtCloudServices::Authenticated));
+    QObject::connect(static_cast<QEnginioConnection*>(QTC_Q_PTR(this)), &QEnginioConnection::sessionAuthenticationError, AuthenticationStateTrackerFunctor(this, QtCloudServices::AuthenticationFailure));
+    _request.setHeader(QNetworkRequest::UserAgentHeader,
+                       QByteArrayLiteral("Qt:" QT_VERSION_STR " Enginio:" QTCLOUDSERVICES_VERSION_STR " Language:C++"));
+}
+
+bool QEnginioConnectionPrivate::finishDelayedReplies()
+{
+    // search if we can trigger an old finished signal.
+    bool needToReevaluate = false;
+
+    do {
+        needToReevaluate = false;
+        foreach (QEnginioOperation * reply, _delayedReplies) {
+            if (!reply->delayFinishedSignal()) {
+                reply->dataChanged();
+                QEnginioOperationPrivate::get(reply)->emitFinished();
+                emitFinished(reply);
+
+//                if (gEnableEnginioDebugInfo) {
+//                    _requestData.remove(reply->d_func()->_nreply);    // FIXME it is ugly, and breaks encapsulation
+//                }
+
+                _delayedReplies.remove(reply);
+                needToReevaluate = true;
+            }
         }
-    } scope(reply);
+    } while (needToReevaluate);
 
-    if (reply->isError()) {
-        qDebug() << "\n\n### EnginioBackendConnection ERROR";
-        qDebug() << reply->errorString();
-        reply->dumpDebugInfo();
-        qDebug() << "\n###\n";
-        return;
+    return !_delayedReplies.isEmpty();
+}
+
+QEnginioConnectionPrivate::~QEnginioConnectionPrivate()
+{
+    foreach (const QMetaObject::Connection & identityConnection, _identityConnections)
+    QObject::disconnect(identityConnection);
+    foreach (const QMetaObject::Connection & connection, _connections)
+    QObject::disconnect(connection);
+    QObject::disconnect(_networkManagerConnection);
+}
+
+
+void QEnginioConnectionPrivate::emitSessionTerminated() const
+{
+    emit static_cast<QEnginioConnection*>(QTC_Q_PTR(this))->sessionTerminated();
+}
+
+void QEnginioConnectionPrivate::emitSessionAuthenticated(QEnginioOperation *reply)
+{
+    QTC_Q(QEnginioConnection);
+    emit static_cast<QEnginioConnection*>(q)->sessionAuthenticated(static_cast<QEnginioOperation*>(reply));
+}
+
+void QEnginioConnectionPrivate::emitSessionAuthenticationError(QEnginioOperation *reply)
+{
+    QTC_Q(QEnginioConnection);
+    emit static_cast<QEnginioConnection*>(q)->sessionAuthenticationError(static_cast<QEnginioOperation*>(reply));
+}
+
+void QEnginioConnectionPrivate::emitFinished(QEnginioOperation *reply)
+{
+    QTC_Q(QEnginioConnection);
+    emit static_cast<QEnginioConnection*>(q)->finished(static_cast<QEnginioOperation*>(reply));
+}
+
+void QEnginioConnectionPrivate::emitError(QEnginioOperation *reply)
+{
+    QTC_Q(QEnginioConnection);
+    emit static_cast<QEnginioConnection*>(q)->error(static_cast<QEnginioOperation*>(reply));
+}
+
+QEnginioOperation * QEnginioConnectionPrivate::createReply(QNetworkReply *nreply)
+{
+    return new QEnginioOperation(this, nreply);
+}
+
+void QEnginioConnectionPrivate::uploadChunk(QEnginioOperation *ereply, QIODevice *device, qint64 startPos)
+{
+    QUrl serviceUrl = _serviceUrl;
+    {
+        QString path;
+        QByteArray errorMsg;
+
+        if (!getPath(ereply->data(), QtCloudServices::FileChunkUploadOperation, &path, &errorMsg).successful()) {
+            Q_UNREACHABLE();    // sequential upload can not have an invalid path!
+        }
+
+        serviceUrl.setPath(path);
     }
 
-    QJsonValue urlValue = reply->data()[QtCloudServicesConstants::expiringUrl];
+    QNetworkRequest req = prepareRequest(serviceUrl);
+    req.setHeader(QNetworkRequest::ContentTypeHeader, QtCloudServicesConstants::Application_octet_stream);
 
-    if (!urlValue.isString()) {
-        qDebug() << "## Retrieving connection url failed.";
-        return;
+    // Content-Range: bytes {chunkStart}-{chunkEnd}/{totalFileSize}
+    qint64 size = device->size();
+    qint64 endPos = qMin(startPos + _uploadChunkSize, size);
+    req.setRawHeader(QtCloudServicesConstants::Content_Range,
+                     QByteArray::number(startPos) + QtCloudServicesConstants::Minus
+                     + QByteArray::number(endPos) + QtCloudServicesConstants::Div
+                     + QByteArray::number(size));
+
+    // qDebug() << "Uploading chunk from " << startPos << " to " << endPos << " of " << size;
+
+    Q_ASSERT(device->isOpen());
+
+    ChunkDevice *chunkDevice = new ChunkDevice(device, startPos, _uploadChunkSize);
+    chunkDevice->open(QIODevice::ReadOnly);
+
+    QNetworkReply *reply = networkManager()->put(req, chunkDevice);
+    chunkDevice->setParent(reply);
+    _chunkedUploads.insert(reply, qMakePair(device, endPos));
+    ereply->setNetworkReply(reply);
+    _connections.append(QObject::connect(reply, &QNetworkReply::uploadProgress, UploadProgressFunctor(this, reply)));
+}
+
+QByteArray QEnginioConnectionPrivate::constructErrorMessage(const QByteArray &msg)
+{
+    static QByteArray msgBegin = QByteArrayLiteral("{\"errors\": [{\"message\": \"");
+    static QByteArray msgEnd = QByteArrayLiteral("\",\"reason\": \"BadRequest\"}]}");
+    return msgBegin + msg + msgEnd;
+}
+
+#endif
+
+/*
+** Private Implementation
+*/
+
+QEnginioConnectionPrivate::ReplyFinishedFunctor::ReplyFinishedFunctor(QEnginioConnection::dvar aConnection)
+    : iConnection(aConnection)
+{
+}
+void QEnginioConnectionPrivate::ReplyFinishedFunctor::operator ()(QNetworkReply *aNetworkReply)
+{
+    QEnginioConnection::dvar connection;
+
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
+    if (connection = iConnection.lock()) {
+        connection->replyFinished(aNetworkReply);
     }
-
-    qDebug() << "## Initiating WebSocket connection.";
-
-    _socketUrl = QUrl(urlValue.toString());
-    _tcpSocket->connectToHost(_socketUrl.host(), _socketUrl.port(8080));
+#else
+    if (connection = iConnection.toStrongRef()) {
+        connection->replyFinished(aNetworkReply);
+    }
 #endif
 }
 
-void EnginioBackendConnection::protocolError(const char* message, WebSocketCloseStatus status)
+QThreadStorage < QWeakPointer<QNetworkAccessManager> > QEnginioConnectionPrivate::gNetworkManager;
+
+QEnginioConnectionPrivate::QEnginioConnectionPrivate()
 {
-    qWarning() << QLatin1Literal(message) << QStringLiteral("Closing socket.");
-    close(status);
-    _tcpSocket->close();
 }
 
-void EnginioBackendConnection::timerEvent(QTimerEvent *event)
+QEnginioConnectionPrivate::QEnginioConnectionPrivate(const QEnginioDataStorage &aEnginioDataStorage)
+    : iEnginioDataStorage(aEnginioDataStorage)
 {
+    iNetworkManager = gNetworkManager.localData().toStrongRef();
 
-    if (event->timerId() == _keepAliveTimer.timerId()) {
-        _pingTimeoutTimer.start(ThirtySeconds, this);
-        ping();
+    if (!iNetworkManager) {
+        iNetworkManager = QSharedPointer<QNetworkAccessManager>(new QNetworkAccessManager());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) && !defined(QT_NO_SSL) && !defined(ENGINIO_VALGRIND_DEBUG)
+        iNetworkManager->connectToHostEncrypted(aEnginioDataStorage.instanceAddress().host());
+#else
+# error "SSL Connection required."
+#endif
+        gNetworkManager.setLocalData(iNetworkManager);
+    }
+}
+
+QEnginioConnectionPrivate::~QEnginioConnectionPrivate()
+{
+    if (iNetworkManager) {
+        disconnect(iNetworkManagerConnection);
+    }
+}
+
+bool QEnginioConnectionPrivate::isValid() const
+{
+    if (!iEnginioDataStorage) {
+        return false;
+    }
+
+    return true;
+}
+
+QSharedPointer<QNetworkAccessManager> QEnginioConnectionPrivate::networkManager() const
+{
+    return iNetworkManager;
+}
+
+QEnginioOperation QEnginioConnectionPrivate::customRequest(const QEnginioRequest &aRequest)
+{
+    QBuffer *buffer = 0;
+    QNetworkRequest request;
+    QEnginioOperation operation(*q<QEnginioConnection>(), aRequest);
+    QByteArray verb;
+    QNetworkReply *reply;
+
+    switch (aRequest.operation()) {
+    case QtCloudServices::RESTOperationGet:
+        verb = QtCloudServicesConstants::RESTOperationGet;
+        break;
+
+    case QtCloudServices::RESTOperationPost:
+        verb = QtCloudServicesConstants::RESTOperationPost;
+        break;
+
+    case QtCloudServices::RESTOperationPut:
+        verb = QtCloudServicesConstants::RESTOperationPut;
+        break;
+
+    case QtCloudServices::RESTOperationDelete:
+        verb = QtCloudServicesConstants::RESTOperationDelete;
+        break;
+    }
+
+    request = prepareRequest(aRequest.path(),
+                             aRequest.urlQuery(),
+                             aRequest.extraHeaders());
+
+    QJsonObject jsonPayload = aRequest.payload();
+
+    if (!jsonPayload.empty()) {
+        QByteArray payload;
+        payload = QJsonDocument(jsonPayload).toJson(QJsonDocument::Compact);
+        buffer = new QBuffer();
+        buffer->setData(payload);
+        buffer->open(QIODevice::ReadOnly);
+    }
+
+    reply = networkManager()->sendCustomRequest(request, verb, buffer);
+    operation.d<QEnginioOperation>()->setNetworkReply(reply);
+
+    if (buffer) {
+        buffer->setParent(reply);
+    }
+
+    return operation;
+}
+
+void QEnginioConnectionPrivate::replyFinished(QNetworkReply *aNetworkReply)
+{
+    QEnginioOperation operation;
+    operation = iReplyOperationMap.take(aNetworkReply);
+
+    if (!operation) {
         return;
     }
 
-    if (event->timerId() == _pingTimeoutTimer.timerId()) {
-        _pingTimeoutTimer.stop();
-        close();
-        emit timeOut();
-        return;
+    operation.d<QEnginioOperation>()->operationFinished();
+
+#if 0
+
+    if (aNetworkReply->error() != QNetworkReply::NoError) {
+        QPair<QIODevice *, qint64> deviceState = _chunkedUploads.take(nreply);
+        delete deviceState.first;
+        emitError(ereply);
     }
 
-    QObject::timerEvent(event);
-}
+    // continue chunked upload
+    else if (_chunkedUploads.contains(nreply)) {
+        QPair<QIODevice *, qint64> deviceState = _chunkedUploads.take(nreply);
+        QString status = ereply->data().value(QtCloudServicesConstants::status).toString();
 
-void EnginioBackendConnection::onSocketConnectionError(QAbstractSocket::SocketError error)
-{
-    protocolError("Socket connection error.");
-    qWarning() << "\t\t->" << error;
-}
-
-void EnginioBackendConnection::onSocketStateChanged(QAbstractSocket::SocketState socketState)
-{
-    switch (socketState) {
-    case QAbstractSocket::ConnectedState:
-        qDebug() << "\t -> Starting WebSocket handshake.";
-        _protocolDecodeState = HandshakePending;
-        _sentCloseFrame = false;
-        // The protocol handshake will appear to the HTTP server
-        // to be a regular GET request with an Upgrade offer.
-        _tcpSocket->write(constructOpeningHandshake(_socketUrl));
-        break;
-
-    case QAbstractSocket::ClosingState:
-        _protocolDecodeState = HandshakePending;
-        _applicationData.clear();
-        _payloadLength = 0;
-        break;
-
-    case QAbstractSocket::UnconnectedState:
-        emit stateChanged(DisconnectedState);
-        break;
-
-    default:
-        break;
-    }
-}
-
-void EnginioBackendConnection::onSocketReadyRead()
-{
-    //     WebSocket Protocol (RFC6455)
-    //     Base Framing Protocol
-    //     http://tools.ietf.org/html/rfc6455#section-5.2
-    //
-    //      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-    //     +-+-+-+-+-------+-+-------------+-------------------------------+
-    //     |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
-    //     |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
-    //     |N|V|V|V|       |S|             |   (if payload len==126/127)   |
-    //     | |1|2|3|       |K|             |                               |
-    //     +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
-    //     |     Extended payload length continued, if payload len == 127  |
-    //     + - - - - - - - - - - - - - - - +-------------------------------+
-    //     |                               |Masking-key, if MASK set to 1  |
-    //     +-------------------------------+-------------------------------+
-    //     | Masking-key (continued)       |          Payload Data         |
-    //     +-------------------------------- - - - - - - - - - - - - - - - +
-    //     :                     Payload Data continued ...                :
-    //     + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-    //     |                     Payload Data continued ...                |
-    //     +---------------------------------------------------------------+
-
-    while (_tcpSocket->bytesAvailable()) {
-        switch (_protocolDecodeState) {
-        case HandshakePending: {
-            // The response is closed by a CRLF line on its own (e.g. ends with two newlines).
-            while (_handshakeReply.isEmpty()
-                    || (!_handshakeReply.endsWith(QString(CRLF % CRLF).toUtf8())
-                        // According to documentation QIODevice::readLine replaces newline characters on
-                        // Windows with '\n', so just to be on the safe side:
-                        && !_handshakeReply.endsWith(QByteArrayLiteral("\n\n")))) {
-
-                if (!_tcpSocket->bytesAvailable()) {
-                    return;
-                }
-
-                _handshakeReply.append(_tcpSocket->readLine());
-            }
-
-            QString response = QString::fromUtf8(_handshakeReply);
-            _handshakeReply.clear();
-
-            int statusCode = extractResponseStatus(response);
-            QString secWebSocketAccept = extractResponseHeader(SecWebSocketAcceptHeader, response, /* ignoreCase */ false);
-            bool hasValidKey = secWebSocketAccept == gBase64EncodedSha1VerificationKey;
-
-            if (statusCode != 101 || !hasValidKey
-                    || extractResponseHeader(UpgradeHeader, response) != QStringLiteral("websocket")
-                    || extractResponseHeader(ConnectionHeader, response) != QStringLiteral("upgrade")
-               ) {
-                return protocolError("Handshake failed!");
-            }
-
-            _keepAliveTimer.start(TwoMinutes, this);
-            _protocolDecodeState = FrameHeaderPending;
-            emit stateChanged(ConnectedState);
-        } // Fall-through.
-
-        case FrameHeaderPending: {
-            if (quint64(_tcpSocket->bytesAvailable()) < DefaultHeaderLength) {
-                return;
-            }
-
-            // Large payload.
-            if (_payloadLength == LargePayloadMarker) {
-                if (quint64(_tcpSocket->bytesAvailable()) < LargePayloadHeaderLength) {
-                    return;
-                }
-
-                char data[LargePayloadHeaderLength];
-
-                if (quint64(_tcpSocket->read(data, LargePayloadHeaderLength)) != LargePayloadHeaderLength) {
-                    return protocolError("Reading large payload length failed!");
-                }
-
-                if (data[0] & MSB) {
-                    return protocolError("The most significant bit of a large payload length must be 0!", MessageTooBigCloseStatus);
-                }
-
-                // 8 bytes interpreted as a 64-bit unsigned integer
-                _payloadLength = qFromBigEndian<quint64>(reinterpret_cast<uchar*>(data));
-                _protocolDecodeState = PayloadDataPending;
-
-                break;
-            }
-
-            char data[DefaultHeaderLength];
-
-            if (quint64(_tcpSocket->read(data, DefaultHeaderLength)) != DefaultHeaderLength) {
-                return protocolError("Reading header failed!");
-            }
-
-            if (!_payloadLength) {
-                // This is the initial frame header data.
-                _isFinalFragment = (data[0] & FIN);
-                _protocolOpcode = static_cast<WebSocketOpcode>(data[0] & OPC);
-                _isPayloadMasked = (data[1] & MSK);
-                _payloadLength = (data[1] & LEN);
-
-                if (_isPayloadMasked) {
-                    return protocolError("Invalid masked frame received from server.");
-                }
-
-                // For data length 0-125 LEN is the payload length.
-                if (_payloadLength < NormalPayloadMarker) {
-                    _protocolDecodeState = PayloadDataPending;
-                }
-
-            } else {
-                Q_ASSERT(_payloadLength == NormalPayloadMarker);
-                // Normal sized payload: 2 bytes interpreted as the payload
-                // length expressed in network byte order (e.g. big endian).
-                _payloadLength = qFromBigEndian<quint16>(reinterpret_cast<uchar*>(data));
-                _protocolDecodeState = PayloadDataPending;
-            }
-
-            break;
+        if (status == QtCloudServicesConstants::empty || status == QtCloudServicesConstants::incomplete) {
+            Q_ASSERT(ereply->data().value(QtCloudServicesConstants::objectType).toString() == QtCloudServicesConstants::files);
+            uploadChunk(ereply, deviceState.first, deviceState.second);
+            return;
         }
 
-        case PayloadDataPending: {
-            if (static_cast<quint64>(_tcpSocket->bytesAvailable()) < _payloadLength) {
-                return;
-            }
+        // should never get here unless upload was successful
+        Q_ASSERT(status == QtCloudServicesConstants::complete);
+        delete deviceState.first;
 
-            if (_protocolOpcode == ConnectionCloseOp) {
-                WebSocketCloseStatus closeStatus = UnknownCloseStatus;
-
-                if (_payloadLength >= DefaultHeaderLength) {
-                    char data[DefaultHeaderLength];
-
-                    if (quint64(_tcpSocket->read(data, DefaultHeaderLength)) != DefaultHeaderLength) {
-                        return protocolError("Reading connection close status failed!");
-                    }
-
-                    closeStatus = static_cast<WebSocketCloseStatus>(qFromBigEndian<quint16>(reinterpret_cast<uchar*>(data)));
-
-                    // The body may contain UTF-8-encoded data with value /reason/,
-                    // the interpretation of this data is however not defined by the
-                    // specification. Further more the data is not guaranteed to be
-                    // human readable, thus it is safe for us to just discard the rest
-                    // of the message at this point.
-                }
-
-                qDebug() << "Connection closed by the server with status:" << closeStatus;
-
-                QJsonObject data;
-                data[QtCloudServicesConstants::messageType] = QStringLiteral("close");
-                data[QtCloudServicesConstants::status] = closeStatus;
-                emit dataReceived(data);
-
-                close(closeStatus);
-
-                _tcpSocket->close();
-                return;
-            }
-
-            // We received data from the server so restart the timer.
-            _keepAliveTimer.start(TwoMinutes, this);
-
-            _applicationData.append(_tcpSocket->read(_payloadLength));
-            _protocolDecodeState = FrameHeaderPending;
-            _payloadLength = 0;
-
-            if (!_isFinalFragment) {
-                break;
-            }
-
-            switch (_protocolOpcode) {
-            case TextFrameOp: {
-                QJsonObject data = QJsonDocument::fromJson(_applicationData).object();
-                data[QtCloudServicesConstants::messageType] = QStringLiteral("data");
-                emit dataReceived(data);
-                break;
-            }
-
-            case PingOp: {
-                // We must send back identical application data as found in the message.
-                QByteArray payload = _applicationData;
-                QByteArray maskingKey = generateMaskingKey();
-                QByteArray message = constructFrameHeader(/*isFinalFragment*/ true, PongOp, payload.size(), maskingKey);
-                Q_ASSERT(!message.isEmpty());
-                maskData(payload, maskingKey);
-                message.append(payload);
-                _tcpSocket->write(message);
-                break;
-            }
-
-            case PongOp:
-                _pingTimeoutTimer.stop();
-                emit pong();
-                break;
-
-            default:
-                protocolError("WebSocketOpcode not yet supported.", UnsupportedDataTypeCloseStatus);
-                qWarning() << "\t\t->" << _protocolOpcode;
-            }
-
-            _applicationData.clear();
-
-            break;
-        }
+        if (_connections.count() * 2 > _chunkedUploads.count()) {
+            _connections.removeAll(QMetaObject::Connection());
         }
     }
+
+    if (Q_UNLIKELY(ereply->delayFinishedSignal())) {
+        // delay emittion of finished signal for autotests
+        _delayedReplies.insert(ereply);
+    } else {
+        ereply->dataChanged();
+        QEnginioOperationPrivate::get(ereply)->emitFinished();
+        emitFinished(ereply);
+
+        if (gEnableEnginioDebugInfo) {
+            _requestData.remove(nreply);
+        }
+    }
+
+    if (Q_UNLIKELY(_delayedReplies.count())) {
+        finishDelayedReplies();
+    }
+
+#endif
+}
+
+
+void QEnginioConnectionPrivate::registerReply(QNetworkReply *aNetworkReply, const QEnginioOperation &aOperation)
+{
+#if QCLOUDSERVICES_USE_STD_SHARED_PTR
+    aNetworkReply->setParent(aOperation.d<QEnginioOperation>().get());
+#else
+    aNetworkReply->setParent(aOperation.d<QEnginioOperation>().data());
+#endif
+    iReplyOperationMap[aNetworkReply] = aOperation;
+}
+
+void QEnginioConnectionPrivate::unregisterReply(QNetworkReply *aNetworkReply)
+{
+    iReplyOperationMap.remove(aNetworkReply);
+}
+
+QNetworkRequest QEnginioConnectionPrivate::prepareRequest(const QString &aPath,
+        const QUrlQuery &aQuery,
+        const QJsonObject &aExtraHeaders)
+{
+    QUrl url, relativeUrl;
+    QByteArray requestId;
+    QNetworkRequest request;
+
+    if (!iEnginioDataStorage) {
+        qCritical() << tr("QEnginioConnectionObject not bound to QEnginioDataStoreObject.");
+        return QNetworkRequest();
+    }
+
+    relativeUrl.setPath(aPath);
+    url = iEnginioDataStorage.instanceAddress().resolved(relativeUrl);
+
+    requestId = QUuid::createUuid().toByteArray();
+    // Remove unneeded pretty-formatting.
+    // before: "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}"
+    // after:  "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    requestId.chop(1);      // }
+    requestId.remove(0, 1); // {
+    requestId.remove(23, 1);
+    requestId.remove(18, 1);
+    requestId.remove(13, 1);
+    requestId.remove(8, 1);
+
+    if (!aQuery.isEmpty()) {
+        url.setQuery(aQuery);
+    }
+
+    request.setUrl(url);
+
+    request.setRawHeader(QtCloudServicesConstants::X_Request_Id, requestId);
+    request.setRawHeader(QtCloudServicesConstants::Host, url.host().toLatin1());
+    request.setRawHeader(QtCloudServicesConstants::Accept_Encoding,
+                         QtCloudServicesConstants::Accept_Encoding_Any);
+    request.setRawHeader(QtCloudServicesConstants::User_Agent,
+                         QtCloudServicesConstants::User_Agent_Default);
+    request.setRawHeader(QtCloudServicesConstants::Enginio_Backend_Id,
+                         iEnginioDataStorage.backendId().toLatin1());
+
+    if (!aExtraHeaders.empty()) {
+        QJsonObject::const_iterator end = aExtraHeaders.constEnd();
+
+        for (QJsonObject::const_iterator i = aExtraHeaders.constBegin(); i != end; i++) {
+            QByteArray headerName = i.key().toUtf8();
+            QByteArray headerValue = i.value().toString().toUtf8();
+            request.setRawHeader(headerName, headerValue);
+        }
+    }
+
+    return request;
+}
+
+/*
+** Public Implementation
+*/
+QEnginioConnection::QEnginioConnection(const QEnginioDataStorage &aEnginioDataStorage)
+    : QCloudServicesObject(QEnginioConnection::dvar(new QEnginioConnectionPrivate(aEnginioDataStorage)))
+{
+    QEnginioConnection::dvar pimpl = d<QEnginioConnection>();
+
+    if (pimpl->iNetworkManager) {
+        pimpl->iNetworkManagerConnection = QObject::connect(pimpl->iNetworkManager.data(),
+                                           &QNetworkAccessManager::finished,
+                                           QEnginioConnectionPrivate::ReplyFinishedFunctor(pimpl));
+    }
+}
+QEnginioConnection::QEnginioConnection(QObject *aParent)
+    : QCloudServicesObject(QEnginioConnection::dvar(new QEnginioConnectionPrivate()), aParent)
+{
+}
+
+QEnginioConnection::QEnginioConnection(const QEnginioConnection &aOther)
+    : QCloudServicesObject(aOther.d<QEnginioConnection>())
+{
+}
+QEnginioConnection & QEnginioConnection::operator=(const QEnginioConnection &aOther)
+{
+    setPIMPL(aOther.d<QEnginioConnection>());
+    return *this;
+}
+
+QEnginioConnection::~QEnginioConnection()
+{
+    // qDeleteAll(findChildren<QEnginioOperation *>());
+}
+
+bool QEnginioConnection::operator!() const
+{
+    return !isValid();
+}
+
+bool QEnginioConnection::isValid() const
+{
+    if (isNull()) {
+        return false;
+    }
+
+    return d<QEnginioConnection>()->isValid();
 }
 
 /*!
-    \brief Establish a stateful connection to the backend specified by QEnginioConnection
-    \a client. Note that the client already has to be set up (e.g. backendId has to be valid).
-    Optionally, to let the server only send specific messages of interest,
-    a \a messageFilter can be provided with the following json scheme:
+\brief Get the QNetworkAccessManager used by the Enginio library.
 
-    {
-        "data": {
-            "objectType": "objects.todos"
-        },
-        "event": "create"
-    }
-
-    The "event" property can be one of "create", "update" or "delete".
-
-    \internal
+\note that this QNetworkAccessManager may be shared with other QEnginioConnection instances
+and it is owned by them.
 */
-
-void EnginioBackendConnection::connectToBackend(QEnginioConnectionPrivate* client, const QJsonObject &messageFilter)
+QSharedPointer<QNetworkAccessManager> QEnginioConnection::networkManager() const
 {
-#if 0
-    Q_ASSERT(client);
-    Q_ASSERT(!client->_backendId.isEmpty());
-
-    QUrl url(client->_serviceUrl);
-    url.setPath(QStringLiteral("/v1/stream_url"));
-
-    QByteArray filter = QJsonDocument(messageFilter).toJson(QJsonDocument::Compact);
-    filter.prepend("filter=");
-    url.setQuery(QString::fromUtf8(filter));
-
-    QJsonObject headers;
-    headers[ QStringLiteral("Accept") ] = QStringLiteral("application/json");
-    QJsonObject data;
-    data[QtCloudServicesConstants::headers] = headers;
-
-    emit stateChanged(ConnectingState);
-    QNetworkReply *nreply = client->customRequest(url, QtCloudServicesConstants::Get, data);
-    QEnginioOperation *reply = new QEnginioOperation(client, nreply);
-    QObject::connect(reply, SIGNAL(finished(QEnginioOperation*)), this, SLOT(onEnginioFinished(QEnginioOperation*)));
-#endif
+    return d<const QEnginioConnection>()->networkManager();
 }
 
-void EnginioBackendConnection::connectToBackend(QEnginioConnection *client, const QJsonObject &messageFilter)
+
+/*!
+\brief Create custom request to the enginio REST API
+
+\a aRESTOperation Supported Verb to the server.
+\a aPath The for custom request. This path is appended to current endpoint url.
+\a aData optional JSON object possibly containing custom payload
+\a aExtraHeaders optional JSON object possibly containing additional extra headers.
+
+\return QEnginioOperation containing the status and the result once it is finished.
+\sa QEnginioOperation, create(), query(), update(), remove()
+\internal
+*/
+QEnginioOperation QEnginioConnection::customRequest(const QEnginioRequest &aRequest)
 {
-#if 0
-    connectToBackend(QEnginioConnectionPrivate::get(client), messageFilter);
-#endif
+    return d<QEnginioConnection>()->customRequest(aRequest);
 }
 
-void EnginioBackendConnection::close(WebSocketCloseStatus closeStatus)
+
+
+//
+// OBSOLATE METHODS
+//
+
+
+#if 0
+void QEnginioConnection::setBackendId(const QByteArray &backendId)
 {
-    if (_sentCloseFrame) {
+    QTC_D(QEnginioConnection);
+
+    if (d->_backendId != backendId) {
+        d->_backendId = backendId;
+        d->_request.setRawHeader("Enginio-Backend-Id", d->_backendId);
+        // emit backendIdChanged(backendId);
+    }
+}
+#endif
+
+
+
+/*!
+\property QEnginioConnection::identity
+Property that represents a user. Setting the property will create an asynchronous authentication request,
+the result of it updates \l{QEnginioConnection::authenticationState()}{authenticationState}
+QEnginioConnection does not take ownership of the \a identity object. The object
+has to be valid to keep the authenticated session alive. When the identity object is deleted the session
+is terminated. It is allowed to assign a null pointer to the property to terminate the session.
+\sa EnginioIdentity EnginioOAuth2Authentication
+*/
+EnginioIdentity * QEnginioConnection::identity() const
+{
+    /*
+    QTC_D(const QEnginioConnection);
+    return d->identity();
+    */
+    return NULL;
+}
+
+void QEnginioConnection::setIdentity(EnginioIdentity *identity)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    if (d->_identity == identity) {
         return;
     }
 
-    _sentCloseFrame = true;
-    _keepAliveTimer.stop();
-
-    QByteArray payload;
-    quint16 closeStatusBigEndian = qToBigEndian<quint16>(closeStatus);
-    payload.append(reinterpret_cast<char*>(&closeStatusBigEndian), DefaultHeaderLength);
-
-    QByteArray maskingKey = generateMaskingKey();
-    QByteArray message = constructFrameHeader(/*isFinalFragment*/ true, ConnectionCloseOp, payload.size(), maskingKey);
-    Q_ASSERT(!message.isEmpty());
-
-    maskData(payload, maskingKey);
-    message.append(payload);
-    _tcpSocket->write(message);
+    d->setIdentity(identity);
+    */
 }
 
-void EnginioBackendConnection::ping()
+
+QtCloudServices::AuthenticationState QEnginioConnection::authenticationState() const
 {
-    if (_sentCloseFrame) {
-        return;
-    }
+    /*
+    QTC_D(const QEnginioConnection);
+    return d->authenticationState();
+    */
 
-    // The WebSocket server should accept ping frames without payload according to
-    // the specification, but ours does not, so let's add a dummy payload.
-    QByteArray dummy;
-    dummy.append(QStringLiteral("Ping.").toUtf8());
-    QByteArray maskingKey = generateMaskingKey();
-    QByteArray message = constructFrameHeader(/*isFinalFragment*/ true, PingOp, dummy.size(), maskingKey);
-    Q_ASSERT(!message.isEmpty());
+    return QtCloudServices::AuthenticationState::NotAuthenticated;
+}
 
-    maskData(dummy, maskingKey);
-    message.append(dummy);
-    _tcpSocket->write(message);
+/*!
+\internal
+Tries to emit finished signal from all replies that used to be delayed.
+\return false if all replies were finished, true otherwise.
+*/
+bool QEnginioConnection::finishDelayedReplies()
+{
+    /*
+    QTC_D(QEnginioConnection);
+    return d->finishDelayedReplies();
+
+    */
+    return false;
+}
+
+/*!
+\brief Fulltext search on the Enginio backend
+
+The \a query is JSON sent to the backend to perform a fulltext search.
+Note that the search requires the searched properties to be indexed (on the server, configureable in the backend).
+
+
+\return QEnginioOperation containing the status and the result once it is finished.
+\sa QEnginioOperation, create(), query(), update(), remove(), {cloudaddressbook}{Address book example},
+{https://engin.io/documentation/rest/parameters/fulltext_query}{JSON request structure}
+*/
+QEnginioOperation QEnginioConnection::fullTextSearch(const QJsonObject &query)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->query<QJsonObject>(query, QtCloudServices::SearchOperation);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+    return ereply;
+    */
+
+    return QEnginioOperation();
+}
+
+/*!
+\include client-query.qdocinc
+
+To query the database for all objects of the type "objects.todo":
+\snippet QEnginioConnection/tst_QEnginioConnection.cpp query-todo
+
+\return an QEnginioOperation containing the status and the result once it is finished.
+*/
+QEnginioOperation QEnginioConnection::query(const QJsonObject &query, const QtCloudServices::Operation operation)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->query<QJsonObject>(query, operation);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+
+    return ereply;
+    */
+
+    return QEnginioOperation();
+}
+
+/*!
+\include client-create.qdocinc
+
+\snippet QEnginioConnection/tst_QEnginioConnection.cpp create-todo
+
+To add a new member to a usergroup, the JSON needs to look like the example below.
+\code
+{
+"id": "groupId",
+"member": { "id": "userId", "objectType": "users" }
+}
+\endcode
+It can be constructed like this:
+\snippet QEnginioConnection/tst_QEnginioConnection.cpp create-newmember
+
+\return an QEnginioOperation containing the status and data once it is finished.
+*/
+QEnginioOperation QEnginioConnection::create(const QJsonObject &object, const QtCloudServices::Operation operation)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->create<QJsonObject>(object, operation);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+
+    return ereply;
+    */
+
+    return QEnginioOperation();
+}
+
+/*!
+\include client-update.qdocinc
+
+In C++, the updating of the ACL could be done like this:
+\snippet QEnginioConnection/tst_QEnginioConnection.cpp update-access
+
+\return an QEnginioOperation containing the status of the query and the data once it is finished.
+*/
+QEnginioOperation QEnginioConnection::update(const QJsonObject &object, const QtCloudServices::Operation operation)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->update<QJsonObject>(object, operation);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+
+    return ereply;
+    */
+
+    return QEnginioOperation();
+}
+
+/*!
+\include client-remove.qdocinc
+
+To remove a todo object:
+\snippet QEnginioConnection/tst_QEnginioConnection.cpp remove-todo
+
+\return an QEnginioOperation containing the status and the data once it is finished.
+*/
+QEnginioOperation QEnginioConnection::remove(const QJsonObject &object, const QtCloudServices::Operation operation)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->remove<QJsonObject>(object, operation);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+
+    return ereply;
+    */
+    return QEnginioOperation();
+}
+
+
+/*!
+\brief Stores a \a file attached to an \a object in Enginio
+
+Each uploaded file needs to be associated with an object in the database.
+\note The upload will only work with the propper server setup: in the dashboard create a property
+of the type that you will use. Set this property to be a reference to files.
+
+Each uploaded file needs to be associated with an object in the database.
+
+In order to upload a file, first create an object:
+\snippet files/tst_files.cpp upload-create-object
+
+Then do the actual upload:
+\snippet files/tst_files.cpp upload
+
+Note: There is no need to directly delete files.
+Instead when the object that contains the link to the file gets deleted,
+the file will automatically be deleted as well.
+
+\sa downloadUrl()
+*/
+QEnginioOperation QEnginioConnection::uploadFile(const QJsonObject &object, const QUrl &file)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->uploadFile<QJsonObject>(object, file);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+
+    return ereply;
+    */
+    return QEnginioOperation();
+}
+
+/*!
+\brief Get a temporary URL for a file stored in Enginio
+
+From this URL a file can be downloaded. The URL is valid for a certain amount of time as indicated
+in the reply.
+
+\snippet files/tst_files.cpp download
+The propertyName can be anything, but it must be the same as the one used to upload the file with.
+This way one object can have several files attached to itself (one per propertyName).
+
+If a file provides several variants, it is possible to request a variant by including it in the
+\a object.
+\code
+{
+"id": "abc123",
+"variant": "thumbnail"
+}
+\endcode
+*/
+QEnginioOperation QEnginioConnection::downloadUrl(const QJsonObject &object)
+{
+    /*
+    QTC_D(QEnginioConnection);
+
+    QNetworkReply *nreply = d->downloadUrl<QJsonObject>(object);
+    QEnginioOperation *ereply = new QEnginioOperation(d, nreply);
+
+    return ereply;
+    */
+    return QEnginioOperation();
 }
 
 QT_END_NAMESPACE
