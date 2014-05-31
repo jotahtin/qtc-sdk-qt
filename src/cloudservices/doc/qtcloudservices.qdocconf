@@ -39,15 +39,20 @@ qhp.QtCloudServices.filterAttributes    = qtcloudservices $QT_VERSION
 qhp.QtCloudServices.customFilters.Qt.name = QtCloudServices $QT_VERSION
 qhp.QtCloudServices.customFilters.Qt.filterAttributes = qtcloudservices $QT_VERSION
 
-qhp.QtCloudServices.subprojects         = classes examples
+qhp.QtCloudServices.subprojects         = classes qmltypes examples
 
 qhp.QtCloudServices.subprojects.classes.title = C++ Classes
-qhp.QtCloudServices.subprojects.classes.indexTitle = QtCloudServices C++ Classes and Examples
+qhp.QtCloudServices.subprojects.classes.indexTitle = QtCloudServices C++ Classes
 qhp.QtCloudServices.subprojects.classes.selectors = class
 qhp.QtCloudServices.subprojects.classes.sortPages = true
 
+qhp.QtCloudServices.subprojects.qmltypes.title = QML Types
+qhp.QtCloudServices.subprojects.qmltypes.indexTitle = QtCloudServices QML Types
+qhp.QtCloudServices.subprojects.qmltypes.selectors = fake:qmlclass
+qhp.QtCloudServices.subprojects.qmltypes.sortPages = true
+
 qhp.QtCloudServices.subprojects.examples.title = Examples
-qhp.QtCloudServices.subprojects.examples.indexTitle = QtCloudServices C++ Classes and Examples
+qhp.QtCloudServices.subprojects.examples.indexTitle = QtCloudServices Examples
 qhp.QtCloudServices.subprojects.examples.selectors = fake:example
 qhp.QtCloudServices.subprojects.examples.sortPages = true
 

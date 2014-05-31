@@ -42,102 +42,38 @@
 #ifndef QCLOUDSERVICES_QENGINIOOPERATION_H
 #define QCLOUDSERVICES_QENGINIOOPERATION_H
 
-#include <functional>
-
-#include <QList>
-
-#include <QtCore/qjsonobject.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
-#include <QtNetwork/qnetworkreply.h>
-
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/qenginioobject.h>
+#include <QtCloudServices/qrestoperation.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioConnection;
-class QEnginioRequest;
-class QEnginioConnectionPrivate;
-class QEnginioOperationPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioOperation : public QCloudServicesObject {
-    Q_OBJECT
-    /*
-    Q_ENUMS(QNetworkReply::NetworkError); // TODO remove me QTBUG-33577
-    Q_ENUMS(QtCloudServices::ErrorType); // TODO remove me QTBUG-33577
-    */
-    Q_PROPERTY(QtCloudServices::ErrorType errorType READ errorType NOTIFY dataChanged)
-    Q_PROPERTY(QNetworkReply::NetworkError networkError READ networkError NOTIFY dataChanged)
-    Q_PROPERTY(QString errorString READ errorString NOTIFY dataChanged)
-    Q_PROPERTY(int backendStatus READ backendStatus NOTIFY dataChanged)
-    Q_PROPERTY(QString requestId READ requestId CONSTANT)
-    Q_PROPERTY(QJsonObject result READ result NOTIFY dataChanged)
-
-    QTC_DECLARE_PRIVATE(QEnginioOperation)
-    friend class QEnginioConnection;
-    friend class QEnginioConnectionPrivate;
+class QEnginioOperationObject;
+class QTCLOUDSERVICES_EXPORT QEnginioOperation : public QRestOperation {
 public:
-    typedef std::function<void(QEnginioOperation &)> Callback;
+    typedef std::function<void(QEnginioOperation aEnginioOperation)> Callback;
 protected:
-    QEnginioOperation(const QEnginioConnection &aEnginioConnection,
-                      const QEnginioRequest &aEnginioRequest);
+    QEnginioOperation(QEnginioOperationObject *aEnginioOperationObject);
 public:
+    // Constructors
     QEnginioOperation();
     QEnginioOperation(const QEnginioOperation &aOther);
     ~QEnginioOperation();
 
+    // Assignment
     QEnginioOperation& operator=(const QEnginioOperation &aOther);
 
-    bool operator!() const;
+    // Get implementation object - for binding signals.
+    const QEnginioOperationObject* enginioOperationObject() const;
 
-    bool isValid() const Q_REQUIRED_RESULT;
-    bool isError() const Q_REQUIRED_RESULT;
-    bool isFinished() const Q_REQUIRED_RESULT;
-
-    /*
-    explicit QEnginioOperation(QEnginioConnectionPrivate *parent, QNetworkReply *reply);
-    virtual ~QEnginioOperation();
-    */
-    QJsonObject result() const Q_REQUIRED_RESULT; // data
+    // IsValid
+    virtual bool isValid() const Q_REQUIRED_RESULT;
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
     QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
 
-    QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
-    QNetworkReply::NetworkError networkError() const Q_REQUIRED_RESULT;
-    QString errorString() const Q_REQUIRED_RESULT;
-    QString requestId() const Q_REQUIRED_RESULT;
-    int backendStatus() const Q_REQUIRED_RESULT;
-
-    /*
-    void setDelayFinishedSignal(bool delay);
-    bool delayFinishedSignal() Q_REQUIRED_RESULT;
-
-    // void swapNetworkReply(QEnginioOperation *other);
-    */
-
     QEnginioRequest enginioRequest() const Q_REQUIRED_RESULT;
-public Q_SLOTS:
-    void dumpDebugInfo() const;
-Q_SIGNALS:
-    void dataChanged();
-    void progress(qint64 bytesSent, qint64 bytesTotal);
-    void finished(QEnginioOperation aReply);
 };
 
-Q_DECLARE_TYPEINFO(QEnginioOperation, Q_COMPLEX_TYPE);
-
-#ifndef QT_NO_DEBUG_STREAM
-QTCLOUDSERVICES_EXPORT QDebug operator<<(QDebug d, const QEnginioOperation &aReply);
-#endif
-
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QEnginioOperation);
 
 #endif /* QCLOUDSERVICES_QENGINIOOPERATION_H */

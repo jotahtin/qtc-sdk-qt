@@ -47,10 +47,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QCloudServicesPlugin : public QQmlExtensionPlugin { // EnginioPlugin
+class QQmlCloudServices : public QQmlExtensionPlugin { // EnginioPlugin
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface")
-
+    //Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
     void initializeEngine(QQmlEngine *engine, const char *uri);
     void registerTypes(const char *uri);

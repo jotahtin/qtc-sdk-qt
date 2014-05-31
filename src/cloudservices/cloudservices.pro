@@ -1,5 +1,5 @@
 TARGET   = QtCloudServices
-QT      += network websockets qml
+QT      += network websockets qml core-private
 QT      -= gui
 DEFINES += QTCLOUDSERVICES_LIBRARY
 MODULE   = cloudservices
@@ -30,7 +30,29 @@ SOURCES += \
     qenginiouser.cpp \
     qenginiomodelnode.cpp \
     qmanagedwebsocket.cpp \
-    qtcloudservices.cpp
+    qtcloudservices.cpp \
+    qenginiodatastorageshared.cpp \
+    qenginiodatastorageobject.cpp \
+    qenginioconnectionshared.cpp \
+    qenginioconnectionobject.cpp \
+    qrestendpoint.cpp \
+    qrestendpointshared.cpp \
+    qrestendpointobject.cpp \
+    qrestconnection.cpp \
+    qrestconnectionshared.cpp \
+    qrestconnectionobject.cpp \
+    qrestrequest.cpp \
+    qrestrequestshared.cpp \
+    qrestrequestobject.cpp \
+    qrestoperation.cpp \
+    qrestoperationobject.cpp \
+    qrestoperationshared.cpp \
+    qenginiorequestobject.cpp \
+    qenginiorequestshared.cpp \
+    qenginiocollectionshared.cpp \
+    qenginiocollectionobject.cpp \
+    qenginiooperationobject.cpp \
+    qenginiooperationshared.cpp
 
 HEADERS += \
     stdafx.h \
@@ -41,12 +63,7 @@ HEADERS += \
     enginioobjectadaptor_p.h \
     qcloudservicesconstants_p.h \
     qcloudservicesobject_p.h \
-    qenginiocollection_p.h \
-    qenginioconnection_p.h \
-    qenginiodatastorage_p.h \
-    qenginiooperation_p.h \
     qenginioquery_p.h \
-    qenginiorequest_p.h \
     qenginiomodel_p.h \
     qenginioobject_p.h \
     qenginiouser_p.h \
@@ -66,4 +83,34 @@ HEADERS += \
     qenginioobject.h \
     qenginiouser.h \
     qenginiomodelnode.h \
-    qmanagedwebsocket.h
+    qmanagedwebsocket.h \
+    qenginiodatastorageshared_p.h \
+    qenginiodatastorageobject.h \
+    qenginiodatastorageobject_p.h \
+    qenginioconnectionobject.h \
+    qrestendpoint.h \
+    qrestendpointshared_p.h \
+    qrestendpointobject.h \
+    qrestendpointobject_p.h \
+    qrestconnection.h \
+    qrestconnectionobject.h \
+    qrestconnectionshared_p.h \
+    qrestrequest.h \
+    qrestrequestshared_p.h \
+    qrestrequestobject.h \
+    qrestrequestobject_p.h \
+    qrestoperation.h \
+    qrestoperationobject.h \
+    qrestoperationobject_p.h \
+    qrestoperationshared_p.h \
+    qenginiorequestobject_p.h \
+    qenginiorequestobject.h \
+    qenginiorequestshared_p.h \
+    qenginiocollectionshared_p.h \
+    qenginiocollectionobject.h \
+    qenginiocollectionobject_p.h \
+    qenginiooperationobject.h \
+    qenginiooperationobject_p.h \
+    qenginiooperationshared_p.h \
+    qenginioconnectionshared_p.h \
+    qenginioconnectionobject_p.h

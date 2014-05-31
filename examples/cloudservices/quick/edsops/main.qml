@@ -8,6 +8,11 @@ Item {
 
     function foobar() {
         console.log("Z..")
+
+
+        var x = eds.collection("todos")
+
+        //console.log("Z.." + x.length)
     }
 
     Rectangle {
@@ -16,7 +21,7 @@ Item {
         anchors.fill: parent
 
         Rectangle {
-            id: header
+            id: headere
             anchors.top: parent.top
             width: parent.width
             height: 70
@@ -26,6 +31,15 @@ Item {
                 anchors.fill: parent
                 onClicked: foobar()
             }
+
+            data: [
+                QEnginioDataStorage {
+                    id: eds
+                    backendId: "5379dea0698b3c1dc00cdf57"
+                    instanceAddress: "https://api.engin.io"
+                }
+
+            ]
         }
 
 

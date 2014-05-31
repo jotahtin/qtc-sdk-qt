@@ -47,88 +47,59 @@
 #include <QString>
 #include <QSharedPointer>
 
-#include <QtCloudServices/qcloudservicesobject.h>
 #include <QtCloudServices/QEnginioConnection>
 #include <QtCloudServices/QEnginioCollection>
+#include <QtCloudServices/QEnginioDataStorageObject>
 
 QT_BEGIN_NAMESPACE
 
-/*
-
-QtCloudServices (lib/dll)
-   QEnginioDataStorage (EDS)  - QEds
-   QEdsCollection
-   QManagedWebSocket (MWS)
-*/
-
-class QEnginioDataStoragePrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioDataStorage : public QCloudServicesObject {
-    Q_OBJECT
-    Q_PROPERTY(QString backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged)
-    Q_PROPERTY(QUrl instanceAddress READ instanceAddress WRITE setInstanceAddress NOTIFY instanceAddressChanged)
-    Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
-    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
-    QTC_DECLARE_PRIVATE(QEnginioDataStorage)
-    friend class QEnginioCollection;
+class QEnginioDataStorageObject;
+class QTCLOUDSERVICES_EXPORT QEnginioDataStorage {
+protected:
+    QEnginioDataStorage(QEnginioDataStorageObject *aObject);
 public:
-    // Default Constructor
-    QEnginioDataStorage(QObject *parent = 0);
-    QEnginioDataStorage(const QUrl &instanceAddress, const QString &backendId, QObject *parent = 0);
-    QEnginioDataStorage(const QString &instanceAddress, const QString &backendId, QObject *parent = 0);
-    QEnginioDataStorage(const QEnginioDataStorage &aEnginioDataStorage);
+    // Constructors
+    QEnginioDataStorage();
+    QEnginioDataStorage(const QUrl &aInstanceAddress, const QString &aBackendId);
+    QEnginioDataStorage(const QString &aInstanceAddress, const QString &aBackendId);
+    QEnginioDataStorage(const QEnginioDataStorage &aOther);
     ~QEnginioDataStorage();
 
     // Assignment
-    QEnginioDataStorage& operator=(const QEnginioDataStorage &aEnginioDataStorage);
+    QEnginioDataStorage& operator=(const QEnginioDataStorage &aOther);
+
+    // Get implementation object
+    const QEnginioDataStorageObject* enginioDataStorageObject() const;
 
     // IsValid
-    bool operator!() const;
-    virtual bool isValid() const;
+    virtual bool operator!() const Q_REQUIRED_RESULT;
+    virtual bool isValid() const Q_REQUIRED_RESULT;
 
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
 
     QUrl instanceAddress() const Q_REQUIRED_RESULT;
     void setInstanceAddress(const QUrl &aInstanceAddress);
-    void setInstanceAddressString(const QString &aInstanceAddress);
+    void setInstanceAddress(const QString &aInstanceAddress);
 
     QString backendId() const Q_REQUIRED_RESULT;
     void setBackendId(const QString &aBackendId);
 
     // Authentication
     QString username() const Q_REQUIRED_RESULT;
-    QString password() const Q_REQUIRED_RESULT;
-
-public Q_SLOTS:
     void setUsername(const QString &aUsername);
+
+    QString password() const Q_REQUIRED_RESULT;
     void setPassword(const QString &aPassword);
 
-public:
-    // Access Storage Resources (Collections)
-    QEnginioCollection collection(const QString &collectionName);
+    // Get object collection
+    QEnginioCollection collection(const QString &aCollectionName) Q_REQUIRED_RESULT;
 
     // Get Plain connection
-    QEnginioConnection reserveConnection();
+    QEnginioConnection reserveConnection() Q_REQUIRED_RESULT;
     void releaseConnection(const QEnginioConnection &aConnection);
-Q_SIGNALS:
-    void backendIdChanged(const QString &backendId);
-    void instanceAddressChanged(const QUrl &instanceAddress);
-    void backendChanged();
-
-    void usernameChanged(const QString &aUsername);
-    void passwordChanged(const QString &aPassword);
-
-    //
-    void operationError(const QEnginioOperation &aOperation);
-
-    // What are these
-Q_SIGNALS:
-//	void dataChanged();
-//	void aboutToDestroy();
-//protected:
-//	virtual void prepareSessionToken(QEnginioConnectionPrivate *enginio) Q_DECL_OVERRIDE;
-//	virtual void removeSessionToken(QEnginioConnectionPrivate *enginio) Q_DECL_OVERRIDE;
-
+private:
+    QEnginioDataStorageObject *iEnginioDataStorageObject;
 };
 
 QT_END_NAMESPACE

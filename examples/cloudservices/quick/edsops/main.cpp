@@ -1,6 +1,6 @@
 #include <QDebug>
 
-#include <QApplication>
+#include <QGuiApplication>
 // #include <QQmlApplicationEngine>
 
 #include <QQuickView>
@@ -8,10 +8,11 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QQuickView view;
-    view.setSource(QUrl("qrc:///main.qml"));
+// view.setSource(QUrl("qrc:///main.qml"));
+    view.setSource(QUrl::fromLocalFile("/home/jta/Programming/QtC-SDK-Qt/examples/cloudservices/quick/edsops/main.qml"));
 
     view.show();
 

@@ -48,6 +48,12 @@
 #include <QtQml/qqmlengine.h>
 
 #include "QtCloudServices/qtcloudservices.h"
+
+#include "QtCloudServices/qenginiodatastorage.h"
+#include "QtCloudServices/qenginiocollection.h"
+#include "QtCloudServices/qenginiooperation.h"
+#include "QtCloudServices/qenginioquery.h"
+
 #include "qqmlcloudservices_p.h"
 
 /*
@@ -85,11 +91,11 @@ public:
 };
 #endif
 
-void QCloudServicesPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
+void QQmlCloudServices::initializeEngine(QQmlEngine *engine, const char *uri)
 {
     Q_UNUSED(uri);
 
-    qDebug() << "Initialize QQmlCloudServices";
+    qDebug() << "Initialize QQmlCloudServices.";
 
 #if 0
 
@@ -105,14 +111,21 @@ void QCloudServicesPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
 #endif
 }
 
-void QCloudServicesPlugin::registerTypes(const char *uri)
+void QQmlCloudServices::registerTypes(const char *uri)
 {
-    qDebug() << "Register Types: " << uri;
+    qDebug() << "Register Types..: " << uri;
 
     Q_ASSERT(uri == QLatin1String("QtCloudServices"));
+
+    // @uri QtCloudServices
     qmlRegisterUncreatableType<QtCloudServices>(uri, 1, 0, "QtCloudServices", "QtCloudServices is an enum container and can not be constructed");
 
-    // @uri Enginio
+    // EnginioDataStorage
+    qmlRegisterType<QEnginioDataStorageObject>(uri, 1, 0, "QEnginioDataStorage");
+    qmlRegisterType<QEnginioCollection>(uri, 1, 0, "QEnginioCollection");
+    qmlRegisterType<QEnginioOperation>(uri, 1, 0, "QEnginioOperation");
+    qmlRegisterType<QEnginioQuery>(uri, 1, 0, "QEnginioQuery");
+
     /*
     qmlRegisterUncreatableType<Enginio>(uri, 1, 0, "Enginio", "Enginio is an enum container and can not be constructed");
     qmlRegisterUncreatableType<EnginioClientConnection>(uri, 1, 0, "EnginioClientConnection", "EnginioClientConnection should not be instantiated in QML directly.");

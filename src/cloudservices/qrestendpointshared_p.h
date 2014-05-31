@@ -39,60 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QENGINIODATASTORAGE_P_H
-#define QCLOUDSERVICES_QENGINIODATASTORAGE_P_H
-
-#include <QtCloudServices/qtcloudservices_global.h>
+#ifndef QCLOUDSERVICES_QRESTENDPOINT_SHARED_P_H
+#define QCLOUDSERVICES_QRESTENDPOINT_SHARED_P_H
 
 #include <QMap>
 #include <QUrl>
 
-#include <QtCloudServices/qenginiodatastorage.h>
+#include <QtCloudServices/qtcloudservices_global.h>
 
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
-#include <QtCloudServices/private/qenginiocollection_p.h>
-#include <QtCloudServices/private/qenginioconnection_p.h>
+#include <QtCloudServices/private/qrestoperationshared_p.h>
 
 QT_BEGIN_NAMESPACE
 
 /*
-** QEnginioDataStoragePrivate
+** QRestEndpointShared
 */
-class QEnginioDataStoragePrivate : public QCloudServicesObjectPrivate {
-    Q_OBJECT;
+class QRestEndpointShared : public QObject {
+    Q_OBJECT
     friend class QEnginioCollectionPrivate;
 public:
-    QEnginioDataStoragePrivate();
-    QEnginioDataStoragePrivate(const QUrl &aInstanceAddress, const QString &aBackendId,
-                               QEnginioDataStoragePrivate *aPrevInstance = 0);
-    ~QEnginioDataStoragePrivate();
+    QRestEndpointShared(const QUrl &aEndpointAddress);
+    ~QRestEndpointShared();
 public:
-    void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
+    bool isValid() const;
 
-    QUrl instanceAddress() const Q_REQUIRED_RESULT;
-    QString backendId() const Q_REQUIRED_RESULT;
+    QUrl restEndpointAddress() const Q_REQUIRED_RESULT;
 
-    QString username() const Q_REQUIRED_RESULT;
-    void setUsername(const QString &aUsername);
-
-    QString password() const Q_REQUIRED_RESULT;
-    void setPassword(const QString &aPassword);
-
-    QEnginioConnection reserveConnection() Q_REQUIRED_RESULT;
-    void releaseConnection(const QEnginioConnection &aConnection);
-
-    QEnginioCollection collection(const QString &aCollectionName);
-public:
-    void bindForwarding(QEnginioDataStorage *aInstance);
-    void unbindForwarding();
-public:
-    QTC_DECLARE_PUBLIC(QEnginioDataStorage);
+    QSharedPointer<QRestConnection> reserveConnection(QSharedPointer<QRestEndpointShared> aSelf) Q_REQUIRED_RESULT;
+    void releaseConnection(QSharedPointer<QRestConnection> aConnection);
 Q_SIGNALS:
-    void usernameChanged(const QString &aUsername);
-    void passwordChanged(const QString &aPassword);
+    void operationError(QSharedPointer<QRestOperationShared> aOperation);
 protected:
-    QString iBackendId;
-    QUrl iInstanceAddress;
+    QUrl iRestEndpointAddress;
 
     // Mutable objects
     QMutex iLock;
@@ -101,15 +79,8 @@ protected:
     QString iPassword;
 
     QVector< QEnginioConnection > iConnectionPool;
-    QMap<QString, QEnginioCollection > iCollections;
-
-    bool iForwarding;
-    QMetaObject::Connection iUsernameForwarding;
-    QMetaObject::Connection iPasswordForwarding;
-
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QENGINIODATASTORAGE_P_H */
-
+#endif /* QCLOUDSERVICES_QRESTENDPOINT_SHARED_P_H */

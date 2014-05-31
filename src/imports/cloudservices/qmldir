@@ -1,5 +1,4 @@
 module QtCloudServices
-plugin declarative_cloudservices
+plugin declarative_qtcloudservices
 classname QQmlCloudServices
 typeinfo plugins.qmltypes
-

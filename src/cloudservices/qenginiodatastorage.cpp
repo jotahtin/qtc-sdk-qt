@@ -41,9 +41,13 @@
 
 #include "stdafx.h"
 
-#include "QtCloudServices/private/qenginiodatastorage_p.h"
+#include "QtCloudServices/qenginiodatastorage.h"
+#include "QtCloudServices/private/qenginiodatastorageobject_p.h"
 #include "QtCloudServices/private/qenginiocollection_p.h"
 #include "QtCloudServices/private/qenginioconnection_p.h"
+
+
+QT_BEGIN_NAMESPACE
 
 /*!
 \class QEnginioDataStorage
@@ -82,511 +86,120 @@ In order to make queries that return an array of data more convenient
 a model is provided by \l {EnginioModelCpp}{EnginioModel}.
 */
 
-QT_BEGIN_NAMESPACE
+QEnginioDataStorage::QEnginioDataStorage(QEnginioDataStorageObject *aObject)
+: iObject(aObject)
+{
+    Q_ASSERT(iObject);
+}
 
-/*
-** Private Implementation
-*/
-QEnginioDataStoragePrivate::QEnginioDataStoragePrivate()
+QEnginioDataStorage::QEnginioDataStorage()
+    : iObject(new QEnginioDataStorageObject)
 {
 
 }
-QEnginioDataStoragePrivate::QEnginioDataStoragePrivate(const QUrl &aInstanceAddress, const QString &aBackendId,
-        QEnginioDataStoragePrivate *aPrevInstance)
-    : QCloudServicesObjectPrivate(),
-      iInstanceAddress(aInstanceAddress), iBackendId(aBackendId),
-      iForwarding(false)
+
+QEnginioDataStorage::QEnginioDataStorage(const QUrl &aInstanceAddress, const QString &aBackendId)
+    : iObject(new QEnginioDataStorageObject(aInstanceAddress,aBackendId))
 {
-    qRegisterMetaType<QEnginioConnection*>();
-    qRegisterMetaType<QEnginioOperation*>();
+}
 
-    /*
-    qRegisterMetaType<EnginioModel*>();
-    // qRegisterMetaType<EnginioIdentity*>();
-    // qRegisterMetaType<EnginioOAuth2Authentication*>();
-    */
-    qRegisterMetaType<QtCloudServices::Operation>();
-    qRegisterMetaType<QtCloudServices::AuthenticationState>();
-    qRegisterMetaType<QtCloudServices::ErrorType>();
+QEnginioDataStorage::QEnginioDataStorage(const QString &aInstanceAddress, const QString &aBackendId)
+    : iObject(new QEnginioDataStorageObject(QUrl(aInstanceAddress),aBackendId))
+{
+}
 
-    if (aPrevInstance)  {
-        iUsername = aPrevInstance->iUsername;
-        iPassword = aPrevInstance->iPassword;
+QEnginioDataStorage::QEnginioDataStorage(const QEnginioDataStorage &aOther)
+    : iObject(new QEnginioDataStorageObject)
+{
+    iObject->setBackend(aOther.object());
+}
+QEnginioDataStorage::QEnginioDataStorage::~QEnginioDataStorage() {
+    if (iObject) {
+        delete iObject;
     }
 }
 
-
-QEnginioDataStoragePrivate::~QEnginioDataStoragePrivate()
-{
-    if (iForwarding) {
-        unbindForwarding();
-    }
-}
-
-QUrl QEnginioDataStoragePrivate::instanceAddress() const
-{
-    return iInstanceAddress;
-}
-
-QString QEnginioDataStoragePrivate::backendId() const
-{
-    return iBackendId;
-}
-
-QString QEnginioDataStoragePrivate::username() const
-{
-    return iUsername;
-}
-
-void QEnginioDataStoragePrivate::setUsername(const QString &aUsername)
-{
-    if (iUsername == aUsername) {
-        return;
-    }
-
-    iUsername = aUsername;
-
-    emit usernameChanged(aUsername);
-}
-
-QString QEnginioDataStoragePrivate::password() const
-{
-    return iPassword;
-}
-
-void QEnginioDataStoragePrivate::setPassword(const QString &aPassword)
-{
-    if (iPassword == aPassword) {
-        return;
-    }
-
-    iPassword = aPassword;
-
-    emit passwordChanged(aPassword);
-}
-
-
-QEnginioConnection QEnginioDataStoragePrivate::reserveConnection()
-{
-    QEnginioConnection connection;
-    QMutexLocker locker(&iLock);
-
-    if (!iConnectionPool.empty()) {
-        connection = iConnectionPool.front();
-        iConnectionPool.pop_front();
-    }
-
-    if (!connection) {
-        connection = QEnginioConnection(*q<QEnginioDataStorage>());
-    }
-
-    return connection;
-}
-void QEnginioDataStoragePrivate::releaseConnection(const QEnginioConnection &aConnection)
-{
-    QMutexLocker locker(&iLock);
-
-    iConnectionPool.push_back(aConnection);
-}
-
-QEnginioCollection QEnginioDataStoragePrivate::collection(const QString &aCollectionName)
-{
-    QMutexLocker locker(&iLock);
-
-    QEnginioCollection collection;
-    QMap<QString, QEnginioCollection>::iterator i;
-
-    i = iCollections.find(aCollectionName);
-
-    if (i != iCollections.end()) {
-        collection = i.value();
-    } else {
-        collection = QEnginioCollection(*q<QEnginioDataStorage>(), aCollectionName);
-        iCollections.insert(aCollectionName, collection);
-    }
-
-    return collection;
-}
-
-void QEnginioDataStoragePrivate::bindForwarding(QEnginioDataStorage *aInstance)
-{
-    if (iForwarding) {
-        unbindForwarding();
-    }
-
-    iUsernameForwarding =
-        connect(this, &QEnginioDataStoragePrivate::usernameChanged,
-                aInstance, &QEnginioDataStorage::usernameChanged);
-    iPasswordForwarding =
-        connect(this, &QEnginioDataStoragePrivate::passwordChanged,
-                aInstance, &QEnginioDataStorage::passwordChanged);
-    iForwarding = true;
-
-}
-void QEnginioDataStoragePrivate::unbindForwarding()
-{
-    if (!iForwarding) {
-        return;
-    }
-
-    disconnect(iUsernameForwarding);
-    disconnect(iPasswordForwarding);
-
-    iForwarding = false;
-}
-
-
-/*
-** Public Interface
-*/
-QEnginioDataStorage::QEnginioDataStorage(QObject *aParent)
-    : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
-{
-}
-
-QEnginioDataStorage::QEnginioDataStorage(const QUrl &instanceAddress, const QString &backendId, QObject *aParent)
-    : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
-{
-    setInstanceAddress(instanceAddress);
-    setBackendId(backendId);
-}
-
-QEnginioDataStorage::QEnginioDataStorage(const QString &instanceAddress, const QString &backendId, QObject *aParent)
-    : QCloudServicesObject(QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate), aParent)
-{
-    setInstanceAddress(QUrl(instanceAddress));
-    setBackendId(backendId);
-}
-
-QEnginioDataStorage::QEnginioDataStorage(const QEnginioDataStorage &aEnginioDataStorage)
-    : QCloudServicesObject(aEnginioDataStorage.d<QEnginioDataStorage>())
-{
-
-}
-
-QEnginioDataStorage::~QEnginioDataStorage()
-{
-
-}
-
-QEnginioDataStorage& QEnginioDataStorage::operator=(const QEnginioDataStorage &aEnginioDataStorage)
-{
-    setPIMPL(aEnginioDataStorage.d<QEnginioDataStorage>());
+QEnginioDataStorage& QEnginioDataStorage::operator=(const QEnginioDataStorage &aOther) {
+    iObject->setBackend(aOther.object());
     return *this;
 }
 
-bool QEnginioDataStorage::operator!() const
-{
+const QEnginioDataStorageObject* QEnginioDataStorage::object() const {
+    return iObject;
+}
+
+bool QEnginioDataStorage::operator!() const {
     return !isValid();
 }
-bool QEnginioDataStorage::isValid() const
-{
-    if (isNull()) {
-        return false;
-    }
-
-    if (instanceAddress().isEmpty() || backendId().isEmpty()) {
-        return false;
-    }
-
-    return true;
+bool QEnginioDataStorage::isValid() const {
+    return iObject->isValid();
 }
-
-void QEnginioDataStorage::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId)
-{
-    bool chgAddress, chgId;
-    QEnginioDataStorage::dvar impl;
-
-    impl = d<QEnginioDataStorage>();
-
-    chgAddress = (impl->instanceAddress() != aInstanceAddress);
-    chgId = (impl->backendId() != aBackendId);
-
-    if (!chgAddress && !chgId) {
-        return;
-    }
-
-    impl->unbindForwarding();
-
-    impl = QEnginioDataStorage::dvar(new QEnginioDataStoragePrivate(aInstanceAddress, aBackendId));
-    setPIMPL(impl);
-
-    impl->bindForwarding(this);
-
-    if (chgAddress) {
-        emit instanceAddressChanged(aInstanceAddress);
-    }
-
-    if (chgId) {
-        emit backendIdChanged(aBackendId);
-    }
-
-    emit backendChanged();
-}
-
-QUrl QEnginioDataStorage::instanceAddress() const
-{
-    return d<const QEnginioDataStorage>()->instanceAddress();
-}
-void QEnginioDataStorage::setInstanceAddress(const QUrl &aInstanceAddress)
-{
-    setBackend(aInstanceAddress, backendId());
-}
-void QEnginioDataStorage::setInstanceAddressString(const QString &aInstanceAddress)
-{
-    setInstanceAddress(QUrl(aInstanceAddress));
-}
-
-QString QEnginioDataStorage::backendId() const
-{
-    return d<const QEnginioDataStorage>()->backendId();
-}
-void QEnginioDataStorage::setBackendId(const QString &aBackendId)
-{
-    setBackend(instanceAddress(), aBackendId);
-}
-
-QString QEnginioDataStorage::username() const
-{
-    return d<const QEnginioDataStorage>()->username();
-}
-
-QString QEnginioDataStorage::password() const
-{
-    return d<const QEnginioDataStorage>()->password();
-}
-
-void QEnginioDataStorage::setUsername(const QString &aUsername)
-{
-    d<QEnginioDataStorage>()->setUsername(aUsername);
-}
-
-void QEnginioDataStorage::setPassword(const QString &aPassword)
-{
-    d<QEnginioDataStorage>()->setPassword(aPassword);
-}
-
-QEnginioCollection QEnginioDataStorage::collection(const QString &aCollectionName)
-{
-    return d<QEnginioDataStorage>()->collection(aCollectionName);
-}
-
-QEnginioConnection QEnginioDataStorage::reserveConnection()
-{
-    return d<QEnginioDataStorage>()->reserveConnection();
-}
-void QEnginioDataStorage::releaseConnection(const QEnginioConnection &aConnection)
-{
-    d<QEnginioDataStorage>()->releaseConnection(aConnection);
-}
-
-QT_END_NAMESPACE
-
-
-#if 0
-
-#include "stdafx.h"
-
-#include <QtCloudServices/enginioidentity.h>
-#include <QtCloudServices/enginiooauth2authentication.h>
-#include <QtCloudServices/private/qenginioconnection_p.h>
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
-#include <QtCloudServices/QEnginioOperation.h>
-
-#include <QtCore/qjsonobject.h>
-#include <QtCore/qjsondocument.h>
-#include <QtCore/qstring.h>
-#include <QtNetwork/qnetworkreply.h>
-
-QT_BEGIN_NAMESPACE
-
-class EnginioUserPassAuthenticationPrivate : public EnginioIdentityPrivate {
-    template<typename T>
-    class SessionSetterFunctor {
-        QEnginioConnectionPrivate *_enginio;
-        QNetworkReply *_reply;
-        EnginioUserPassAuthenticationPrivate *_auth;
-    public:
-        SessionSetterFunctor(QEnginioConnectionPrivate *enginio, QNetworkReply *reply, EnginioUserPassAuthenticationPrivate *auth)
-            : _enginio(enginio)
-            , _reply(reply)
-            , _auth(auth)
-        {}
-        void operator ()()
-        {
-            QEnginioOperation *ereply = _enginio->createReply(_reply);
-
-            if (_reply->error() != QNetworkReply::NoError) {
-                emit _enginio->emitSessionAuthenticationError(ereply);
-            } else {
-                _auth->thisAs<T>()->proccessToken(_enginio, ereply);
-                _enginio->emitSessionAuthenticated(ereply);
-            }
-        }
-    };
-
-    QPointer<QNetworkReply> _reply;
-    QMetaObject::Connection _replyFinished;
-    QMetaObject::Connection _enginioDestroyed;
-
-public:
-    EnginioUserPassAuthenticationPrivate()
-        : EnginioIdentityPrivate()
-    {}
-public:
-
-    ~EnginioUserPassAuthenticationPrivate();
-
-    template<class Derived>
-    Derived *thisAs()
-    {
-        return static_cast<Derived*>(this);
-    }
-
-    void cleanupConnections()
-    {
-        if (_reply) {
-            QObject::disconnect(_replyFinished);
-            QObject::disconnect(_enginioDestroyed);
-            QObject::connect(_reply.data(), &QNetworkReply::finished, _reply.data(), &QNetworkReply::deleteLater);
-            _reply = 0;
-        }
-    }
-
-    template<typename Derived>
-    void prepareSessionToken(QEnginioConnectionPrivate *enginio)
-    {
-        cleanupConnections();
-
-        _reply = thisAs<Derived>()->makeRequest(enginio);
-        enginio->setAuthenticationState(QtCloudServices::Authenticating);
-        _replyFinished = QObject::connect(_reply.data(), &QNetworkReply::finished, SessionSetterFunctor<Derived>(enginio, _reply.data(), this));
-        _enginioDestroyed = QObject::connect(QTC_Q_PTR(enginio), &QEnginioConnection::destroyed, DisconnectConnection(this));
-    }
-
-    template<typename Derived>
-    void removeSessionToken(QEnginioConnectionPrivate *enginio)
-    {
-        cleanupConnections();
-        thisAs<Derived>()->cleanupClient(enginio);
-        _reply = 0;
-        enginio->emitSessionTerminated();
-    }
-};
-
-
-QNetworkReply *makeRequest(QEnginioConnectionPrivate *enginio)
-{
-    QByteArray data;
-    {
-        QUrlQuery urlQuery;
-        urlQuery.addQueryItem(QtCloudServicesConstants::grant_type, QtCloudServicesConstants::password);
-        urlQuery.addQueryItem(QtCloudServicesConstants::username, _user);
-        urlQuery.addQueryItem(QtCloudServicesConstants::password, _pass);
-        data = urlQuery.query().toUtf8();
-    }
-
-    QUrl url(enginio->_serviceUrl);
-    url.setPath(QtCloudServicesConstants::v1_auth_oauth2_token);
-
-    QNetworkRequest request(enginio->prepareRequest(url));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QtCloudServicesConstants::Application_x_www_form_urlencoded);
-    request.setRawHeader(QtCloudServicesConstants::Accept, QtCloudServicesConstants::Application_json);
-
-    return enginio->networkManager()->post(request, data);
-}
-
-void proccessToken(QEnginioConnectionPrivate *enginio, QEnginioOperation *ereply)
-{
-    QByteArray header;
-    header = QtCloudServicesConstants::Bearer_ + ereply->data()[QtCloudServicesConstants::access_token].toString().toUtf8();
-    enginio->_request.setRawHeader(QtCloudServicesConstants::Authorization, header);
-}
-
-void cleanupClient(QEnginioConnectionPrivate *enginio)
-{
-    enginio->_request.setRawHeader(QtCloudServicesConstants::Authorization, QByteArray());
-}
-};
 
 /*!
-\class EnginioOAuth2Authentication
-\since 5.3
-\inmodule enginio-qt
-\ingroup enginio-client
-\brief Represents a user that is authenticated directly by the backend using OAuth2 standard.
+\brief Set Enginio Data Storage environment variables.
 
-This class can authenticate a user by verifying the user's login and password.
-The user has to exist in the backend already.
+Internally QEnginioDataStorage hold reference into private shared implementation,
+that contains these connection variables and resource pools for connections, collections
+and other resources.
 
-To authenticate an instance of QEnginioConnection called \a client such code may be used:
+When new environment is initialized, this QEnginioDataStorage instance will release its
+shared reference to actual implementation object and construct new instace.
+
+Setting these values do not affect any started operations. New values are used only when new
+resources (for example QEnginioCollection's) are requested from QEnginioDataStorage.
+
 \code
-EnginioOAuth2Authentication identity;
-identity.setUser(_user);
-identity.setPassword(_user);
-
-client.setIdentity(&identity);
+    QEnginioDataStorage eds;
+    eds.setBackend(QUrl("https://api.engino.io","12345....");
 \endcode
-
-Setting the identity will trigger an asynchronous request, resulting in QEnginioConnection::authenticationState()
-changing.
-
-\sa QEnginioConnection::authenticationState() QEnginioConnection::identity() QEnginioConnection::sessionAuthenticated()
-\sa QEnginioConnection::sessionAuthenticationError() QEnginioConnection::sessionTerminated()
 */
-
-/*!
-Constructs a EnginioPasswordOAuth2 instance with \a parent as QObject parent.
-*/
-EnginioOAuth2Authentication::EnginioOAuth2Authentication(QObject *parent)
-    : EnginioIdentity(*new EnginioOAuth2AuthenticationPrivate(), parent)
-{
-    connect(this, &EnginioOAuth2Authentication::userChanged, this, &EnginioIdentity::dataChanged);
-    connect(this, &EnginioOAuth2Authentication::passwordChanged, this, &EnginioIdentity::dataChanged);
+void QEnginioDataStorage::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId) {
+    iObject->setBackend(aInstanceAddress,aBackendId);
 }
 
-/*!
-Destructs this EnginioPasswordOAuth2 instance.
-*/
-EnginioOAuth2Authentication::~EnginioOAuth2Authentication()
-{
-    emit aboutToDestroy();
+QUrl QEnginioDataStorage::instanceAddress() const {
+    return iObject->instanceAddress();
+}
+void QEnginioDataStorage::setInstanceAddress(const QUrl &aInstanceAddress) {
+    iObject->setInstanceAddress(aInstanceAddress);
 }
 
-
-/*!
-\internal
-*/
-void EnginioOAuth2Authentication::prepareSessionToken(QEnginioConnectionPrivate *enginio)
-{
-    Q_ASSERT(enginio);
-    Q_ASSERT(enginio->identity());
-    QTC_D(EnginioOAuth2Authentication);
-    d->prepareSessionToken<EnginioOAuth2AuthenticationPrivate>(enginio);
+void QEnginioDataStorage::setInstanceAddress(const QString &aInstanceAddress) {
+    iObject->setInstanceAddress(QUrl(aInstanceAddress));
 }
 
-/*!
-\internal
-*/
-void EnginioOAuth2Authentication::removeSessionToken(QEnginioConnectionPrivate *enginio)
-{
-    Q_ASSERT(enginio);
-    Q_ASSERT(enginio->identity());
-    QTC_D(EnginioOAuth2Authentication);
-    d->removeSessionToken<EnginioOAuth2AuthenticationPrivate>(enginio);
+QString QEnginioDataStorage::backendId() const {
+    return iObject->backendId();
+}
+void QEnginioDataStorage::setBackendId(const QString &aBackendId) {
+    iObject->setBackendId(aBackendId);
 }
 
-void DisconnectConnection::operator ()() const
-{
-    auth->cleanupConnections();
+QString QEnginioDataStorage::username() const {
+    return iObject->username();
 }
 
-EnginioUserPassAuthenticationPrivate::~EnginioUserPassAuthenticationPrivate()
-{
-    cleanupConnections();
+void QEnginioDataStorage::setUsername(const QString &aUsername) {
+    iObject->setUsername(aUsername);
+}
+
+QString QEnginioDataStorage::password() const {
+    return iObject->password();
+}
+void QEnginioDataStorage::setPassword(const QString &aPassword) {
+    iObject->setPassword(aPassword);
+}
+
+QEnginioCollection QEnginioDataStorage::collection(const QString &aCollectionName) {
+    return iObject->collection(aCollectionName);
+}
+
+QEnginioConnection QEnginioDataStorage::reserveConnection() {
+    return iObject->reserveConnection();
+}
+
+void QEnginioDataStorage::releaseConnection(const QEnginioConnection &aConnection) {
+    iObject->releaseConnection(aConnection);
 }
 
 QT_END_NAMESPACE
-
-
-#endif
