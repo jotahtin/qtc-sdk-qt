@@ -52,11 +52,11 @@ QEnginioDataStorage eds("https://api.engin.io", "123456789abcdef123456789")
 
 ##### QEnginioDataStorage.collection
 ```cpp
-        eds.collection(name)
-        
-        // for example
-        QEnginioCollection todos;
-        todos = eds.collection("todos");
+    eds.collection(name)
+    
+    // for example
+    QEnginioCollection todos;
+    todos = eds.collection("todos");
 ```
 
 Assign collection instance. Arguments:
