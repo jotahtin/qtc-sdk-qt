@@ -44,6 +44,11 @@
 #include "QtCloudServices/private/qenginioobjectobject_p.h"
 #include "QtCloudServices/private/qenginioobjectshared_p.h"
 #include "QtCloudServices/private/qenginiooperationobject_p.h"
+#include "QtCloudServices/private/qenginiooperationshared_p.h"
+#include "QtCloudServices/private/qenginioobjectobject_p.h"
+#include "QtCloudServices/private/qenginioobjectshared_p.h"
+#include "QtCloudServices/private/qenginiouserobject_p.h"
+#include "QtCloudServices/private/qenginiousershared_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,18 +56,18 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 QEnginioObjectObjectPrivate::QEnginioObjectObjectPrivate(QSharedPointer<QEnginioObjectShared> aShared)
+    : iShared(aShared)
 {
-    setSharedInstance(aShared);
 }
 
 QEnginioObjectObjectPrivate::QEnginioObjectObjectPrivate()
-{
-    setSharedInstance(new QEnginioObjectObjectShared);
+{    
 }
 
 QEnginioObjectObjectPrivate::QEnginioObjectObjectPrivate(const QJsonObject &aJsonObject)
 {
-    setSharedInstance(new QEnginioObjectObjectShared(aJsonObject));
+    QSharedPointer<QEnginioObjectShared> shared(new QEnginioObjectShared(aJsonObject));
+    setSharedInstance(shared);
 }
 
 bool QEnginioObjectObjectPrivate::isValid() const {
@@ -102,6 +107,7 @@ bool QEnginioObjectObjectPrivate::contains(const QString &aKey) const {
     if (!iShared) {
         return false;
     }
+    return iShared->contains(aKey);
 }
 QJsonValue QEnginioObjectObjectPrivate::value(const QString &aKey) const {
     if (!iShared) {
@@ -113,7 +119,7 @@ QJsonValueRef QEnginioObjectObjectPrivate::valueRef(const QString &aKey)  {
     if (!iShared) {
         lazyInitialization();
     }
-    iShared->valueRef(aKey);
+    return iShared->valueRef(aKey);
 }
 
 QJsonObject QEnginioObjectObjectPrivate::jsonObject() const {
@@ -143,10 +149,23 @@ QTime QEnginioObjectObjectPrivate::createAt() const {
     return iShared->createAt();
 }
 QEnginioUserObject *QEnginioObjectObjectPrivate::creator() const {
+    QEnginioUserObject *obj;
+
     if (!iShared) {
        return NULL;
     }
-    return iShared->creator();
+
+    QSharedPointer<QEnginioUserShared> user;
+    user = iShared->creator();
+
+    if (user.isNull()) {
+        return NULL;
+    }
+
+    obj = new QEnginioUserObject;
+    obj->d_func()->setSharedInstance(user);
+
+    return obj;
 }
 QTime QEnginioObjectObjectPrivate::updatedAt() const {
     if (!iShared) {
@@ -155,34 +174,46 @@ QTime QEnginioObjectObjectPrivate::updatedAt() const {
     return iShared->updatedAt();
 }
 QEnginioUserObject *QEnginioObjectObjectPrivate::updater() const {
+    QEnginioUserObject *obj;
+
     if (!iShared) {
        return NULL;
     }
-    return iShared->updater();
+
+    QSharedPointer<QEnginioUserShared> user;
+    user = iShared->updater();
+
+    if (user.isNull()) {
+        return NULL;
+    }
+
+    obj = new QEnginioUserObject;
+    obj->d_func()->setSharedInstance(user);
+
+    return obj;
 }
 
 QEnginioOperationObject *QEnginioObjectObjectPrivate::save() {
     QEnginioOperationObject *operation = NULL;
-    QSharedPointer<QEnginioOperationObject> opShared;
+    QSharedPointer<QEnginioOperationShared> opShared;
 
     if (!iShared) {
         return operation;
     }
 
-    opShared = iShared->save();
+    opShared = iShared->save(iShared);
 
     if (opShared) {
-        operation = new QEnginioOperationObject();
-
-        toDO
-        operation->d_
+        operation = new QEnginioOperationObject;
+        operation->d_func()->setSharedInstance(opShared);
     }
 
     return operation;
 }
 
 void QEnginioObjectObjectPrivate::lazyInitialization() {
-    iShared = QSharedPointer<QEnginioObjectObjectShared>(new QEnginioObjectShared);
+    QSharedPointer<QEnginioObjectShared> shared(new QEnginioObjectShared);
+    setSharedInstance(shared);
 }
 
 void QEnginioObjectObjectPrivate::setEnginioCollection(QSharedPointer<QEnginioCollectionShared> aEnginioCollection) {
@@ -192,18 +223,46 @@ void QEnginioObjectObjectPrivate::setEnginioCollection(QSharedPointer<QEnginioCo
     iShared->setEnginioCollection(aEnginioCollection);
 }
 
+void QEnginioObjectObjectPrivate::init() {
+
+}
+
+void QEnginioObjectObjectPrivate::deinit() {
+
+}
+
+QSharedPointer<QEnginioObjectShared> QEnginioObjectObjectPrivate::sharedInstance() const {
+    return iShared;
+}
+void QEnginioObjectObjectPrivate::setSharedInstance(QSharedPointer<QEnginioObjectShared> aShared) {
+    if (iShared) {
+        init();
+    }
+
+    iShared = aShared;
+
+    if (iShared) {
+        deinit();
+    }
+}
+
+
 /*
 ** Public
 */
 
+QEnginioObjectObject::QEnginioObjectObject(QEnginioObjectObjectPrivate &dd,QObject *aParent)
+    : QObject(dd,aParent)
+{}
+
 QEnginioObjectObject::QEnginioObjectObject(QObject *aParent)
-    : QObject(*new QEnginioObjectObject,aParent)
+    : QObject(*new QEnginioObjectObjectPrivate,aParent)
 {
 
 }
 
 QEnginioObjectObject::QEnginioObjectObject(const QJsonObject &aJsonObject,QObject *aParent)
-    : QObject(*new QEnginioObjectObject(aJsonObject),aParent)
+    : QObject(*new QEnginioObjectObjectPrivate(aJsonObject),aParent)
 {
 
 }
@@ -274,16 +333,14 @@ QEnginioUserObject *QEnginioObjectObject::updater() const {
     return d->updater();
 }
 
-QEnginioUserObject *QEnginioObjectObject::save() {
+QEnginioOperationObject *QEnginioObjectObject::save() {
     Q_D(QEnginioObjectObject);
     return d->save();
 }
 
 void QEnginioObjectObject::setSharedInstanceFrom(const QEnginioObjectObject *aOther) {
-    Q_D(QEnginioObjectObject);
-    QEnginioObjectObjectPrivate *otherPrv;
-    otherPrv=reinterpret_cast<QEnginioObjectObjectPrivate *>(aOther->d_ptr);
-    d->setSharedInstance(otherPrv->sharedInstance());
+    Q_D(QEnginioObjectObject);    
+    d->setSharedInstance(aOther->d_func()->sharedInstance());
 }
 
 QT_END_NAMESPACE

@@ -57,9 +57,9 @@ QT_BEGIN_NAMESPACE
 class QEnginioDataStorageObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioDataStorageObject : public QRestEndpointObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QEnginioDataStorageObject)
     Q_PROPERTY(QString backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged)
-    Q_PROPERTY(QUrl instanceAddress READ instanceAddress WRITE setInstanceAddress NOTIFY instanceAddressChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
 private:
@@ -67,10 +67,6 @@ private:
 public:
     QEnginioDataStorageObject(QObject *aParent=0);
     QEnginioDataStorageObject(const QUrl &aInstanceAddress, const QString &aBackendId, QObject *aParent = 0);
-    ~QEnginioDataStorageObject();
-
-    // IsValid
-    Q_INVOKABLE bool isValid() const Q_REQUIRED_RESULT;
 
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);

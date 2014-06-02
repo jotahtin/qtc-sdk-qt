@@ -53,6 +53,19 @@ class QTCLOUDSERVICES_EXPORT QEnginioCollectionShared : public QObject {
     Q_OBJECT
 private:
     Q_DISABLE_COPY(QEnginioCollectionShared)
+private:
+    class CallbackFunctor {
+    public:
+        CallbackFunctor(QSharedPointer<QEnginioDataStorageShared> aEnginioDataStorage,
+                        QSharedPointer<QEnginioConnectionShared> aConnection,
+                        QEnginioOperationShared::Callback aCallback);
+        void operator ()(QSharedPointer<QRestOperationShared> aOperation);
+    private:
+        QSharedPointer<QEnginioDataStorageShared> iEnginioDataStorage;
+        QSharedPointer<QEnginioConnectionShared> iConnection;
+        QEnginioOperationShared::Callback iCallback;
+    };
+
 public:
     QEnginioCollectionShared(QSharedPointer<QEnginioDataStorageShared> aEnginioDataStorage,
                              QString aCollectionName);
@@ -82,9 +95,11 @@ public:
 
 public:
     QString resolveBasePath();
+    /*
     void handleCompletedOperation(QSharedPointer<QRestOperationObject> aOperation,
                                   QSharedPointer<QEnginioConnectionShared> aConnection,
                                   QEnginioOperationShared::Callback aCallback);
+    */
 private:
     QSharedPointer<QEnginioDataStorageShared> iEnginioDataStorage;
     QString iCollectionName;

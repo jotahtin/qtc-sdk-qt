@@ -77,7 +77,7 @@ private:
     // Mutable objects
     QMutex iLock;
 
-    QVector< QRestConnectionShared > iConnectionPool;
+    QVector< QSharedPointer<QRestConnectionShared> > iConnectionPool;
 };
 
 QT_END_NAMESPACE

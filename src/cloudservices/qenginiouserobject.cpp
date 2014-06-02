@@ -50,36 +50,48 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 
-QEnginioUserObjectPrivate::QEnginioUserObjectPrivate()
-    : QEnginioObjectObjectPrivate(new QEnginioUserShared)
-{
-
-}
-
-QEnginioUserObjectPrivate::QEnginioUserObjectPrivate(const QJsonObject &aJsonObject)
-    : QEnginioObjectObjectPrivate(new QEnginioUserShared(aJsonObject))
-{
+QEnginioUserObjectPrivate::QEnginioUserObjectPrivate() {
 
 }
 
 QString QEnginioUserObjectPrivate::username() const {
    QSharedPointer<QEnginioUserShared> shared;
    shared=qSharedPointerCast<QEnginioUserShared>(sharedInstance());
+
+   if (shared.isNull()) {
+       return QString();
+   }
+
    return shared->username();
 }
 QString QEnginioUserObjectPrivate::email() const {
     QSharedPointer<QEnginioUserShared> shared;
     shared=qSharedPointerCast<QEnginioUserShared>(sharedInstance());
+
+    if (shared.isNull()) {
+        return QString();
+    }
+
     return shared->email();
 }
 QString QEnginioUserObjectPrivate::firstName() const {
     QSharedPointer<QEnginioUserShared> shared;
     shared=qSharedPointerCast<QEnginioUserShared>(sharedInstance());
+
+    if (shared.isNull()) {
+        return QString();
+    }
+
     return shared->firstName();
 }
 QString QEnginioUserObjectPrivate::lastName() const {
     QSharedPointer<QEnginioUserShared> shared;
     shared=qSharedPointerCast<QEnginioUserShared>(sharedInstance());
+
+    if (shared.isNull()) {
+        return QString();
+    }
+
     return shared->lastName();
 }
 
@@ -88,17 +100,18 @@ QString QEnginioUserObjectPrivate::lastName() const {
 */
 
 QEnginioUserObject::QEnginioUserObject(QObject *aParent)
-    : QObject(*new QEnginioUserPrivate,aParent)
+    : QEnginioObjectObject(*new QEnginioUserObjectPrivate,aParent)
 {
 
 }
 
 QEnginioUserObject::QEnginioUserObject(const QJsonObject &aJsonObject,QObject *aParent)
-    : QObject(*new QEnginioUserPrivate(aJsonObject),aParent)
+    : QEnginioObjectObject(*new QEnginioUserObjectPrivate,aParent)
 {
-
+    Q_D(QEnginioUserObject);
+    QSharedPointer<QEnginioUserShared> shared(new QEnginioUserShared(aJsonObject));
+    d->setSharedInstance(shared);;
 }
-
 
 QString QEnginioUserObject::username() const {
     Q_D(const QEnginioUserObject);
@@ -109,7 +122,7 @@ QString QEnginioUserObject::email() const {
     return d->username();
 }
 QString QEnginioUserObject::firstName() const {
-    Q_D(const EnginioUserObject);
+    Q_D(const QEnginioUserObject);
     return d->firstName();
 }
 QString QEnginioUserObject::lastName() const {

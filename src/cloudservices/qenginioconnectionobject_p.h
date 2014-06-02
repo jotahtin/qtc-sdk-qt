@@ -54,10 +54,9 @@ class QTCLOUDSERVICES_EXPORT QEnginioConnectionObjectPrivate : public QRestConne
 private:
     Q_DISABLE_COPY(QEnginioConnectionObjectPrivate)
 public:
-    QEnginioConnectionObjectPrivate(const QEnginioDataStorageObject *aEnginioDataStorageObject=0);
-    ~QEnginioConnectionObjectPrivate();
+    QEnginioConnectionObjectPrivate();
 
-    QEnginioOperation customRequest(const QEnginioRequest &aRequest);
+    QEnginioOperationObject *customRequest(const QEnginioRequestObject *aRequest);
 
     // EnginioIdentity *identity() const Q_REQUIRED_RESULT;
     // void setIdentity(EnginioIdentity *identity);
@@ -70,6 +69,10 @@ public:
     // QEnginioOperation remove(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
     // QEnginioOperation uploadFile(const QJsonObject &associatedObject, const QUrl &file);
     // QEnginioOperation downloadUrl(const QJsonObject &object);
+protected:
+    virtual QRestOperationObject* buildOperationObject() const;
+protected:
+    //virtual QSharedPointer<QRestConnectionShared> buildSharedInstance();
 };
 
 QT_END_NAMESPACE

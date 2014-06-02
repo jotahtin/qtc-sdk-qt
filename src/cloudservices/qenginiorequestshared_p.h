@@ -43,10 +43,10 @@
 #define QCLOUDSERVICES_QENGINIOREQUEST_SHARED_P_H
 
 #include <QtCloudServices/private/qrestrequestshared_p.h>
+#include <QtCloudServices/private/qenginiocollectionshared_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioCollectionShared;
 class QTCLOUDSERVICES_EXPORT QEnginioRequestShared : public QRestRequestShared {
     Q_OBJECT
 private:
@@ -56,7 +56,7 @@ public:
     QEnginioRequestShared(QtCloudServices::RESTOperation aOperation, QString aPath);
 
     QSharedPointer<QEnginioCollectionShared> enginioCollection() const Q_REQUIRED_RESULT;
-    void setEnginioCollection(QSharedPointer<QEnginioCollectionShared> &aEnginioCollection);
+    void setEnginioCollection(QSharedPointer<QEnginioCollectionShared> aEnginioCollection);
 private:
     QSharedPointer<QEnginioCollectionShared> iEnginioCollection;
 };

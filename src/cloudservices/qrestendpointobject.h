@@ -55,10 +55,9 @@ QT_BEGIN_NAMESPACE
 class QRestEndpointObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QRestEndpointObject : public QObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QRestEndpointObject)
     Q_PROPERTY(QUrl endpointAddress READ endpointAddress WRITE setEndpointAddress NOTIFY endpointAddressChanged)
-    Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
-    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
 private:
     Q_DISABLE_COPY(QRestEndpointObject)
 protected:
@@ -72,6 +71,7 @@ public:
 
     Q_INVOKABLE QUrl endpointAddress() const Q_REQUIRED_RESULT;
     Q_INVOKABLE void setEndpointAddress(const QUrl &aEndpointAddress);
+    Q_INVOKABLE void setEndpointAddressString(const QString &aEndpointAddress);
 
     // Get Plain connection
     Q_INVOKABLE virtual QRestConnectionObject *reserveConnection() Q_REQUIRED_RESULT;

@@ -45,6 +45,8 @@
 
 #include <QtCloudServices/private/qrestoperationobject_p.h>
 #include <QtCloudServices/private/qrestoperationshared_p.h>
+#include <QtCloudServices/private/qrestconnectionobject_p.h>
+#include <QtCloudServices/private/qrestrequestobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,8 +54,7 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 
-QRestOperationObjectPrivate::QRestOperationObjectPrivate(const QRestConnectionObject *aEnginioConnection,
-                            const QRestRequestObject *aEnginioRequest)
+QRestOperationObjectPrivate::QRestOperationObjectPrivate()
 {
 
 }
@@ -64,11 +65,21 @@ QRestOperationObjectPrivate::~QRestOperationObjectPrivate() {
     }
 }
 
-QRestConnectionObject *QRestOperationObjectPrivate::restConnection() const {
+QRestConnectionObject *QRestOperationObjectPrivate::connection() const {
+    QRestConnectionObject *obj;
 
+    obj=buildConnectionObject();
+    obj->d_func()->setSharedInstance(iShared->connection());
+
+    return obj;
 }
-QRestRequestObject *QRestOperationObjectPrivate::restRequest() const {
+QRestRequestObject *QRestOperationObjectPrivate::request() const {
+    QRestRequestObject *obj;
 
+    obj=buildRequestObject();
+    obj->d_func()->setSharedInstance(iShared->request());
+
+    return obj;
 }
 
 bool QRestOperationObjectPrivate::isValid() const {
@@ -83,11 +94,18 @@ bool QRestOperationObjectPrivate::isFinished() const {
     return iShared->isFinished();
 }
 
+int QRestOperationObjectPrivate::backendStatus() const {
+    return iShared->backendStatus();
+}
+QString QRestOperationObjectPrivate::requestId() const {
+    return iShared->requestId();
+}
+
 QtCloudServices::ErrorType QRestOperationObjectPrivate::errorType() const {
     return iShared->errorType();
 }
-QNetworkReply::NetworkError QRestOperationObjectPrivate::networkError() const {
-    return iShared->networkError();
+QNetworkReply::NetworkError QRestOperationObjectPrivate::errorCode() const {
+    return iShared->errorCode();
 }
 QString QRestOperationObjectPrivate::errorString() const {
     return iShared->errorString();
@@ -101,65 +119,83 @@ QByteArray QRestOperationObjectPrivate::resultBytes() const {
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-void QRestOperationObjectPrivate::dumpDebugInfo() const {
-    iShared->dumpDebugInfo(qDebug());
+void QRestOperationObjectPrivate::dumpDebugInfo(QDebug &d) const {
+    iShared->dumpDebugInfo(d);
 }
 #endif
 
 void QRestOperationObjectPrivate::init() {
+    /*
     Q_Q(QRestOperationObject);
-    iConnectionDataChanged
-            = QObject::connect(iShared.data(), &QRestOperationObjectShared::dataChanged,
-                      q, &QRestOperationObject::dataChanged);
     iConnectionFinished
-    = QObject::connect(iShared.data(), &QRestOperationObjectShared::finished,
+    = QObject::connect(iShared.data(), &QRestOperationShared::finished,
               q, &QRestOperationObject::finished);
-    iConnectionProgress
-    = QObject::connect(iShared.data(), &QRestOperationObjectShared::progress,
-              q, &QRestOperationObject::progress);
+    */
 
+    /*
+    iConnectionDataChanged
+            = QObject::connect(iShared.data(), &QRestOperationShared::dataChanged,
+                      q, &QRestOperationObject::dataChanged);
+    iConnectionProgress
+    = QObject::connect(iShared.data(), &QRestOperationShared::progress,
+              q, &QRestOperationObject::progress);
+    */
 }
 
 void QRestOperationObjectPrivate::deinit() {
-    QObject::disconnect(iConnectionDataChanged);
     QObject::disconnect(iConnectionFinished);
+    /*
+    QObject::disconnect(iConnectionDataChanged);
     QObject::disconnect(iConnectionProgress);
+    */
 }
 
 QSharedPointer<QRestOperationShared> QRestOperationObjectPrivate::sharedInstance() const {
     return iShared;
 }
 
-void QRestOperationObjectPrivate::setSharedInstance(const QRestOperationObject *aOther) {
+void QRestOperationObjectPrivate::setSharedInstance(QSharedPointer<QRestOperationShared> aShared) {
     if (iShared) {
         deinit();
     }
 
-    iShared = aOther->d_func()->sharedInstance();
+    iShared = aShared;
 
-    init();
+    if (iShared) {
+        init();
+    }
 }
+
+QRestConnectionObject *QRestOperationObjectPrivate::buildConnectionObject() const {
+    return new QRestConnectionObject;
+}
+QRestRequestObject *QRestOperationObjectPrivate::buildRequestObject() const {
+    return new QRestRequestObject;
+}
+
 
 /*
 ** Public
 */
 
-QRestOperationObject::QRestOperationObject(const QRestConnectionObject *aRestConnection,
-                                           const QRestRequestObject *aRestRequest,
-                                            QObject *aParent)
-    : QObject(*new QRestOperationObjectPrivate(aRestConnection,aRestRequest),aParent)
+QRestOperationObject::QRestOperationObject(QRestOperationObjectPrivate &dd,QObject *aParent)
+    : QObject(dd,aParent)
+{}
+
+QRestOperationObject::QRestOperationObject(QObject *aParent)
+    : QObject(*new QRestOperationObjectPrivate,aParent)
 {
 
 }
 
-QRestConnectionObject *QRestOperationObject::restConnection() const {
+QRestConnectionObject *QRestOperationObject::connection() const {
     Q_D(const QRestOperationObject);
-    return d->restConnection();
+    return d->connection();
 }
 
-QRestRequestObject *QRestOperationObject::restRequest() const {
+QRestRequestObject *QRestOperationObject::request() const {
     Q_D(const QRestOperationObject);
-    return d->restRequest();
+    return d->request();
 }
 
 bool QRestOperationObject::isValid() const {
@@ -177,14 +213,23 @@ bool QRestOperationObject::isFinished() const {
     return d->isFinished();
 }
 
+int QRestOperationObject::backendStatus() const {
+    Q_D(const QRestOperationObject);
+    return d->backendStatus();
+}
+QString QRestOperationObject::requestId() const {
+    Q_D(const QRestOperationObject);
+    return d->requestId();
+}
+
 QtCloudServices::ErrorType QRestOperationObject::errorType() const {
    Q_D(const QRestOperationObject);
     return d->errorType();
 }
 
-QNetworkReply::NetworkError QRestOperationObject::networkError() const {
+QNetworkReply::NetworkError QRestOperationObject::errorCode() const {
     Q_D(const QRestOperationObject);
-    return d->networkError();
+    return d->errorCode();
 }
 
 QString QRestOperationObject::errorString() const {
@@ -194,7 +239,7 @@ QString QRestOperationObject::errorString() const {
 
 QJsonObject QRestOperationObject::resultJson() const {
     Q_D(const QRestOperationObject);
-    return d->resultBytes();
+    return d->resultJson();
 }
 
 QByteArray QRestOperationObject::resultBytes() const {
@@ -203,17 +248,15 @@ QByteArray QRestOperationObject::resultBytes() const {
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-void QRestOperationObject::dumpDebugInfo() const {
+void QRestOperationObject::dumpDebugInfo(QDebug &dd) const {
     Q_D(const QRestOperationObject);
-    d->dumpDebugInfo();
+    d->dumpDebugInfo(dd);
 }
 #endif
 
 void QRestOperationObject::setSharedInstanceFrom(const QRestOperationObject *aOther) {
     Q_D(QRestOperationObject);
-    QRestOperationObjectPrivate *otherPrv;
-    otherPrv=reinterpret_cast<QRestOperationObjectPrivate *>(aOther->d_ptr);
-    d->setSharedInstance(otherPrv->sharedInstance());
+    d->setSharedInstance(aOther->d_func()->sharedInstance());
 }
 
 QT_END_NAMESPACE

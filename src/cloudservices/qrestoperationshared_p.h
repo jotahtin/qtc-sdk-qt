@@ -49,12 +49,16 @@
 #include <QtCore/qjsondocument.h>
 #include <QtNetwork/qnetworkreply.h>
 
+#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qtcloudservices.h>
+
 QT_BEGIN_NAMESPACE
 
 class QRestRequestShared;
 class QRestConnectionShared;
 class QRestOperationShared : public QObject {
     Q_OBJECT
+    friend class QRestConnectionShared;
 private:
     Q_DISABLE_COPY(QRestOperationShared)
 public:
@@ -87,15 +91,18 @@ public:
 #endif
 protected:
     // void setRestRequest(const QEnginioRequest &aEnginioRequest);
-    void setNetworkReply(QNetworkReply *aNetworkReply);
-    virtual void operationFinished();
+    void setNetworkReply(QSharedPointer<QRestOperationShared> aSelf,
+                         QNetworkReply *aNetworkReply);
+    void operationFinishedPrepare(QSharedPointer<QRestOperationShared> aSelf);
+    virtual void operationFinished(QSharedPointer<QRestOperationShared> aSelf);
 Q_SIGNALS:
     void finished();
 private:
     QSharedPointer<QRestConnectionShared> iConnection;
     QSharedPointer<QRestRequestShared> iRequest;
     QNetworkReply *iNetworkReply;
-    mutable QByteArray iData;
+protected:
+    mutable QByteArray iData;    
     QJsonObject iJsonObject;
 };
 

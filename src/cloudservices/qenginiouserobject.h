@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 class QEnginioUserObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioUserObject : public QEnginioObjectObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QEnginioUserObject)
 private:
     Q_DISABLE_COPY(QEnginioUserObject)

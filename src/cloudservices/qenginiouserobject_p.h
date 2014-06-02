@@ -55,7 +55,6 @@ class QEnginioUserObjectPrivate : public QEnginioObjectObjectPrivate {
     Q_DECLARE_PUBLIC(QEnginioUserObject)
 public:
     QEnginioUserObjectPrivate();
-    QEnginioUserObjectPrivate(const QJsonObject &aJsonObject);
 
     QString username() const Q_REQUIRED_RESULT;
     QString email() const Q_REQUIRED_RESULT;

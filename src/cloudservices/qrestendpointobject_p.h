@@ -59,26 +59,25 @@ class QRestEndpointObjectPrivate : public QObjectPrivate {
     Q_DECLARE_PUBLIC(QRestEndpointObject)
 private:
     Q_DISABLE_COPY(QRestEndpointObjectPrivate)
-protected:
-    QRestEndpointObjectPrivate(QSharedPointer<QRestEndpointShared> aShared);
 public:
     QRestEndpointObjectPrivate();
-    QRestEndpointObjectPrivate(const QUrl &aEndpointAddress);
     ~QRestEndpointObjectPrivate();
 
-    // IsValid
+     // IsValid
      bool isValid() const Q_REQUIRED_RESULT;
 
      QUrl endpointAddress() const Q_REQUIRED_RESULT;
      virtual void setEndpointAddress(const QUrl &aEndpointAddress);
 
     // Get Plain connection
-     virtual QRestConnectionObject *reserveConnection() Q_REQUIRED_RESULT;
-     virtual void releaseConnection(QRestConnectionObject *aConnection);
+    QRestConnectionObject *reserveConnection() Q_REQUIRED_RESULT;
+    void releaseConnection(const QRestConnectionObject *aConnection);
+protected:
+     virtual QRestConnectionObject* buildConnectionObject() const;
 protected:
     virtual void init();
     virtual void deinit();
-
+public:
     QSharedPointer<QRestEndpointShared> sharedInstance() const;
     void setSharedInstance(QSharedPointer<QRestEndpointShared> aShared);
 private:

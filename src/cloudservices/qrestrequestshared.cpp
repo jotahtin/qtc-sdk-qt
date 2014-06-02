@@ -42,6 +42,7 @@
 #include "stdafx.h"
 
 #include "QtCloudServices/private/qrestrequestshared_p.h"
+#include "QtCloudServices/private/qrestoperationshared_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -90,8 +91,12 @@ void QRestRequestShared::setExtraHeaders(const QJsonObject &aExtraHeaders) {
     iExtraHeaders = aExtraHeaders;
 }
 
-void QRestRequestShared::setRestCallback(std::function<void(QRestOperationObject *)> aCallback) {
+void QRestRequestShared::setCallback(std::function<void(QSharedPointer<QRestOperationShared>)> aCallback) {
     iCallback = aCallback;
+}
+
+void QRestRequestShared::operationFinished(QSharedPointer<QRestOperationShared> aOperation) {
+    iCallback(aOperation);
 }
 
 QT_END_NAMESPACE

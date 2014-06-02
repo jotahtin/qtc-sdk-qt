@@ -63,7 +63,7 @@ QRestEndpointShared::~QRestEndpointShared() {
 
 bool QRestEndpointShared::isValid() const
 {
-    if (iEndpointAddress().isEmpty()) {
+    if (iEndpointAddress.isEmpty()) {
         return false;
     }
 
@@ -75,7 +75,7 @@ QUrl QRestEndpointShared::endpointAddress() const
     return iEndpointAddress;
 }
 
-QSharedPointer<QRestConnectionShared> QRestEndpointShared::reserveConnection(QSharedPointer<QEnginioDataStorageShared> aSelf)
+QSharedPointer<QRestConnectionShared> QRestEndpointShared::reserveConnection(QSharedPointer<QRestEndpointShared> aSelf)
 {
     QSharedPointer<QRestConnectionShared> connection;
     QMutexLocker locker(&iLock);

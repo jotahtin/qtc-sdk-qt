@@ -62,16 +62,16 @@ public:
     QRestEndpoint(const QUrl &aEndpointAddress);
     QRestEndpoint(const QString &aEndpointAddress);
     QRestEndpoint(const QRestEndpoint &aOther);
-    ~QRestEndpoint();
+    virtual ~QRestEndpoint();
 
     // Assignment
     QRestEndpoint& operator=(const QRestEndpoint &aOther);
 
     // IsValid
-    virtual bool operator!() const Q_REQUIRED_RESULT;
-    virtual bool isValid() const Q_REQUIRED_RESULT;
+    bool operator!() const Q_REQUIRED_RESULT;
+    bool isValid() const Q_REQUIRED_RESULT;
 
-    QUrl enpointAddress() const Q_REQUIRED_RESULT;
+    QUrl endpointAddress() const Q_REQUIRED_RESULT;
     void setEndpointAddress(const QUrl &aEndpointAddress);
     void setEndpointAddress(const QString &aEndpointAddress);
 

@@ -51,20 +51,8 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 
-QRestEndpointObjectPrivate::QRestEndpointObjectPrivate(QSharedPointer<QRestEndpointShared> aShared)
-    : iShared(aShared)
-{
+QRestEndpointObjectPrivate::QRestEndpointObjectPrivate() {
 
-}
-
-QRestEndpointObjectPrivate::QRestEndpointObjectPrivate()
-    : iShared(new QRestEndpointShared)
-{
-}
-
-QRestEndpointObjectPrivate::QRestEndpointObjectPrivate(const QUrl &aEndpointAddress)
-    : iShared(new QRestEndpointShared(aEndpointAddress))
-{
 }
 
 QRestEndpointObjectPrivate::~QRestEndpointObjectPrivate()
@@ -90,7 +78,8 @@ QUrl QRestEndpointObjectPrivate::endpointAddress() const
 
 void QRestEndpointObjectPrivate::setEndpointAddress(const QUrl &aEndpointAddress) {
     Q_Q(QRestEndpointObject);
-    setSharedInstance(new QRestEndpointShared(aEndpointAddress));
+    QSharedPointer<QRestEndpointShared> shared(new QRestEndpointShared(aEndpointAddress));
+    setSharedInstance(shared);
 
     emit q->endpointAddressChanged(aEndpointAddress);
 }
@@ -98,32 +87,31 @@ void QRestEndpointObjectPrivate::setEndpointAddress(const QUrl &aEndpointAddress
 QRestConnectionObject *QRestEndpointObjectPrivate::reserveConnection()
 {
     QRestConnectionObject *obj;
-    QRestConnectionObjectPrivate *objPrv;
     QSharedPointer<QRestConnectionShared> conShared;
 
     conShared=iShared->reserveConnection(iShared);
-    if (!conShred) {
+    if (!conShared) {
         return NULL;
     }
 
-    obj = new QRestConnectionObject();
-    objPrv = reinterpret_cast<QRestConnectionObjectPrivate *>(obj->d_ptr);
-
-    objPrv->setSharedInstance(conShared);
+    obj = buildConnectionObject();
+    obj->d_func()->setSharedInstance(conShared);
 
     return obj;
 }
 
 void QRestEndpointObjectPrivate::releaseConnection(const QRestConnectionObject *aConnection)
 {
-    QRestConnectionObjectPrivate *objPrv;
     if (!aConnection) {
         return;
     }
 
-    objPrv = reinterpret_cast<QRestConnectionObjectPrivate *>(aConnection->d_ptr);
+    iShared->releaseConnection(aConnection->d_func()->sharedInstance());
+}
 
-    iShared->releaseConnection(objPrv->sharedInstance());
+QRestConnectionObject* QRestEndpointObjectPrivate::buildConnectionObject() const {
+    return new QRestConnectionObject;
+
 }
 
 void QRestEndpointObjectPrivate::init() {
@@ -132,7 +120,7 @@ void QRestEndpointObjectPrivate::init() {
 void QRestEndpointObjectPrivate::deinit() {
 }
 
-QSharedPointer<QEnginioDataStorageShared> QRestEndpointObjectPrivate::sharedInstance() const {
+QSharedPointer<QRestEndpointShared> QRestEndpointObjectPrivate::sharedInstance() const {
     return iShared;
 }
 
@@ -163,9 +151,11 @@ QRestEndpointObject::QRestEndpointObject(QObject *aParent)
 }
 
 QRestEndpointObject::QRestEndpointObject(const QUrl &aEndpointAddress, QObject *aParent)
-    : QObject(*new QRestEndpointObjectPrivate(aEndpointAddress),aParent)
+    : QObject(*new QRestEndpointObjectPrivate,aParent)
 {
-
+    Q_D(QRestEndpointObject);
+    QSharedPointer<QRestEndpointShared> shared(new QRestEndpointShared(aEndpointAddress));
+    d->setSharedInstance(shared);
 }
 
 bool QRestEndpointObject::isValid() const {
@@ -181,22 +171,23 @@ void QRestEndpointObject::setEndpointAddress(const QUrl &aEndpointAddress) {
     Q_D(QRestEndpointObject);
     d->setEndpointAddress(aEndpointAddress);
 }
+void QRestEndpointObject::setEndpointAddressString(const QString &aEndpointAddress) {
+    setEndpointAddress(QUrl(aEndpointAddress));
+}
 
 QRestConnectionObject *QRestEndpointObject::reserveConnection() {
     Q_D(QRestEndpointObject);
     return d->reserveConnection();
 }
 
-void QRestEndpointObject::releaseConnection(QRestConnectionObject *aConnection) {
+void QRestEndpointObject::releaseConnection(const QRestConnectionObject *aConnection) {
     Q_D(QRestEndpointObject);
     d->releaseConnection(aConnection);
 }
 
 void QRestEndpointObject::setSharedInstanceFrom(const QRestEndpointObject *aOther) {
     Q_D(QRestEndpointObject);
-    QRestEndpointObjectPrivate *otherPrv;
-    otherPrv=reinterpret_cast<QRestEndpointObjectPrivate *>(aOther->d_ptr);
-    d->setSharedInstance(otherPrv->sharedInstance());
+    d->setSharedInstance(aOther->d_func()->sharedInstance());
 }
 
 QT_END_NAMESPACE

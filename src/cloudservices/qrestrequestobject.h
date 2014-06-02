@@ -55,12 +55,14 @@ class QRestOperationObject;
 class QRestRequestObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QRestRequestObject : public QObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QRestRequestObject)
 private:
     Q_DISABLE_COPY(QRestRequestObject)
 protected:
     QRestRequestObject(QRestRequestObjectPrivate &dd,QObject *aParent);
 public:
+    QRestRequestObject(QObject *aParent = 0);
     QRestRequestObject(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent = 0);
 
     QtCloudServices::RESTOperation operation() const Q_REQUIRED_RESULT;

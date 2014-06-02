@@ -51,13 +51,15 @@ QT_BEGIN_NAMESPACE
 class QRestRequest;
 class QRestConnectionObject;
 class QTCLOUDSERVICES_EXPORT QRestConnection {
+    friend class QRestEndpoint;
+    friend class QRestOperation;
 protected:
     QRestConnection(QRestConnectionObject *aObject);
 public:
     // Constructors
     QRestConnection();
     QRestConnection(const QRestConnection &aOther);
-    ~QRestConnection();
+    virtual ~QRestConnection();
 
     // Assignment
     QRestConnection& operator=(const QRestConnection &aOther);

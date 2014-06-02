@@ -42,6 +42,7 @@
 #include "stdafx.h"
 
 #include "QtCloudServices/private/qenginiorequestshared_p.h"
+#include "QtCloudServices/private/qenginiocollectionshared_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -59,7 +60,7 @@ QEnginioRequestShared::QEnginioRequestShared(QtCloudServices::RESTOperation aOpe
 QSharedPointer<QEnginioCollectionShared> QEnginioRequestShared::enginioCollection() const {
     return iEnginioCollection;
 }
-void QEnginioRequestShared::setEnginioCollection(QSharedPointer<QEnginioCollectionShared> &aEnginioCollection) {
+void QEnginioRequestShared::setEnginioCollection(QSharedPointer<QEnginioCollectionShared> aEnginioCollection) {
     iEnginioCollection = aEnginioCollection;
 }
 

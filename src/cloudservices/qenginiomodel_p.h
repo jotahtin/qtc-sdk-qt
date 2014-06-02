@@ -50,11 +50,10 @@
 #include <QtCore/qstring.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qvector.h>
-
+#include <QtCore/qabstractitemmodel.h>
 #include <QtCore/private/qabstractitemmodel_p.h>
 
 #include <QtCloudServices/qenginiomodel.h>
-
 #include <QtCloudServices/qenginioconnection.h>
 #include <QtCloudServices/qenginiooperation.h>
 #include <QtCloudServices/qenginiomodelnode.h>
@@ -259,9 +258,8 @@ public:
 /*
 ** QEnginioModelPrivate
 */
-class QEnginioModelPrivate : public QAbstractItemModelPrivate
-{
-    Q_OBJECT
+class QEnginioModelPrivate : public QAbstractItemModelPrivate {
+public:
     Q_DECLARE_PUBLIC(QEnginioModel)
 public:
     QEnginioModelPrivate();

@@ -42,6 +42,7 @@
 #include "stdafx.h"
 
 #include <QtCloudServices/qrestoperation.h>
+#include <QtCloudServices/qrestconnection.h>
 
 #include <QtCloudServices/private/qrestoperationobject_p.h>
 
@@ -93,7 +94,7 @@ QT_BEGIN_NAMESPACE
 
 
 QRestOperation::QRestOperation(QRestOperationObject *aObject)
-    : iObject(&aObject)
+    : iObject(aObject)
 {
     Q_ASSERT(iObject);
 }
@@ -184,7 +185,7 @@ QRestOperationObject* QRestOperation::object() {
 
 #ifndef QT_NO_DEBUG_STREAM
 QTCLOUDSERVICES_EXPORT
-QDebug operator<<(QDebug d, const QRestOperation &aReply) {
+QDebug operator<<(QDebug d, const QRestOperation &aOperation) {
     aOperation.dumpDebugInfo(d);
     return d;
 }

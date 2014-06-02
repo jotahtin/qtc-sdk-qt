@@ -159,6 +159,17 @@ QEnginioDataStorageShared::collection(QSharedPointer<QEnginioDataStorageShared> 
     return collection;
 }
 
+QSharedPointer<QEnginioConnectionShared> QEnginioDataStorageShared::reserveConnection(QSharedPointer<QEnginioDataStorageShared> aSelf) {
+    QSharedPointer<QRestConnectionShared> con;
+    con = QRestEndpointShared::reserveConnection(aSelf);
+    return qSharedPointerCast<QEnginioConnectionShared>(con);
+}
+
+void QEnginioDataStorageShared::releaseConnection(QSharedPointer<QEnginioConnectionShared> aConnection) {
+    QRestEndpointShared::releaseConnection(aConnection);
+}
+
+
 QSharedPointer<QRestConnectionShared>
 QEnginioDataStorageShared::buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf) {
     return QSharedPointer<QRestConnectionShared>(new QEnginioConnectionShared(qSharedPointerCast<QEnginioDataStorageShared>(aSelf)));

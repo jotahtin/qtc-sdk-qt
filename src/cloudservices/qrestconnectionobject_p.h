@@ -51,12 +51,13 @@ QT_BEGIN_NAMESPACE
 class QRestEndpointObject;
 class QRestConnectionShared;
 class QTCLOUDSERVICES_EXPORT QRestConnectionObjectPrivate : public QObjectPrivate {
+public:
     Q_DECLARE_PUBLIC(QRestConnectionObject)
 private:
     Q_DISABLE_COPY(QRestConnectionObjectPrivate)
 public:
     // Constructor for valid connection.
-    QRestConnectionObjectPrivate(const QRestEndpointObject *aRestEndpointObject);
+    QRestConnectionObjectPrivate();
     ~QRestConnectionObjectPrivate();
 
     virtual bool isValid() const;
@@ -67,6 +68,8 @@ public:
 protected:
     virtual void init();
     virtual void deinit();
+protected:
+    virtual QRestOperationObject* buildOperationObject() const;
 public:
     QSharedPointer<QRestConnectionShared> sharedInstance() const;
     void setSharedInstance(QSharedPointer<QRestConnectionShared> aShared);

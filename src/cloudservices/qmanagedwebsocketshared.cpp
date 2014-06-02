@@ -68,6 +68,9 @@ bool QManagedWebSocketShared::isValid() const
     return true;
 }
 
+QString QManagedWebSocketShared::gatewayId() const {
+    return iGatewayId;
+}
 
 // https://mws-eu-1.qtc.io/v1/gateways/:mws_gateway_id
 void QManagedWebSocketShared::connectSocket() {

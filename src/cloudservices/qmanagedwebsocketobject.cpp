@@ -53,12 +53,6 @@ QT_BEGIN_NAMESPACE
 
 QManagedWebSocketObjectPrivate::QManagedWebSocketObjectPrivate()
 {
-    setSharedInstance(new QManagedWebSocketShared);
-}
-
-QManagedWebSocketObjectPrivate::QManagedWebSocketObjectPrivate(const QUrl &aInstanceAddress, const QString &aGatewayId)
-{
-    setSharedInstance(new QManagedWebSocketShared(aInstanceAddress,aGatewayId);
 }
 
 QManagedWebSocketObjectPrivate::~QManagedWebSocketObjectPrivate()
@@ -82,14 +76,16 @@ void QManagedWebSocketObjectPrivate::setGateway(const QUrl &aInstanceAddress, co
     Q_Q(QManagedWebSocketObject);
     bool chgAddress, chgId;
 
-    chgAddress = (impl->instanceAddress() != aInstanceAddress);
-    chgId = (impl->gatewayId() != aGatewayId);
+    chgAddress = (instanceAddress() != aInstanceAddress);
+    chgId = (gatewayId() != aGatewayId);
 
     if (!chgAddress && !chgId) {
         return;
     }
 
-    setSharedInstance(new QManagedWebSocketShared(aInstanceAddress, aGatewayId));
+    QSharedPointer<QManagedWebSocketShared> shared
+            (new QManagedWebSocketShared(aInstanceAddress,aGatewayId));
+    setSharedInstance(shared);
 
     if (chgAddress) {
         emit q->instanceAddressChanged(aInstanceAddress);
@@ -156,14 +152,18 @@ void QManagedWebSocketObjectPrivate::setSharedInstance(QSharedPointer<QManagedWe
 /*
 ** Public Interface
 */
-QManagedWebSocketObject::QManagedWebSocket(QObject *aParent)
-    : QObject(*new QManagedWebSocketPrivate, aParent)
+QManagedWebSocketObject::QManagedWebSocketObject(QObject *aParent)
+    : QObject(*new QManagedWebSocketObjectPrivate, aParent)
 {
 }
 
 QManagedWebSocketObject::QManagedWebSocketObject(const QUrl &aInstanceAddress, const QString &aGatewayId, QObject *aParent)
-    : QObject(*new QManagedWebSocketPrivate(aInstanceAddress, aGatewayId), aParent)
+    : QObject(*new QManagedWebSocketObjectPrivate, aParent)
 {
+    Q_D(QManagedWebSocketObject);
+    QSharedPointer<QManagedWebSocketShared> shared
+            (new QManagedWebSocketShared(aInstanceAddress,aGatewayId));
+    d->setSharedInstance(shared);
 }
 
 bool QManagedWebSocketObject::isValid() const
@@ -215,9 +215,7 @@ void QManagedWebSocketObject::disconnectSocket()
 
 void QManagedWebSocketObject::setSharedInstanceFrom(const QManagedWebSocketObject *aOther) {
     Q_D(QManagedWebSocketObject);
-    QManagedWebSocketObjectPrivate *otherPrv;
-    otherPrv=reinterpret_cast<QManagedWebSocketObjectPrivate *>(aOther->d_ptr);
-    d->setSharedInstance(otherPrv->sharedInstance());
+    d->setSharedInstance(aOther->d_func()->sharedInstance());
 }
 
 QT_END_NAMESPACE

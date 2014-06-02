@@ -60,7 +60,7 @@ public:
     QEnginioObject();
     QEnginioObject(const QEnginioObject &aOther);
     QEnginioObject(const QJsonObject &aJsonObject);
-    ~QEnginioObject();
+    virtual ~QEnginioObject();
 
     // Assignment
     QEnginioObject& operator=(const QEnginioObject &aOther);

@@ -42,12 +42,14 @@
 #ifndef QCLOUDSERVICES_QENGINIOQUERY_SHARED_P_H
 #define QCLOUDSERVICES_QENGINIOQUERY_SHARED_P_H
 
+#include <QObject>
 #include <QtCore/qjsonobject.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEnginioQueryShared : public QObject {
     Q_OBJECT
+private:
     Q_DISABLE_COPY(QEnginioQueryShared)
 public:
     QEnginioQueryShared();

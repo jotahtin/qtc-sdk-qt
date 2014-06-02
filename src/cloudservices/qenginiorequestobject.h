@@ -54,11 +54,10 @@ class QTCLOUDSERVICES_EXPORT QEnginioRequestObject : public QRestRequestObject {
 private:
     Q_DISABLE_COPY(QEnginioRequestObject)
 public:
-    QEnginioRequestObject();
+    QEnginioRequestObject(QObject *aParent = 0);
     QEnginioRequestObject(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent = 0);
 
     QEnginioCollectionObject *enginioCollection() const Q_REQUIRED_RESULT;
-    void setEnginioCollection(const QEnginioCollectionObject *aEnginioCollection);
 };
 
 QT_END_NAMESPACE

@@ -42,6 +42,8 @@
 #ifndef QCLOUDSERVICES_QENGINIOQUERY_OBJECT_H
 #define QCLOUDSERVICES_QENGINIOQUERY_OBJECT_H
 
+#include <QJsonObject>
+
 #include <QtCloudServices/qtcloudservices_global.h>
 
 QT_BEGIN_NAMESPACE
@@ -49,6 +51,7 @@ QT_BEGIN_NAMESPACE
 class QEnginioQueryObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioQueryObject : public QObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QEnginioQueryObject)
 private:
     Q_DISABLE_COPY(QEnginioQueryObject)
@@ -63,8 +66,6 @@ public:
 
     int offset() const;
     void setOffset(int aOffset);
-public:
-    void setSharedInstanceFrom(const QEnginioQueryObject *aOther);
 Q_SIGNALS:
     void queryChanged(QJsonObject aQuery);
     void limitChanged(int aLimit);

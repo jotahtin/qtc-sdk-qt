@@ -79,6 +79,9 @@ public:
     QSharedPointer<QEnginioCollectionShared>
     collection(QSharedPointer<QEnginioDataStorageShared> aSelf,
                const QString &aCollectionName);
+
+    QSharedPointer<QEnginioConnectionShared> reserveConnection(QSharedPointer<QEnginioDataStorageShared> aSelf) Q_REQUIRED_RESULT;
+    void releaseConnection(QSharedPointer<QEnginioConnectionShared> aConnection);
 protected:
     virtual QSharedPointer<QRestConnectionShared>
     buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf);

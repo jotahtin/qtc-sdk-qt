@@ -121,33 +121,37 @@ QRestEndpoint& QRestEndpoint::operator=(const QRestEndpoint &aOther) {
     return *this;
 }
 
-bool QRestEndpointObject::operator!() const {
+bool QRestEndpoint::operator!() const {
     return !isValid();
 }
-bool QRestEndpointObject::isValid() const {
+bool QRestEndpoint::isValid() const {
     return object()->isValid();
 }
 
-QUrl QRestEndpointObject::enpointAddress() const {
-    return iObject->enpointAddress();
+QUrl QRestEndpoint::endpointAddress() const {
+    return iObject->endpointAddress();
 }
-void QRestEndpointObject::setInstanceAddress(const QUrl &aEndpointAddress) {
+void QRestEndpoint::setEndpointAddress(const QUrl &aEndpointAddress) {
     iObject->setEndpointAddress(aEndpointAddress);
 }
 
-void QRestEndpointObject::setInstanceAddress(const QString &aEndpointAddress) {
+void QRestEndpoint::setEndpointAddress(const QString &aEndpointAddress) {
     iObject->setEndpointAddress(QUrl(aEndpointAddress));
 }
 
-QRestConnection QRestEndpointObject::reserveConnection() {
-    return iObject->reserveConnection();
+QRestConnection QRestEndpoint::reserveConnection() {
+    return QRestConnection(iObject->reserveConnection());
 }
 
-void QRestEndpointObject::releaseConnection(const QRestConnection &aConnection) {
-    iObject->releaseConnection(aConnection);
+void QRestEndpoint::releaseConnection(const QRestConnection &aConnection) {
+    iObject->releaseConnection(aConnection.object());
 }
 
 const QRestEndpointObject* QRestEndpoint::object() const {
+    return iObject;
+}
+
+QRestEndpointObject* QRestEndpoint::object() {
     return iObject;
 }
 

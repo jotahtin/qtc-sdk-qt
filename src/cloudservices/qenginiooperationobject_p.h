@@ -62,22 +62,14 @@ class QEnginioOperationObjectPrivate : public QRestOperationObjectPrivate {
 private:
     Q_DISABLE_COPY(QEnginioOperationObjectPrivate)
 public:
-    QEnginioOperationObjectPrivate(const QEnginioConnection &aEnginioConnection,
-                                   const QEnginioRequest &aRequest);
-    ~QEnginioOperationObjectPrivate();
-
-    virtual QRestConnectionObject *restConnection() const Q_REQUIRED_RESULT;
-    virtual QRestRequestObject *restRequest() const Q_REQUIRED_RESULT;
-
-    int backendStatus() const Q_REQUIRED_RESULT;
-    QString requestId() const Q_REQUIRED_RESULT;
+    QEnginioOperationObjectPrivate();
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
     QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
 protected:
-    virtual void init();
-    virtual void deinit();
+    virtual QRestConnectionObject *buildConnectionObject() const;
+    virtual QRestRequestObject *buildRequestObject() const;
 };
 
 QT_END_NAMESPACE

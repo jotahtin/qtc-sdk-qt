@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 class QEnginioModel;
 class QEnginioModelNodePrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioModelNode : public QObject {
+public:
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEnginioModelNode)
     friend class QEnginioModel;

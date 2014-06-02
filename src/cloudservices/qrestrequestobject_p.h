@@ -58,6 +58,7 @@ private:
 protected:
     QRestRequestObjectPrivate(QSharedPointer<QRestRequestShared> aShared);
 public:
+    QRestRequestObjectPrivate();
     QRestRequestObjectPrivate(QtCloudServices::RESTOperation aOperation, QString aPath);
 
     QtCloudServices::RESTOperation operation() const Q_REQUIRED_RESULT;
@@ -72,7 +73,7 @@ public:
     QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
     void setExtraHeaders(const QJsonObject &aExtraHeaders);
 
-    void setRestCallback(std::function<void(QRestOperationObject *)> aCallback);
+    void setCallback(std::function<void(QRestOperationObject *)> aCallback);
 protected:
     virtual void init();
     virtual void deinit();

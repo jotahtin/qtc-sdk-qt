@@ -52,14 +52,13 @@ class QEnginioRequestShared;
 class QEnginioConnectionShared;
 class QEnginioOperationShared : public QRestOperationShared {
     Q_OBJECT
+private:
     Q_DISABLE_COPY(QEnginioOperationShared)
 public:
     typedef std::function<void(QSharedPointer<QEnginioOperationShared> aOperation)> Callback;
 public:
-    QEnginioOperationShared();
     QEnginioOperationShared(QSharedPointer<QEnginioConnectionShared> aEnginioConnection,
                             QSharedPointer<QEnginioRequestShared> aRequest);
-    ~QEnginioOperationShared();
 public:
     // QSharedPointer<QEnginioRequestShared> enginioRequest() const Q_REQUIRED_RESULT;
     // QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
@@ -73,7 +72,7 @@ public:
     virtual void dumpDebugInfo(QDebug &d) const;
 #endif
 protected:
-    virtual void operationFinished();
+    virtual void operationFinished(QSharedPointer<QRestOperationShared> aSelf);
 private:
     QList<QEnginioObject> iResultObjects;
 };

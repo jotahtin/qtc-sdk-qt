@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 class QRestConnection;
 class QRestOperationObject;
 class QTCLOUDSERVICES_EXPORT QRestOperation {
+    friend class QRestConnection;
+    friend class QRestRequest;
 public:
     typedef std::function<void(QRestOperation aRestOperation)> Callback;
 protected:
@@ -65,7 +67,7 @@ public:
     // Constructors
     QRestOperation();
     QRestOperation(const QRestOperation &aOther);
-    ~QRestOperation();
+    virtual ~QRestOperation();
 
     // Assignment
     QRestOperation& operator=(const QRestOperation &aOther);

@@ -69,7 +69,7 @@ public:
 protected:
     virtual void init();
     virtual void deinit();
-
+public:
     QSharedPointer<QEnginioQueryShared> sharedInstance() const;
     void setSharedInstance(QSharedPointer<QEnginioQueryShared> aShared);
 private:

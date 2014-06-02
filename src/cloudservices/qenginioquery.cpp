@@ -61,11 +61,13 @@ QEnginioQuery::QEnginioQuery(const QJsonObject &aQuery)
 QEnginioQuery::QEnginioQuery(const QEnginioQuery &aOther)
     : iObject(new QEnginioQueryObject)
 {
-    object()->setSharedInstanceFrom(aOther.object());
+    object()->d_func()->setSharedInstance
+            (aOther.object()->d_func()->sharedInstance());
 }
 
 QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther) {
-    object()->setSharedInstanceFrom(aOther.object());
+    object()->d_func()->setSharedInstance
+            (aOther.object()->d_func()->sharedInstance());
     return *this;
 }
 
@@ -79,7 +81,7 @@ QEnginioQuery &QEnginioQuery::offset(int aOffset) {
     return *this;
 }
 
-const QJsonObject &QEnginioQuery::query() const {
+QJsonObject QEnginioQuery::query() const {
     return iObject->query();
 }
 

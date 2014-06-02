@@ -43,6 +43,7 @@
 #define QCLOUDSERVICES_QRESTREQUEST_SHARED_P_H
 
 #include <QtCore/qjsonobject.h>
+#include <QUrlQuery>
 
 #include <QtCloudServices/qtcloudservices_global.h>
 #include <QtCloudServices/qtcloudservices.h>
@@ -53,6 +54,8 @@ class QRestOperationShared;
 class QRestOperationObject;
 class QRestRequestShared : public QObject {
     Q_OBJECT
+    friend class QRestOperationShared;
+private:
     Q_DISABLE_COPY(QRestRequestShared)
 public:
     QRestRequestShared();
@@ -71,7 +74,9 @@ public:
     QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
     void setExtraHeaders(const QJsonObject &aExtraHeaders);
 
-    void setCallback(std::function<void(QSharedPointer<QRestOperationObject>)> aCallback);
+    void setCallback(std::function<void(QSharedPointer<QRestOperationShared>)> aCallback);
+protected:
+    void operationFinished(QSharedPointer<QRestOperationShared> aOperation);
 Q_SIGNALS:
     void urlQueryChanged(const QUrlQuery &aUrlQuery);
     void payloadChanged(const QJsonObject &aPayload);

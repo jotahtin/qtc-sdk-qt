@@ -63,7 +63,8 @@ QRestConnection::QRestConnection()
 QRestConnection::QRestConnection(const QRestConnection &aOther)
     : iObject(new QRestConnectionObject)
 {
-    object()->setSharedInstanceFrom(aOther.object());
+    object()->d_func()->setSharedInstance
+            (aOther.object()->d_func()->sharedInstance());
 }
 
 QRestConnection::~QRestConnection() {
@@ -73,7 +74,8 @@ QRestConnection::~QRestConnection() {
 }
 
 QRestConnection& QRestConnection::operator=(const QRestConnection &aOther) {
-    object()->setSharedInstanceFrom(aOther.object());
+    object()->d_func()->setSharedInstance
+            (aOther.object()->d_func()->sharedInstance());
     return *this;
 }
 

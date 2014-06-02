@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 */
 class QEnginioModelPrivate;
 class QEnginioModelNodePrivate : public QObjectPrivate {
-    Q_OBJECT
+public:
     Q_DECLARE_PUBLIC(QEnginioModelNode)
     friend class QEnginioModelPrivate;
 public:

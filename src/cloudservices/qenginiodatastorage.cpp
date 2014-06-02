@@ -110,6 +110,10 @@ QEnginioDataStorage::QEnginioDataStorage(const QEnginioDataStorage &aOther)
     object()->setSharedInstanceFrom(aOther.object());
 }
 
+QEnginioDataStorage::~QEnginioDataStorage() {
+
+}
+
 QEnginioDataStorage& QEnginioDataStorage::operator=(const QEnginioDataStorage &aOther) {
     object()->setSharedInstanceFrom(aOther.object());
     return *this;
@@ -196,5 +200,13 @@ QEnginioConnection QEnginioDataStorage::reserveConnection() {
 void QEnginioDataStorage::releaseConnection(const QEnginioConnection &aConnection) {
     object()->releaseConnection(aConnection.object());
 }
+
+const QEnginioDataStorageObject* QEnginioDataStorage::object() const {
+    return reinterpret_cast<const QEnginioDataStorageObject*>(QRestEndpoint::object());
+}
+QEnginioDataStorageObject* QEnginioDataStorage::object() {
+    return reinterpret_cast<QEnginioDataStorageObject*>(QRestEndpoint::object());
+}
+
 
 QT_END_NAMESPACE

@@ -55,7 +55,11 @@
 	F(updatedAt, "updatedAt")\
 	F(updater, "updater")\
 	F(results, "results")\
-	\
+    F(limit, "limit")\
+    F(offset, "offset")\
+    F(query_q, "q")\
+    F(path_separator, "/")\
+    \
     F(_synced, "_synced")\
     F(_delete, "delete")\
     F(access, "access")\
@@ -77,14 +81,12 @@
     F(include, "include")\
     F(incomplete, "incomplete")\
     F(length, "length")\
-    F(limit, "limit")\
     F(member, "member")\
     F(members, "members")\
     F(message, "message")\
     F(messageType, "messageType")\
     F(object, "object")\
     F(objectTypes, "objectTypes")\
-    F(offset, "offset")\
     F(origin, "origin")\
     F(pageSize, "pageSize")\
     F(password, "password")\

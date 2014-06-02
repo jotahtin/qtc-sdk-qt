@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QEnginioModelPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioModel : public QAbstractItemModel {
+public:
     Q_OBJECT
     // Q_ENUMS(QtCloudServices::Operation) // TODO remove me QTBUG-33577
     // Q_PROPERTY(QtCloudServices::Operation operation READ operation WRITE setOperation NOTIFY operationChanged)

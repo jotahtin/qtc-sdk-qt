@@ -42,6 +42,7 @@
 #ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H
 #define QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H
 
+#include <QWebSocket>
 #include <QtCloudServices/qtcloudservices_global.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,6 +56,9 @@ public:
     ~QManagedWebSocketShared();
 public:
     bool isValid() const;
+
+    QUrl instanceAddress() const { return QUrl(); }
+    QString gatewayId() const;
 
     void connectSocket();
     void disconnectSocket();

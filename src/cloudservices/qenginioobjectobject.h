@@ -54,16 +54,18 @@ class QEnginioOperationObject;
 class QEnginioObjectObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioObjectObject : public QObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QEnginioObjectObject)
-
     Q_PROPERTY(QString objectId READ objectId NOTIFY dataChanged)
     Q_PROPERTY(QString objectType READ objectType NOTIFY dataChanged)
     Q_PROPERTY(QTime createAt READ createAt NOTIFY dataChanged)
-    Q_PROPERTY(QEnginioUser creator READ creator NOTIFY dataChanged)
-    Q_PROPERTY(QTime updatedAt READ objectId NOTIFY dataChanged)
-    Q_PROPERTY(QEnginioUser updater READ objectId NOTIFY dataChanged)
+    // Q_PROPERTY(QEnginioUser creator READ creator NOTIFY dataChanged)
+    Q_PROPERTY(QTime updatedAt READ updatedAt NOTIFY dataChanged)
+    // Q_PROPERTY(QEnginioUser updater READ objectId NOTIFY dataChanged)
 private:
     Q_DISABLE_COPY(QEnginioObjectObject)
+protected:
+    QEnginioObjectObject(QEnginioObjectObjectPrivate &dd,QObject *aParent);
 public:
     QEnginioObjectObject(QObject *aParent = 0);
     QEnginioObjectObject(const QJsonObject &aJsonObject,QObject *aParent = 0);

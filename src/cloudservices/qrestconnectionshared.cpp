@@ -43,6 +43,7 @@
 
 #include <QtCloudServices/private/qrestconnectionshared_p.h>
 #include <QtCloudServices/private/qrestendpointshared_p.h>
+#include <QtCloudServices/private/qcloudservicesconstants_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +70,7 @@ QRestConnectionShared::QRestConnectionShared(QSharedPointer<QRestEndpointShared>
     if (!iNetworkManager) {
         iNetworkManager = QSharedPointer<QNetworkAccessManager>(new QNetworkAccessManager());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0) && !defined(QT_NO_SSL) && !defined(ENGINIO_VALGRIND_DEBUG)
-        iNetworkManager->connectToHostEncrypted(aEnginioDataStorage.instanceAddress().host());
+        iNetworkManager->connectToHostEncrypted(iRestEndpoint->endpointAddress().host());
 #else
 # error "SSL Connection required."
 #endif
@@ -98,9 +99,8 @@ QSharedPointer<QNetworkAccessManager> QRestConnectionShared::networkManager() co
     return iNetworkManager;
 }
 
-QSharedPointer<QRestOperationShared> QRestConnectionShared::customRequest
-(QSharedPointer<QRestConnectionShared> aSelf,
- QSharedPointer<QRestRequestShared> aRequest)
+QSharedPointer<QRestOperationShared> QRestConnectionShared::restRequest(QSharedPointer<QRestConnectionShared> aSelf,
+                                                                        QSharedPointer<QRestRequestShared> aRequest)
 {
     QBuffer *buffer = 0;
     QNetworkRequest request;
@@ -108,7 +108,7 @@ QSharedPointer<QRestOperationShared> QRestConnectionShared::customRequest
     QByteArray verb;
     QNetworkReply *reply;
 
-    switch (aRequest.operation()) {
+    switch (aRequest->operation()) {
     case QtCloudServices::RESTOperationGet:
         verb = QtCloudServicesConstants::RESTOperationGet;
         break;
@@ -127,9 +127,9 @@ QSharedPointer<QRestOperationShared> QRestConnectionShared::customRequest
     }
 
     if (!prepareRequest(request,
-                        aRequest.path(),
-                        aRequest.urlQuery(),
-                        aRequest.extraHeaders()))
+                        aRequest->path(),
+                        aRequest->urlQuery(),
+                        aRequest->extraHeaders()))
     {
         return operation;
     }
@@ -147,7 +147,7 @@ QSharedPointer<QRestOperationShared> QRestConnectionShared::customRequest
     }
 
     reply = networkManager()->sendCustomRequest(request, verb, buffer);
-    operation.d<QEnginioOperation>()->setNetworkReply(reply);
+    operation->setNetworkReply(operation, reply);
 
     if (buffer) {
         buffer->setParent(reply);
@@ -157,21 +157,22 @@ QSharedPointer<QRestOperationShared> QRestConnectionShared::customRequest
 }
 
 void QRestConnectionShared::replyFinished(QNetworkReply *aNetworkReply)
-{
-    QEnginioOperation operation;
+{    
+    QSharedPointer<QRestOperationShared> operation;
     operation = iReplyOperationMap.take(aNetworkReply);
 
     if (!operation) {
         return;
     }
 
-    operation.d<QEnginioOperation>()->operationFinished();
+    operation->operationFinishedPrepare(operation);
 }
 
 
-void QRestConnectionShared::registerReply(QNetworkReply *aNetworkReply, const QEnginioOperation &aOperation)
+void QRestConnectionShared::registerReply(QNetworkReply *aNetworkReply,
+                                          QSharedPointer<QRestOperationShared> aOperation)
 {
-    aNetworkReply->setParent(aOperation.d<QEnginioOperation>().data());
+    aNetworkReply->setParent(aOperation.data());
     iReplyOperationMap[aNetworkReply] = aOperation;
 }
 
@@ -180,12 +181,10 @@ void QRestConnectionShared::unregisterReply(QNetworkReply *aNetworkReply)
     iReplyOperationMap.remove(aNetworkReply);
 }
 
-QSharedPointer<QRestOperationShared> QRestConnectionShared::buildOperationInstance
-(QSharedPointer<QRestConnectionShared> aSelf,
- QSharedPointer<QRestRequestShared> aRequest)
+QSharedPointer<QRestOperationShared> QRestConnectionShared::buildOperationInstance(QSharedPointer<QRestConnectionShared> aSelf,
+                                                                                   QSharedPointer<QRestRequestShared> aRequest)
 {
-    return QSharedPointer<QRestOperationShared>
-            (new QRestOperationShared(aSelf,aRequest));
+    return QSharedPointer<QRestOperationShared>(new QRestOperationShared(aSelf,aRequest));
 }
 
 bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
@@ -202,7 +201,7 @@ bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
 
     relativeUrl.setPath(aPath);
 
-    url = iRestEndpoint->restEndpointAddress().resolved(relativeUrl);
+    url = iRestEndpoint->endpointAddress().resolved(relativeUrl);
 
     requestId = QUuid::createUuid().toByteArray();
     // Remove unneeded pretty-formatting.
@@ -234,7 +233,7 @@ bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
         for (QJsonObject::const_iterator i = aExtraHeaders.constBegin(); i != end; i++) {
             QByteArray headerName = i.key().toUtf8();
             QByteArray headerValue = i.value().toString().toUtf8();
-            request.setRawHeader(headerName, headerValue);
+            aRequest.setRawHeader(headerName, headerValue);
         }
     }
 

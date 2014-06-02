@@ -46,6 +46,7 @@
 
 #include <QtCloudServices/private/qenginiorequestobject_p.h>
 #include <QtCloudServices/private/qenginiorequestshared_p.h>
+#include <QtCloudServices/private/qenginiocollectionobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,27 +68,25 @@ QEnginioRequestObjectPrivate::QEnginioRequestObjectPrivate(QtCloudServices::REST
 
 QEnginioCollectionObject *QEnginioRequestObjectPrivate::QEnginioRequestObjectPrivate::enginioCollection() const {
     QEnginioCollectionObject *result;
-    const QSharedPointer<QEnginioRequestShared> request;
+    QSharedPointer<const QEnginioRequestShared> request;
 
-    request = qSharedPointerCast<QEnginioRequestShared>(iShared);
+    request = qSharedPointerCast<const QEnginioRequestShared>(sharedInstance());
     if (!request) {
         return nullptr;
     }
 
-
+    result = new QEnginioCollectionObject;
+    result->d_func()->setSharedInstance(request->enginioCollection());
 
     return result;
-}
-void QEnginioRequestObjectPrivate::setEnginioCollection(const QEnginioCollectionObjext *aEnginioCollection) {
-
 }
 
 /*
 ** Public
 */
 
-QEnginioRequestObject::QEnginioRequestObject()
-    : QRestRequestObject(*new QEnginioRequestObjectPrivate(),aParent)
+QEnginioRequestObject::QEnginioRequestObject(QObject *aParent)
+    : QRestRequestObject(*new QEnginioRequestObjectPrivate,aParent)
 {
 }
 
@@ -100,10 +99,6 @@ QEnginioRequestObject::QEnginioRequestObject(QtCloudServices::RESTOperation aOpe
 QEnginioCollectionObject *QEnginioRequestObject::enginioCollection() const {
     Q_D(const QEnginioRequestObject);
     return d->enginioCollection();
-}
-void QEnginioRequestObject::setEnginioCollection(const QEnginioCollectionObjext *aEnginioCollection) {
-    Q_D(QEnginioRequestObject);
-    return d->setEnginioCollection(aEnginioCollection);
 }
 
 QT_END_NAMESPACE

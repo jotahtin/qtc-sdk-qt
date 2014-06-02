@@ -61,11 +61,6 @@ private:
     Q_DISABLE_COPY(QEnginioDataStorageObjectPrivate)
 public:
     QEnginioDataStorageObjectPrivate();
-    QEnginioDataStorageObjectPrivate(const QUrl &aInstanceAddress, const QString &aBackendId);
-    ~QEnginioDataStorageObjectPrivate();
-
-    // IsValid
-    bool isValid() const Q_REQUIRED_RESULT;
 
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
@@ -75,7 +70,6 @@ public:
 
     QString backendId() const Q_REQUIRED_RESULT;
 
-
     // Authentication
     QString username() const Q_REQUIRED_RESULT;
     QString password() const Q_REQUIRED_RESULT;
@@ -83,12 +77,10 @@ public:
     // Get object collection
     QEnginioCollectionObject *collection(const QString &collectionName);
 
-    // Get Plain connection
-     virtual QRestConnectionObject *reserveConnection() Q_REQUIRED_RESULT;
-     virtual void releaseConnection(const QRestConnectionObject *aConnection);
-
     void setUsername(const QString &aUsername);
     void setPassword(const QString &aPassword);
+protected:
+    virtual QRestConnectionObject* buildConnectionObject() const;
 protected:
     virtual void init();
     virtual void deinit();

@@ -51,8 +51,33 @@
 #include <QtCloudServices/private/qenginiodatastorageshared_p.h>
 #include <QtCloudServices/private/qenginiorequestshared_p.h>
 #include <QtCloudServices/private/qenginioobjectshared_p.h>
+#include <QtCloudServices/private/qenginioqueryobject_p.h>
+#include <QtCloudServices/private/qenginioqueryshared_p.h>
+#include <QtCloudServices/private/qenginiooperationshared_p.h>
 
 QT_BEGIN_NAMESPACE
+
+QEnginioCollectionShared::CallbackFunctor::CallbackFunctor(QSharedPointer<QEnginioDataStorageShared> aEnginioDataStorage,
+                QSharedPointer<QEnginioConnectionShared> aConnection,
+                QEnginioOperationShared::Callback aCallback
+                )
+    : iEnginioDataStorage(aEnginioDataStorage), iConnection(aConnection), iCallback(aCallback)
+{}
+
+void QEnginioCollectionShared::CallbackFunctor::operator ()(QSharedPointer<QRestOperationShared> aOperation) {
+    if (aOperation.isNull()) {
+        return;
+    }
+
+    if (aOperation->isValid() && !aOperation->isError()) {
+        iEnginioDataStorage->releaseConnection(iConnection);
+    }
+
+    QSharedPointer<QEnginioOperationShared> op;
+    op=qSharedPointerCast<QEnginioOperationShared>(aOperation);
+    iCallback(op);
+}
+
 
 QEnginioCollectionShared::QEnginioCollectionShared(QSharedPointer<QEnginioDataStorageShared> aEnginioDataStorage,
                                                    QString aCollectionName)
@@ -94,20 +119,25 @@ QEnginioCollectionShared::find(QSharedPointer<QEnginioCollectionShared> aSelf,
 
     QSharedPointer<QEnginioRequestShared> request(new QEnginioRequestShared(QtCloudServices::RESTOperationGet, path));
 
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("limit", QString("%1").arg(aQuery.limit()));
-    urlQuery.addQueryItem("offset", QString("%1").arg(aQuery.offset()));
+    QUrlQuery urlQuery;    
+    urlQuery.addQueryItem(QtCloudServicesConstants::limit,
+                          QString::fromLatin1("%1").arg(aQuery->limit()));
+    urlQuery.addQueryItem(QtCloudServicesConstants::offset,
+                          QString::fromLatin1("%1").arg(aQuery->offset()));
 
-    if (!aQuery.query().isEmpty()) {
-        urlQuery.addQueryItem("q",
-                              QString::fromLatin1(QJsonDocument(aQuery.query()).toJson(QJsonDocument::Compact)));
+    if (!aQuery->query().isEmpty()) {
+        urlQuery.addQueryItem(QtCloudServicesConstants::query_q,
+                              QString::fromLatin1(QJsonDocument(aQuery->query()).toJson(QJsonDocument::Compact)));
     }
 
     request->setEnginioCollection(aSelf);
     request->setUrlQuery(urlQuery);
+    request->setCallback(CallbackFunctor(iEnginioDataStorage,connection,aCallback));
+    /*
     request->setCallback([=](QSharedPointer<QRestOperationObject> aOperation) {
-        aSelf->handleCompletedOperation(aOperation,connection,aCallback);
+        //aSelf->handleCompletedOperation(aOperation,connection,aCallback);
     });
+    */
 
     return connection->customRequest(connection,request);
 }
@@ -123,14 +153,17 @@ QEnginioCollectionShared::findOne(QSharedPointer<QEnginioCollectionShared> aSelf
     connection = iEnginioDataStorage->reserveConnection(iEnginioDataStorage);
 
     path = resolveBasePath();
-    path.append("/");
+    path.append(QtCloudServicesConstants::path_separator);
     path.append(aObjectId);
 
     QSharedPointer<QEnginioRequestShared> request(new QEnginioRequestShared(QtCloudServices::RESTOperationGet, path));
     request->setEnginioCollection(aSelf);
+    request->setCallback(CallbackFunctor(iEnginioDataStorage,connection,aCallback));
+    /*
     request->setCallback([=](QSharedPointer<QRestOperationObject> aOperation) {
         aSelf->handleCompletedOperation(aOperation,connection,aCallback);
     });
+    */
 
     return connection->customRequest(connection,request);
 }
@@ -149,10 +182,13 @@ QEnginioCollectionShared::insert(QSharedPointer<QEnginioCollectionShared> aSelf,
 
     QSharedPointer<QEnginioRequestShared> request(new QEnginioRequestShared(QtCloudServices::RESTOperationPost, path));
     request->setEnginioCollection(aSelf);
-    request->setPayload(aObject->jsonObject()());
+    request->setPayload(aObject->jsonObject());
+    request->setCallback(CallbackFunctor(iEnginioDataStorage,connection,aCallback));
+    /*
     request->setCallback([=](QSharedPointer<QRestOperationObject> aOperation) {
         aSelf->handleCompletedOperation(aOperation,connection,aCallback);
     });
+    */
 
     return connection->customRequest(connection,request);
 }
@@ -169,15 +205,18 @@ QEnginioCollectionShared::update(QSharedPointer<QEnginioCollectionShared> aSelf,
     connection = iEnginioDataStorage->reserveConnection(iEnginioDataStorage);
 
     path = resolveBasePath();
-    path.append("/");
+    path.append(QtCloudServicesConstants::path_separator);
     path.append(aObjectId);
 
     QSharedPointer<QEnginioRequestShared> request(new QEnginioRequestShared(QtCloudServices::RESTOperationPut, path));
     request->setEnginioCollection(aSelf);
     request->setPayload(aObject);
+    request->setCallback(CallbackFunctor(iEnginioDataStorage,connection,aCallback));
+    /*
     request->setCallback([=](QSharedPointer<QRestOperationObject> aOperation) {
         aSelf->handleCompletedOperation(aOperation,connection,aCallback);
     });
+    */
 
     return connection->customRequest(connection,request);
 }
@@ -193,14 +232,17 @@ QEnginioCollectionShared::remove(QSharedPointer<QEnginioCollectionShared> aSelf,
     connection = iEnginioDataStorage->reserveConnection(iEnginioDataStorage);
 
     path = resolveBasePath();
-    path.append("/");
+    path.append(QtCloudServicesConstants::path_separator);
     path.append(aObjectId);
 
     QSharedPointer<QEnginioRequestShared> request(new QEnginioRequestShared(QtCloudServices::RESTOperationDelete, path));
     request->setEnginioCollection(aSelf);
+    request->setCallback(CallbackFunctor(iEnginioDataStorage,connection,aCallback));
+    /*
     request->setCallback([=](QSharedPointer<QRestOperationObject> aOperation) {
         aSelf->handleCompletedOperation(aOperation,connection,aCallback);
     });
+    */
 
     return connection->customRequest(connection,request);
 }
@@ -223,7 +265,7 @@ QString QEnginioCollectionShared::resolveBasePath() {
 
     return path;
 }
-
+/*
 void QEnginioCollectionShared::handleCompletedOperation(QSharedPointer<QRestOperationObject> aOperation,
                                                         QSharedPointer<QEnginioConnectionShared> aConnection,
                                                         QEnginioOperationShared::Callback aCallback)
@@ -238,5 +280,6 @@ void QEnginioCollectionShared::handleCompletedOperation(QSharedPointer<QRestOper
 
     aCallback(qSharedPointerCast<QEnginioOperationShared>(aOperation));
 }
+*/
 
 QT_END_NAMESPACE

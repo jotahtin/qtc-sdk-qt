@@ -45,6 +45,7 @@
 
 #include <QtCloudServices/private/qrestrequestobject_p.h>
 #include <QtCloudServices/private/qrestrequestshared_p.h>
+#include <QtCloudServices/private/qrestoperationobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,6 +57,13 @@ QRestRequestObjectPrivate::QRestRequestObjectPrivate(QSharedPointer<QRestRequest
 {
 
 }
+
+QRestRequestObjectPrivate::QRestRequestObjectPrivate()
+    : iShared(new QRestRequestShared)
+{
+
+}
+
 QRestRequestObjectPrivate::QRestRequestObjectPrivate(QtCloudServices::RESTOperation aOperation, QString aPath)
     : iShared(new QRestRequestShared(aOperation,aPath))
 {
@@ -85,17 +93,26 @@ void QRestRequestObjectPrivate::setPayload(const QJsonObject &aPayload) {
 }
 
 QJsonObject QRestRequestObjectPrivate::extraHeaders() const {
-
+    return iShared->extraHeaders();
 }
 void QRestRequestObjectPrivate::setExtraHeaders(const QJsonObject &aExtraHeaders) {
     iShared->setExtraHeaders(aExtraHeaders);
 }
 
-void QRestRequestObjectPrivate::setRestCallback(std::function<void(QRestOperationObject *)> aCallback) {
-    iShared->setRestCallback(aCallback);
+void QRestRequestObjectPrivate::setCallback(std::function<void(QRestOperationObject *)> aCallback) {
+    // TODO: functor & signal binding
+    iShared->setCallback(
+                [=](QSharedPointer<QRestOperationShared> operation) {
+                    if (aCallback) {
+                        QRestOperationObject *op=new QRestOperationObject();
+                        op->d_func()->setSharedInstance(operation);
+                        aCallback(op);
+                    }
+    });
 }
 
 void QRestRequestObjectPrivate::init() {
+    /*
     Q_Q(QRestRequestObject);
     iConnectionDataChanged
             = QObject::connect(iShared.data(), &QRestOperationObjectShared::dataChanged,
@@ -106,27 +123,31 @@ void QRestRequestObjectPrivate::init() {
     iConnectionProgress
     = QObject::connect(iShared.data(), &QRestOperationObjectShared::progress,
               q, &QRestOperationObject::progress);
-
+    */
 }
 
 void QRestRequestObjectPrivate::deinit() {
+    /*
     QObject::disconnect(iConnectionDataChanged);
     QObject::disconnect(iConnectionFinished);
     QObject::disconnect(iConnectionProgress);
+    */
 }
 
-QSharedPointer<QRestOperationShared> QRestRequestObjectPrivate::sharedInstance() const {
+QSharedPointer<QRestRequestShared> QRestRequestObjectPrivate::sharedInstance() const {
     return iShared;
 }
 
-void QRestRequestObjectPrivate::setSharedInstance(const QRestOperationObject *aOther) {
+void QRestRequestObjectPrivate::setSharedInstance(QSharedPointer<QRestRequestShared> aShared) {
     if (iShared) {
         deinit();
     }
 
-    iShared = aOther->d_func()->sharedInstance();
+    iShared = aShared;
 
-    init();
+    if (iShared) {
+        init();
+    }
 }
 
 /*
@@ -135,6 +156,12 @@ void QRestRequestObjectPrivate::setSharedInstance(const QRestOperationObject *aO
 
 QRestRequestObject::QRestRequestObject(QRestRequestObjectPrivate &dd,QObject *aParent)
     : QObject(dd,aParent)
+{
+
+}
+
+QRestRequestObject::QRestRequestObject(QObject *aParent)
+    : QObject(*new QRestRequestObjectPrivate,aParent)
 {
 
 }
@@ -181,19 +208,14 @@ void QRestRequestObject::setExtraHeaders(const QJsonObject &aExtraHeaders) {
     d->setExtraHeaders(aExtraHeaders);
 }
 
-void QRestRequestObject::setRestCallback(std::function<void(QRestOperationObject *)> aCallback) {
+void QRestRequestObject::setCallback(std::function<void(QRestOperationObject *)> aCallback) {
     Q_D(QRestRequestObject);
-    d->setRestCallback(aCallback);
+    d->setCallback(aCallback);
 }
 
 void QRestRequestObject::setSharedInstanceFrom(const QRestRequestObject *aOther) {
-    const QRestRequestObjectPrivate *otherPrivate;
     Q_D(QRestRequestObject);
-
-    otherPrivate=reinterpret_cast<QRestRequestObjectPrivate *>(aOther->d_ptr);
-    if (otherPrivate) {
-        d->setSharedInstance(otherPrivate->sharedInstance());
-    }
+    d->setSharedInstance(aOther->d_func()->sharedInstance());
 }
 
 QT_END_NAMESPACE

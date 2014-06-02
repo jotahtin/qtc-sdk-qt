@@ -45,6 +45,7 @@
 #include <QtCloudServices/qenginiorequest.h>
 
 #include <QtCloudServices/private/qenginioconnectionobject_p.h>
+#include <QtCloudServices/private/qenginioconnectionshared_p.h>
 
 /*!
 \class QEnginioConnection
@@ -84,7 +85,10 @@ a model is provided by \l {EnginioModelCpp}{EnginioModel}.
 QT_BEGIN_NAMESPACE
 
 
-// Constructors
+QEnginioConnection::QEnginioConnection(QEnginioConnectionObject *aObject)
+    : QRestConnection(aObject)
+{}
+
 QEnginioConnection::QEnginioConnection()
     : QRestConnection(new QEnginioConnectionObject)
 {
@@ -94,12 +98,14 @@ QEnginioConnection::QEnginioConnection()
 QEnginioConnection::QEnginioConnection(const QEnginioConnection &aOther)
     : QRestConnection(new QEnginioConnectionObject)
 {
-    object()->setSharedInstanceFrom(aOther.object());
+    object()->d_func()->setSharedInstance
+            (aOther.object()->d_func()->sharedInstance());
 }
 
 // Assignment
 QEnginioConnection& QEnginioConnection::operator=(const QEnginioConnection &aOther) {
-    object()->setSharedInstanceFrom(aOther.object());
+    object()->d_func()->setSharedInstance
+            (aOther.object()->d_func()->sharedInstance());
     return *this;
 }
 

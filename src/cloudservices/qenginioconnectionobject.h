@@ -51,7 +51,8 @@ class QEnginioDataStorageObject;
 class QEnginioOperationObject;
 class QEnginioConnectionObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioConnectionObject : public QRestConnectionObject {
-    Q_OBJECT
+    Q_OBJECT    
+public:
     Q_DECLARE_PRIVATE(QEnginioConnectionObject)
 
     // Q_PROPERTY(QByteArray backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged FINAL)
@@ -64,11 +65,8 @@ class QTCLOUDSERVICES_EXPORT QEnginioConnectionObject : public QRestConnectionOb
     // Q_ENUMS(QtCloudServices::AuthenticationState); // TODO remove me QTBUG-33577
 private:
     Q_DISABLE_COPY(QEnginioConnectionObject)
-protected:
-    QEnginioConnectionObject(QEnginioConnectionObjectPrivate &dd,QObject *aParent);
 public:
-    QEnginioConnectionObject(const QEnginioDataStorageObject *aEnginioDataStorageObject = 0,
-                             QObject *aParent = 0);
+    QEnginioConnectionObject(QObject *aParent = 0);
 
     Q_INVOKABLE QEnginioOperationObject *customRequest(const QEnginioRequestObject *aRequest);
 

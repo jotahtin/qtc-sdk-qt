@@ -62,13 +62,10 @@ protected:
 public:
     QEnginioCollection();
     QEnginioCollection(const QEnginioCollection &aOther);
-    ~QEnginioCollection();
+    virtual ~QEnginioCollection();
 
     // Assignment
     QEnginioCollection& operator=(const QEnginioCollection &aOther);
-
-    // Get internal object
-    const QEnginioCollectionObject *enginioCollectionObject();
 
     // IsValid
     bool operator!() const;
@@ -97,6 +94,8 @@ private:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QEnginioCollection)
 
 #endif /* QCLOUDSERVICES_QENGINIOCOLLECTION_H */
 

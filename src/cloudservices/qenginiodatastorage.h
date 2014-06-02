@@ -59,14 +59,10 @@ public:
     QEnginioDataStorage(const QUrl &aInstanceAddress, const QString &aBackendId);
     QEnginioDataStorage(const QString &aInstanceAddress, const QString &aBackendId);
     QEnginioDataStorage(const QEnginioDataStorage &aOther);
-    ~QEnginioDataStorage();
+    virtual ~QEnginioDataStorage();
 
     // Assignment
     QEnginioDataStorage& operator=(const QEnginioDataStorage &aOther);
-
-    // IsValid
-    virtual bool operator!() const Q_REQUIRED_RESULT;
-    virtual bool isValid() const Q_REQUIRED_RESULT;
 
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
@@ -87,6 +83,10 @@ public:
     // Get Plain connection
     QEnginioConnection reserveConnection() Q_REQUIRED_RESULT;
     void releaseConnection(const QEnginioConnection &aConnection);
+public:
+    // Get implementation object
+    const QEnginioDataStorageObject* object() const;
+    QEnginioDataStorageObject* object();
 };
 
 QT_END_NAMESPACE

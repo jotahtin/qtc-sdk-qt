@@ -63,7 +63,7 @@ public:
     // QEnginioQuery &objectType(const QString &aObjectType);
     // QEnginioQuery &include(const QJsonObject &aInclude);
 
-    const QJsonObject &query() const;
+    QJsonObject query() const;
     int limit() const;
     int offset() const;
 public:

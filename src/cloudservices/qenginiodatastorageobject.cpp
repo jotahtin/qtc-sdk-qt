@@ -52,21 +52,9 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 
-QEnginioDataStorageObjectPrivate::QEnginioDataStorageObjectPrivate()
-    : QRestEndpointObjectPrivate(QSharedPointer<QEnginioDataStorageShared>(new QEnginioDataStorageShared))
-{
+QEnginioDataStorageObjectPrivate::QEnginioDataStorageObjectPrivate() {
 
 }
-
-QEnginioDataStorageObjectPrivate::QEnginioDataStorageObjectPrivate(const QUrl &aInstanceAddress, const QString &aBackendId)
-    : QRestEndpointObjectPrivate(QSharedPointer<QEnginioDataStorageShared>(new QEnginioDataStorageShared(aInstanceAddress,aBackendId)))
-{
-}
-
-QEnginioDataStorageObjectPrivate::~QEnginioDataStorageObjectPrivate()
-{
-}
-
 
 void QEnginioDataStorageObjectPrivate::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId)
 {
@@ -153,6 +141,10 @@ QEnginioCollectionObject *QEnginioDataStorageObjectPrivate::collection(const QSt
     return colObj;
 }
 
+QRestConnectionObject* QEnginioDataStorageObjectPrivate::buildConnectionObject() const {
+    return new QEnginioConnectionObject;
+}
+
 void QEnginioDataStorageObjectPrivate::init() {
     Q_Q(QEnginioDataStorageObject);
 
@@ -188,24 +180,15 @@ void QEnginioDataStorageObjectPrivate::deinit() {
 QEnginioDataStorageObject::QEnginioDataStorageObject(QObject *aParent)
     : QRestEndpointObject(*new QEnginioDataStorageObjectPrivate(),aParent)
 {
-    Q_D(QEnginioDataStorageObject);
-    d->init();
 }
 
 QEnginioDataStorageObject::QEnginioDataStorageObject(const QUrl &aInstanceAddress, const QString &aBackendId, QObject *aParent)
-    : QRestEndpointObject(*new QEnginioDataStorageObjectPrivate(aInstanceAddress,aBackendId),aParent)
+    : QRestEndpointObject(*new QEnginioDataStorageObjectPrivate,aParent)
 {
     Q_D(QEnginioDataStorageObject);
-    d->init();
-}
-
-QEnginioDataStorageObject::~QEnginioDataStorageObject() {
-
-}
-
-bool QEnginioDataStorageObject::isValid() const {
-    Q_D(const QEnginioDataStorageObject);
-    return d->isValid();
+    QSharedPointer<QEnginioDataStorageShared>
+            shared(new QEnginioDataStorageShared(aInstanceAddress,aBackendId));
+    d->setSharedInstance(shared);
 }
 
 void QEnginioDataStorageObject::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId) {

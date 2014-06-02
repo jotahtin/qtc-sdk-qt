@@ -47,6 +47,8 @@
 #include <QtNetwork/qnetworkreply.h>
 
 #include <QtCloudServices/private/qrestoperationshared_p.h>
+#include <QtCloudServices/private/qrestconnectionshared_p.h>
+#include <QtCloudServices/private/qcloudservicesconstants_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +66,7 @@ QRestOperationShared::QRestOperationShared(QSharedPointer<QRestConnectionShared>
 
 QRestOperationShared::~QRestOperationShared()
 {
-    setNetworkReply(NULL);
+    setNetworkReply(QSharedPointer<QRestOperationShared>(),NULL);
 }
 
 bool QRestOperationShared::isValid() const
@@ -167,12 +169,13 @@ void QRestOperationShared::dumpDebugInfo(QDebug &d) const
     d << "  RawHeaders[X_Request_Id]:" << request.rawHeader(QtCloudServicesConstants::X_Request_Id);
 
     if (!iData.isEmpty()) {
-        qDebug() << "Reply Data:" << iData();
+        qDebug() << "Reply Data:" << iData;
     }
 }
 #endif
 
-void QRestOperationShared::setNetworkReply(QNetworkReply *aNetworkReply)
+void QRestOperationShared::setNetworkReply(QSharedPointer<QRestOperationShared> aSelf,
+                                           QNetworkReply *aNetworkReply)
 {
     if (iNetworkReply != NULL) {
         iConnection->unregisterReply(iNetworkReply);
@@ -194,19 +197,20 @@ void QRestOperationShared::setNetworkReply(QNetworkReply *aNetworkReply)
         return;
     }
 
-    iConnection->registerReply(aNetworkReply, this);
+    iConnection->registerReply(aNetworkReply, aSelf);
 }
 
-void QEnginioOperationPrivate::operationFinished()
+
+void QRestOperationShared::operationFinishedPrepare(QSharedPointer<QRestOperationShared> aSelf) {
+    iJsonObject = QJsonDocument::fromJson(resultBytes()).object();
+
+    operationFinished(aSelf);
+}
+
+void QRestOperationShared::operationFinished(QSharedPointer<QRestOperationShared> aSelf)
 {
 
-    QEnginioRequest::dvar enginioRequest;
-    enginioRequest = iEnginioRequest.d<QEnginioRequest>();
-
-    if (!!enginioRequest && enginioRequest->iCallback) {
-        enginioRequest->iCallback(*q<QEnginioOperation>());
-    }
-
+    iRequest->operationFinished(aSelf);
     emit finished();
 }
 

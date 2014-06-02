@@ -121,10 +121,10 @@ void QQmlCloudServices::registerTypes(const char *uri)
     qmlRegisterUncreatableType<QtCloudServices>(uri, 1, 0, "QtCloudServices", "QtCloudServices is an enum container and can not be constructed");
 
     // EnginioDataStorage
-    qmlRegisterType<QEnginioDataStorageObject>(uri, 1, 0, "QEnginioDataStorage");
-    qmlRegisterType<QEnginioCollection>(uri, 1, 0, "QEnginioCollection");
-    qmlRegisterType<QEnginioOperation>(uri, 1, 0, "QEnginioOperation");
-    qmlRegisterType<QEnginioQuery>(uri, 1, 0, "QEnginioQuery");
+    //qmlRegisterType<QEnginioDataStorageObject>(uri, 1, 0, "QEnginioDataStorage");
+    //qmlRegisterType<QEnginioCollection>(uri, 1, 0, "QEnginioCollection");
+    //qmlRegisterType<QEnginioOperation>(uri, 1, 0, "QEnginioOperation");
+    //qmlRegisterType<QEnginioQuery>(uri, 1, 0, "QEnginioQuery");
 
     /*
     qmlRegisterUncreatableType<Enginio>(uri, 1, 0, "Enginio", "Enginio is an enum container and can not be constructed");

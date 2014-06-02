@@ -46,94 +46,28 @@
 #include <QtCore/qjsondocument.h>
 #include <QtNetwork/qnetworkreply.h>
 
-#include <QtCloudServices/private/qenginiooperation_p.h>
-#include <QtCloudServices/private/qenginioconnection_p.h>
-#include <QtCloudServices/private/qenginiorequest_p.h>
-#include <QtCloudServices/private/enginioobjectadaptor_p.h>
+#include <QtCloudServices/private/qenginiooperationshared_p.h>
+#include <QtCloudServices/private/qenginiorequestshared_p.h>
+#include <QtCloudServices/private/qenginiocollectionshared_p.h>
+#include <QtCloudServices/private/qenginioobjectshared_p.h>
+#include <QtCloudServices/private/qenginioobjectobject_p.h>
+#include <QtCloudServices/private/qcloudservicesconstants_p.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-  \class QEnginioOperation
-  \since 5.3
-  \brief The QEnginioOperation class contains the data from a request to the Enginio database.
-  \inmodule enginio-qt
-  \ingroup enginio-client
-
-  The reply, when finished, contains information received from the server:
-  \list
-  \li Data - object, which is a result from an earlier request,
-    see the \l {QEnginioOperation::data}{data} function
-  \li Network status - in case of a network problem, additional information can
-  be accessed through: errorType, errorString, networkError
-  \li Backend status - a finished request is always associated with a backend status
-  code, which is just an HTTP code, and it can be queried through backendStatus
-  \endlist
-
-  The finished signal is emitted when the query is done.
-
-  \sa QEnginioConnection
-*/
-
-/*!
-  \class QEnginioOperation
-  \since 5.3
-  \internal
-*/
-
-/*!
-  \enum QtCloudServices::ErrorType
-  Describes the type of error that occured when making a request to the Enginio backend.
-  \value NoError The reply returned without errors
-  \value NetworkError The error was a networking problem
-  \value BackendError The backend did not accept the query
-*/
-
-/*!
-  \fn QEnginioOperation::finished(QEnginioOperation *reply)
-  This signal is emitted when the QEnginioOperation \a reply is finished.
-  After the network operation, use the \l{QEnginioOperation::isError()}{isError()} function to check for
-  potential problems and then use the \l data property to access the returned data.
-*/
-
-/*!
-  \fn QEnginioOperation::progress(qint64 bytesSent, qint64 bytesTotal)
-  This signal is emitted for file operations, indicating the progress of up or downloads.
-  The \a bytesSent is the current progress relative to the total \a bytesTotal.
-*/
-
-/*
-** QEnginioOperationPrivate
-*/
-QEnginioOperationPrivate::QEnginioOperationPrivate()
-    : iNetworkReply(NULL),
-      iDelay(false)
+QEnginioOperationShared::QEnginioOperationShared(QSharedPointer<QEnginioConnectionShared> aEnginioConnection,
+                        QSharedPointer<QEnginioRequestShared> aRequest)
+ : QRestOperationShared(aEnginioConnection,aRequest)
 {
 
 }
-QEnginioOperationPrivate::QEnginioOperationPrivate(const QEnginioConnection &aEnginioConnection,
-        const QEnginioRequest &aEnginioRequest)
-    : iEnginioConnection(aEnginioConnection),
-      iEnginioRequest(aEnginioRequest),
-      iNetworkReply(NULL),
-      iDelay(false)
-{
-}
 
-QEnginioOperationPrivate::~QEnginioOperationPrivate()
-{
-    setNetworkReply(NULL);
-}
-
-
-
-
-int QEnginioOperationPrivate::resultObjectCount() const
+int QEnginioOperationShared::resultObjectCount() const
 {
     return iResultObjects.size();
 }
 
-QEnginioObject QEnginioOperationPrivate::resultObject() const
+QEnginioObject QEnginioOperationShared::resultObject() const
 {
     if (iResultObjects.size() == 1) {
         iResultObjects.first();
@@ -142,37 +76,15 @@ QEnginioObject QEnginioOperationPrivate::resultObject() const
     return QEnginioObject();
 }
 
-QList<QEnginioObject> QEnginioOperationPrivate::resultObjects() const
+QList<QEnginioObject> QEnginioOperationShared::resultObjects() const
 {
     return iResultObjects;
 }
 
-QEnginioRequest QEnginioOperationPrivate::enginioRequest() const
+#ifndef QT_NO_DEBUG_STREAM
+void QEnginioOperationShared::dumpDebugInfo(QDebug &d) const
 {
-    return iEnginioRequest;
-}
-
-void QEnginioOperationPrivate::dumpDebugInfo() const
-{
-    static QHash<QNetworkAccessManager::Operation, QByteArray> operationNames;
-    operationNames[QNetworkAccessManager::GetOperation] = "GET";
-    operationNames[QNetworkAccessManager::PutOperation] = "PUT";
-    operationNames[QNetworkAccessManager::PostOperation] = "POST";
-    operationNames[QNetworkAccessManager::DeleteOperation] = "DELETE";
-    operationNames[QNetworkAccessManager::CustomOperation] = "CUSTOM";
-
-    QNetworkRequest request = iNetworkReply->request();
-    qDebug() << "NetworkReply:" << iNetworkReply;
-    qDebug() << "  Request URL:" << request.url().toString(/*FormattingOptions*/ QUrl::None);
-    qDebug() << "  Operation:" << operationNames[iNetworkReply->operation()];
-    qDebug() << "  HTTP return code:" << backendStatus();
-    qDebug() << "  Headers[Content-Type]:" << request.header(QNetworkRequest::ContentTypeHeader);
-    qDebug() << "  Raw headers:" << request.rawHeaderList();
-    qDebug() << "  RawHeaders[Accept]:" << request.rawHeader(QtCloudServicesConstants::Accept);
-    qDebug() << "  RawHeaders[Authorization]:" << request.rawHeader(QtCloudServicesConstants::Authorization);
-    qDebug() << "  RawHeaders[Content-Type]:" << request.rawHeader(QtCloudServicesConstants::Content_Type);
-    qDebug() << "  RawHeaders[X_Request_Id]:" << request.rawHeader(QtCloudServicesConstants::X_Request_Id);
-
+    QRestOperationShared::dumpDebugInfo(d);
 #if 0
     QByteArray json = _client->_requestData.value(_nreply);
 
@@ -190,46 +102,19 @@ void QEnginioOperationPrivate::dumpDebugInfo() const
 
 #endif
 }
+#endif
 
-void QEnginioOperationPrivate::setEnginioRequest(const QEnginioRequest &aEnginioRequest)
-{
-    iEnginioRequest = aEnginioRequest;
-}
+void QEnginioOperationShared::operationFinished(QSharedPointer<QRestOperationShared> aSelf)
+{    
+    QSharedPointer<QEnginioRequestShared> enginioRequest;
+    QSharedPointer<QEnginioCollectionShared> enginioCollection;
 
-void QEnginioOperationPrivate::setNetworkReply(QNetworkReply *aNetworkReply)
-{
-    if (iNetworkReply != NULL) {
-        iEnginioConnection.d<QEnginioConnection>()->unregisterReply(iNetworkReply);
-
-        if (iNetworkReply->isFinished()) {
-            iNetworkReply->deleteLater();
-        } else {
-            iNetworkReply->setParent(iNetworkReply->manager());
-            QObject::connect(iNetworkReply, &QNetworkReply::finished,
-                             iNetworkReply, &QNetworkReply::deleteLater);
-            iNetworkReply->abort();
-        }
-    }
-
-    iNetworkReply = aNetworkReply;
-    iData = QByteArray();
-
-    if (!iNetworkReply) {
-        return;
-    }
-
-    iEnginioConnection.d<QEnginioConnection>()->registerReply(aNetworkReply, *q<QEnginioOperation>());
-}
-
-void QEnginioOperationPrivate::operationFinished()
-{
-    QEnginioCollection enginioCollection;
-    enginioCollection = iEnginioRequest.enginioCollection();
-
-    iJsonObject = QJsonDocument::fromJson(resultBytes()).object();
+    enginioRequest=qSharedPointerCast<QEnginioRequestShared>(request());
+    enginioCollection = enginioRequest->enginioCollection();
 
     iResultObjects.clear();
 
+    // TODO: cleanup
     if (iJsonObject.contains(QtCloudServicesConstants::results)) {
         QJsonArray jsonObjects;
         QJsonArray::const_iterator i;
@@ -242,339 +127,39 @@ void QEnginioOperationPrivate::operationFinished()
 
             if (!enginioCollection) {
                 QJsonObject  jsonObject = (*i).toObject();
-                qDebug() << "---- NEED RESOLVE (PER OBJECT)..."
+                qDebug() << "---- NEED RESOLVE (PER OBJECT)..." // TODO
                          << jsonObject.value(QtCloudServicesConstants::objectType);
 
                 continue;
             }
 
-            iResultObjects.push_back(enginioCollection.fromJsonObject((*i).toObject()));
+            QSharedPointer<QEnginioObjectShared> obj;
+            obj = enginioCollection->fromJsonObject(enginioCollection,(*i).toObject());
+
+            QEnginioObject x;
+            x.object()->d_func()->setSharedInstance(obj);
+
+            iResultObjects.push_back(x);
         }
     } else if (!iJsonObject.isEmpty()) {
         if (!enginioCollection) {
-            qDebug() << "---- NEED RESOLVE (PER OBJECT)..."
+            qDebug() << "---- NEED RESOLVE (PER OBJECT)..." // TODO
                      << iJsonObject.value(QtCloudServicesConstants::objectType);
         } else {
-            iResultObjects.push_back(enginioCollection.fromJsonObject(iJsonObject));
+            //iResultObjects.push_back(enginioCollection.fromJsonObject(iJsonObject));
+
+            QSharedPointer<QEnginioObjectShared> obj;
+            obj = enginioCollection->fromJsonObject(enginioCollection,iJsonObject);
+
+            QEnginioObject x;
+            x.object()->d_func()->setSharedInstance(obj);
+
+            iResultObjects.push_back(x);
         }
     }
 
-    QEnginioRequest::dvar enginioRequest;
-    enginioRequest = iEnginioRequest.d<QEnginioRequest>();
-
-    if (!!enginioRequest && enginioRequest->iCallback) {
-        enginioRequest->iCallback(*q<QEnginioOperation>());
-    }
+    QRestOperationShared::operationFinished(aSelf);
 }
-
-
-#if 0
-class QEnginioOperationPrivate: public QEnginioOperationPrivate {
-    QTC_DECLARE_PUBLIC(QEnginioOperation)
-public:
-    QEnginioOperationPrivate(QEnginioConnectionPrivate *p, QNetworkReply *reply)
-        : QEnginioOperationPrivate(p, reply)
-    {}
-    void emitFinished() Q_DECL_OVERRIDE;
-};
-#endif
-/*!
-  \internal
-*/
-#if 0
-QEnginioOperation::QEnginioOperation(QEnginioConnectionPrivate *p, QNetworkReply *reply)
-    : QEnginioOperation(p, reply, new QEnginioOperationPrivate(p, reply))
-{
-    QObject::connect(this, &QEnginioOperation::dataChanged, this, &QEnginioOperation::dataChanged);
-}
-#endif
-
-#if 0
-
-/*!
-  \brief Destroys the QEnginioOperation.
-
-  The reply needs to be deleted after the finished signal is emitted.
-*/
-QEnginioOperation::~QEnginioOperation()
-{}
-
-/*!
-  \internal
-*/
-void QEnginioOperationPrivate::emitFinished()
-{
-    QTC_Q(QEnginioOperation);
-    emit q->finished(q);
-}
-
-/*!
-  \internal
-*/
-void QEnginioOperation::swapNetworkReply(QEnginioOperation *other)
-{
-    QTC_D(QEnginioOperation);
-    d->swapNetworkReply(QTC_D_FUNC(other));
-}
-
-void QEnginioOperationPrivate::swapNetworkReply(QEnginioOperationPrivate *other)
-{
-#if 0
-    QTC_Q(QEnginioOperation);
-    Q_ASSERT(other->_client == _client);
-    _client->unregisterReply(_nreply);
-    _client->unregisterReply(other->_nreply);
-
-    qSwap(_nreply, other->_nreply);
-    _data = other->_data = QByteArray();
-
-    _client->registerReply(_nreply, q);
-    _client->registerReply(other->_nreply, QTC_Q_FUNC(other));
-#endif
-}
-
-/*!
-  \internal
-  Mark this QEnginioOperation as not finished, the finished signal
-  will be delayed until delayFinishedSignal() is returning true.
-
-  \note The feature can be used only with one QEnginioConnection
-*/
-void QEnginioOperation::setDelayFinishedSignal(bool delay)
-{
-#if 0
-    QTC_D(QEnginioOperation);
-    d->_delay = delay;
-    d->_client->finishDelayedReplies();
-#endif
-}
-
-/*!
-  \internal
-  Returns true if signal should be delayed
- */
-bool QEnginioOperation::delayFinishedSignal()
-{
-    QTC_D(QEnginioOperation);
-    return d->_delay;
-}
-
-#endif
-
-#if 0
-QEnginioOperation::QEnginioOperation(QEnginioConnectionPrivate *parent, QNetworkReply *reply,
-                                     QEnginioOperationPrivate *priv)
-    : QCloudServicesObject(*priv, QTC_Q_PTR(parent))
-{
-#if 0
-    parent->registerReply(reply, this);
-#endif
-}
-
-QEnginioOperation::~QEnginioOperation()
-{
-#if 0
-    QTC_D(QEnginioOperation);
-    Q_ASSERT(d->_nreply->parent() == this);
-
-    if (Q_UNLIKELY(!d->isFinished())) {
-        QObject::connect(d->_nreply, &QNetworkReply::finished, d->_nreply, &QNetworkReply::deleteLater);
-        d->_client->unregisterReply(d->_nreply);
-        d->_nreply->setParent(d->_nreply->manager());
-        d->_nreply->abort();
-    }
-
-#endif
-}
-
-#endif
-
-
-/*
-** QEnginioOperation
-*/
-
-QEnginioOperation::QEnginioOperation(const QEnginioConnection &aEnginioConnection,
-                                     const QEnginioRequest &aRequest)
-    : QCloudServicesObject(QEnginioOperation::dvar(new QEnginioOperationPrivate(aEnginioConnection, aRequest)))
-{
-
-}
-QEnginioOperation::QEnginioOperation()
-    : QCloudServicesObject(QEnginioOperation::dvar(new QEnginioOperationPrivate()))
-{
-
-}
-QEnginioOperation::QEnginioOperation(const QEnginioOperation &aOther)
-    : QCloudServicesObject(aOther.d<QEnginioOperation>())
-{
-}
-
-QEnginioOperation::~QEnginioOperation()
-{
-
-}
-
-QEnginioOperation & QEnginioOperation::operator=(const QEnginioOperation &aOther)
-{
-    setPIMPL(aOther.d<QEnginioOperation>());
-    return *this;
-}
-
-bool QEnginioOperation::operator!() const
-{
-    return !isValid() || isError();
-}
-
-bool QEnginioOperation::isValid() const
-{
-    return d<const QEnginioOperation>()->isValid();
-}
-
-/*!
-\fn bool QEnginioOperation::isError() const
-\brief QEnginioOperation::isError returns whether this reply was unsuccessful
-\return true if the reply did not succeed
-*/
-
-bool QEnginioOperation::isError() const
-{
-    return d<const QEnginioOperation>()->isError();
-}
-
-/*!
-\fn bool QEnginioOperation::isFinished() const
-\brief Returns whether this reply was finished or not
-\return true if the reply was finished, false otherwise.
-*/
-
-bool QEnginioOperation::isFinished() const
-{
-    return d<const QEnginioOperation>()->isFinished();
-}
-
-/*!
-\property QEnginioOperation::data
-\brief The data returned from the backend
-This property holds the JSON data returned by the server after a successful request.
-*/
-QJsonObject QEnginioOperation::result() const
-{
-    return d<const QEnginioOperation>()->result();
-}
-
-int QEnginioOperation::resultObjectCount() const
-{
-    return d<const QEnginioOperation>()->resultObjectCount();
-}
-QEnginioObject QEnginioOperation::resultObject() const
-{
-    return d<const QEnginioOperation>()->resultObject();
-}
-QList<QEnginioObject> QEnginioOperation::resultObjects() const
-{
-    return d<const QEnginioOperation>()->resultObjects();
-}
-
-
-/*!
-\property QEnginioOperation::errorType
-\return the type of the error
-\sa QtCloudServices::ErrorType
-*/
-
-QtCloudServices::ErrorType QEnginioOperation::errorType() const
-{
-    return d<const QEnginioOperation>()->errorType();
-}
-
-/*!
-\property QEnginioOperation::networkError
-This property holds the network error for the request.
-*/
-
-QNetworkReply::NetworkError QEnginioOperation::networkError() const
-{
-    return d<const QEnginioOperation>()->errorCode();
-}
-
-/*!
-\property QEnginioOperation::errorString
-This property holds the error for the request as human readable string.
-Check \l{QEnginioOperation::isError()}{isError()} first to check if the reply is an error.
-*/
-
-QString QEnginioOperation::errorString() const
-{
-    return d<const QEnginioOperation>()->errorString();
-}
-
-/*!
-\property QEnginioOperation::requestId
-This property holds the API request ID for the request.
-The request ID is useful for end-to-end tracking of requests and to identify
-the origin of notifications.
-\internal
-*/
-
-/*!
-\internal
-*/
-QString QEnginioOperation::requestId() const
-{
-    return d<const QEnginioOperation>()->requestId();
-}
-
-/*!
-\property QEnginioOperation::backendStatus
-\return the backend return status for this reply.
-\sa QtCloudServices::ErrorType
-*/
-int QEnginioOperation::backendStatus() const
-{
-    return d<const QEnginioOperation>()->backendStatus();
-}
-
-QEnginioRequest QEnginioOperation::enginioRequest() const
-{
-    return d<const QEnginioOperation>()->enginioRequest();
-}
-
-/*!
-\internal
-*/
-void QEnginioOperation::dumpDebugInfo() const
-{
-    d<const QEnginioOperation>()->dumpDebugInfo();
-}
-
-
-
-#ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug d, const QEnginioOperation &aReply)
-{
-    if (!aReply.isValid()) {
-        d << "QEnginioOperation(null)";
-        return d;
-    }
-
-    d.nospace();
-    // d << "QEnginioOperation(" << hex << (void *)aReply << dec;
-
-    if (!aReply.isError()) {
-        d << " success data=" << aReply.result();
-    } else {
-        d << " errorCode=" << aReply.networkError() << " ";
-        d << " errorString=" << aReply.errorString() << " ";
-        d << " errorResult=" << aReply.result() << " ";
-    }
-
-    d << "backendStatus=" << aReply.backendStatus();
-    d << ")";
-
-    return d.space();
-}
-
-#endif /* QT_NO_DEBUG_STREAM */
 
 QT_END_NAMESPACE
+

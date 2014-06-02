@@ -58,7 +58,6 @@ public:
     QEnginioRequestObjectPrivate(QtCloudServices::RESTOperation aOperation, QString aPath);
 
     QEnginioCollectionObject *enginioCollection() const Q_REQUIRED_RESULT;
-    void setEnginioCollection(const QEnginioCollectionObject *aEnginioCollection);
 };
 
 QT_END_NAMESPACE

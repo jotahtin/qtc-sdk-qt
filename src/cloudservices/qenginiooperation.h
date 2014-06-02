@@ -45,6 +45,7 @@
 #include <QtCloudServices/qrestoperation.h>
 #include <QtCloudServices/qenginiorequest.h>
 #include <QtCloudServices/qenginioobject.h>
+#include <QtCloudServices/qenginioquery.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,7 +62,6 @@ public:
     // Constructors
     QEnginioOperation();
     QEnginioOperation(const QEnginioOperation &aOther);
-    ~QEnginioOperation();
 
     // Assignment
     QEnginioOperation& operator=(const QEnginioOperation &aOther);

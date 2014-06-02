@@ -67,6 +67,7 @@ QT_BEGIN_NAMESPACE
 class QRestEndpointShared;
 class QRestConnectionShared : public QObject {
     Q_OBJECT
+    friend class QRestOperationShared;
 private:
     Q_DISABLE_COPY(QRestConnectionShared)
 public:
@@ -94,9 +95,8 @@ protected:
                        QSharedPointer<QRestOperationShared> aOperation);
     void unregisterReply(QNetworkReply *aNetworkReply);
 protected:
-    virtual QSharedPointer<QRestOperationShared> buildOperationInstance
-    (QSharedPointer<QRestConnectionShared> aSelf,
-     QSharedPointer<QRestRequestShared> aRequest);
+    virtual QSharedPointer<QRestOperationShared> buildOperationInstance(QSharedPointer<QRestConnectionShared> aSelf,
+                                                                        QSharedPointer<QRestRequestShared> aRequest);
 
     virtual bool prepareRequest(QNetworkRequest &aRequest,
                                 const QString &aPath,

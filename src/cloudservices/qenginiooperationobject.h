@@ -54,8 +54,8 @@ class QEnginioConnectionObject;
 class QEnginioOperationObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioOperationObject : public QRestOperationObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QEnginioOperationObject)
-
     Q_PROPERTY(int backendStatus READ backendStatus NOTIFY dataChanged)
     Q_PROPERTY(QString requestId READ requestId CONSTANT)
     Q_PROPERTY(int resultObjectCount READ resultObjectCount NOTIFY dataChanged)
@@ -64,12 +64,7 @@ private:
 public:
     typedef std::function<void(QEnginioOperationObject *aOperation)> Callback;
 public:
-    QEnginioOperationObject(const QEnginioConnectionObject *aEnginioConnection = 0,
-                            const QEnginioRequestObject *aEnginioRequest = 0,
-                            QObject *aParent=0);
-
-    int backendStatus() const Q_REQUIRED_RESULT;
-    QString requestId() const Q_REQUIRED_RESULT;
+    QEnginioOperationObject(QObject *aParent=0);
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;

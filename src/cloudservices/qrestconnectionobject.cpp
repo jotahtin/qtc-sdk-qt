@@ -45,6 +45,9 @@
 #include <QtCloudServices/private/qrestconnectionshared_p.h>
 #include <QtCloudServices/private/qrestoperationobject_p.h>
 #include <QtCloudServices/private/qrestrequestobject_p.h>
+#include <QtCloudServices/private/qrestendpointobject_p.h>
+
+
 
 QT_BEGIN_NAMESPACE
 
@@ -52,12 +55,13 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 
-// Constructor for valid connection.
-QRestConnectionObjectPrivate::QRestConnectionObjectPrivate(const QRestEndpointObject *aRestEndpointObject) {
+QRestConnectionObjectPrivate::QRestConnectionObjectPrivate() {
 }
 
 QRestConnectionObjectPrivate::~QRestConnectionObjectPrivate() {
-
+    if (iShared) {
+        deinit();
+    }
 }
 
 bool QRestConnectionObjectPrivate::isValid() const {
@@ -73,23 +77,43 @@ QSharedPointer<QNetworkAccessManager> QRestConnectionObjectPrivate::networkManag
 }
 
 QRestOperationObject *QRestConnectionObjectPrivate::restRequest(const QRestRequestObject *aRequest) {
-    Q_Q(QRestConnectionObject);
-    QRestRequestObjectPrivate *requestPrv;
-
-    requestPrv = reinterpret_cast<QRestRequestObjectPrivate *>(aRequest->d_ptr);
-
-    aRequest->d_ptr
-    iShared->restRequest()
-
     QRestOperationObject *op;
+    QSharedPointer<QRestOperationShared> opShared;
 
-    op = new QRestOperationObject(q,aRequest);
-    op->setSharedInstanceFrom();
+    opShared = iShared->restRequest(iShared, aRequest->d_func()->sharedInstance());
 
+    op = buildOperationObject();
+    op->d_func()->setSharedInstance(opShared);
 
-    iShared->restRequest(iShared,requestPrv->sharedInstance())
+    return op;
 }
 
+void QRestConnectionObjectPrivate::init() {
+
+}
+
+void QRestConnectionObjectPrivate::deinit() {
+
+}
+
+QRestOperationObject* QRestConnectionObjectPrivate::buildOperationObject() const {
+    return new QRestOperationObject;
+}
+
+QSharedPointer<QRestConnectionShared> QRestConnectionObjectPrivate::sharedInstance() const {
+    return iShared;
+}
+void QRestConnectionObjectPrivate::setSharedInstance(QSharedPointer<QRestConnectionShared> aShared) {
+    if (iShared) {
+        deinit();
+    }
+
+    iShared = aShared;
+
+    if (iShared) {
+        init();
+    }
+}
 
 /*
 ** Public
@@ -101,9 +125,8 @@ QRestConnectionObject::QRestConnectionObject(QRestConnectionObjectPrivate &dd,QO
 
 }
 
-QRestConnectionObject::QRestConnectionObject(const QRestEndpointObject *aRestEndpointObject,
-                                             QObject *aParent)
-    : QObject(*new QRestConnectionObjectPrivate(aRestEndpointObject,aParent), aParent)
+QRestConnectionObject::QRestConnectionObject(QObject *aParent)
+    : QObject(*new QRestConnectionObjectPrivate, aParent)
 {
 
 }

@@ -70,6 +70,10 @@ QEnginioUser::QEnginioUser(const QEnginioUser &aOther)
     object()->setSharedInstanceFrom(aOther.object());
 }
 
+QEnginioUser::~QEnginioUser() {
+
+}
+
 QEnginioUser& QEnginioUser::operator=(const QEnginioUser &aOther) {
     object()->setSharedInstanceFrom(aOther.object());
     return *this;

@@ -75,22 +75,25 @@ public:
     QRestOperationObjectPrivate();
     ~QRestOperationObjectPrivate();
 
-    virtual QRestConnectionObject *restConnection() const Q_REQUIRED_RESULT;
-    virtual QRestRequestObject *restRequest() const Q_REQUIRED_RESULT;
+    QRestConnectionObject *connection() const Q_REQUIRED_RESULT;
+    QRestRequestObject *request() const Q_REQUIRED_RESULT;
 
     bool isValid() const Q_REQUIRED_RESULT;
     bool isError() const Q_REQUIRED_RESULT;
     bool isFinished() const Q_REQUIRED_RESULT;
 
+    int backendStatus() const Q_REQUIRED_RESULT;
+    QString requestId() const Q_REQUIRED_RESULT;
+
     QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
-    QNetworkReply::NetworkError networkError() const Q_REQUIRED_RESULT;
+    QNetworkReply::NetworkError errorCode() const Q_REQUIRED_RESULT;
     QString errorString() const Q_REQUIRED_RESULT;
 
     QJsonObject resultJson() const Q_REQUIRED_RESULT;
     QByteArray resultBytes() const Q_REQUIRED_RESULT;
 
 #ifndef QT_NO_DEBUG_STREAM
-    void dumpDebugInfo() const;
+    void dumpDebugInfo(QDebug &d) const;
 #endif
 protected:
     virtual void init();
@@ -98,6 +101,9 @@ protected:
 public:
     QSharedPointer<QRestOperationShared> sharedInstance() const;
     void setSharedInstance(QSharedPointer<QRestOperationShared> aShared);
+protected:
+    virtual QRestConnectionObject *buildConnectionObject() const;
+    virtual QRestRequestObject *buildRequestObject() const;
 private:
     QSharedPointer<QRestOperationShared> iShared;
 

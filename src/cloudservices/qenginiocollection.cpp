@@ -48,6 +48,11 @@
 
 QT_BEGIN_NAMESPACE
 
+QEnginioCollection::QEnginioCollection(QEnginioCollectionObject *aEnginioCollectionObject)
+    : iObject(aEnginioCollectionObject)
+{
+}
+
 QEnginioCollection::QEnginioCollection()
     : iObject(new QEnginioCollectionObject)
 {

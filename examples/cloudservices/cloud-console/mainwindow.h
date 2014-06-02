@@ -20,7 +20,7 @@ public slots:
 
     void doSwitchToMws();
 public:
-    void handleOperationReply(QEnginioOperation & op);
+    void handleOperationReply(QEnginioOperation op);
 private:
     Ui::MainWindowClass ui;
 private:

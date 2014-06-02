@@ -77,7 +77,7 @@ QRestRequest::QRestRequest(QRestRequestObject *aObject)
 }
 
 QRestRequest::QRestRequest()
-    : iObject(new QRestRequstObject())
+    : iObject(new QRestRequestObject)
 {
 
 }
@@ -89,9 +89,15 @@ QRestRequest::QRestRequest(QtCloudServices::RESTOperation aOperation, QString aP
 }
 
 QRestRequest::QRestRequest(const QRestRequest &aOther)
-    : iObject(new QRestRequstObject())
+    : iObject(new QRestRequestObject)
 {
       object()->setSharedInstanceFrom(aOther.object());
+}
+
+QRestRequest::~QRestRequest() {
+    if (iObject) {
+        delete iObject;
+    }
 }
 
 QRestRequest& QRestRequest::operator=(const QRestRequest &aOther) {
@@ -99,7 +105,7 @@ QRestRequest& QRestRequest::operator=(const QRestRequest &aOther) {
     return *this;
 }
 
-QtCloudServices::RESTOperation QRestRequest::operation() {
+QtCloudServices::RESTOperation QRestRequest::operation() const {
     return object()->operation();
 }
 
@@ -130,7 +136,6 @@ void QRestRequest::setExtraHeaders(const QJsonObject &aExtraHeaders) {
 
 QRestRequest &QRestRequest::then(std::function<void(QRestOperation)> aCallback) {
     iObject->setCallback([=](QRestOperationObject *aOperation) {
-        if (!aObject) return;
         aCallback( QRestOperation(aOperation) );
     });
     return *this;

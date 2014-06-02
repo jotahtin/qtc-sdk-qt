@@ -57,12 +57,15 @@
 #include <QtCloudServices/qtcloudservices_global.h>
 #include <QtCloudServices/qrestrequest.h>
 
+#include <QtCloudServices/qrestoperation.h>
+
 QT_BEGIN_NAMESPACE
 
 class QRestConnectionObject;
 class QRestOperationObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QRestOperationObject : public QObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QRestOperationObject)
 
     /*
@@ -75,17 +78,17 @@ class QTCLOUDSERVICES_EXPORT QRestOperationObject : public QObject {
     Q_PROPERTY(bool isFinished READ isFinished NOTIFY dataChanged)
 
     Q_PROPERTY(QtCloudServices::ErrorType errorType READ errorType NOTIFY dataChanged)
-    Q_PROPERTY(QNetworkReply::NetworkError networkError READ networkError NOTIFY dataChanged)
+    Q_PROPERTY(QNetworkReply::NetworkError errorCode READ errorCode NOTIFY dataChanged)
     Q_PROPERTY(QString errorString READ errorString NOTIFY dataChanged)
 
     Q_PROPERTY(QJsonObject resultJson READ resultJson NOTIFY dataChanged)
     Q_PROPERTY(QByteArray resultBytes READ resultBytes NOTIFY dataChanged)
 private:
     Q_DISABLE_COPY(QRestOperationObject)
+protected:
+    QRestOperationObject(QRestOperationObjectPrivate &dd,QObject *aParent);
 public:
-    QRestOperationObject(const QRestConnectionObject *aRestConnection=0,
-                         const QRestRequestObject *aRestRequest=0,
-                         QObject *aParent=0);
+    QRestOperationObject(QObject *aParent=0);
 
     // connection & request
     QRestConnectionObject *connection() const Q_REQUIRED_RESULT;

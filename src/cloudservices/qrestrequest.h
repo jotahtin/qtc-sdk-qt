@@ -54,12 +54,14 @@ QT_BEGIN_NAMESPACE
 class QRestOperation;
 class QRestRequestObject;
 class QTCLOUDSERVICES_EXPORT QRestRequest {
+    friend class QRestOperation;
 protected:
     QRestRequest(QRestRequestObject *aObject);
 public:
     QRestRequest();
     QRestRequest(QtCloudServices::RESTOperation aOperation, QString aPath);
     QRestRequest(const QRestRequest &aOther);
+    virtual ~QRestRequest();
 
     QRestRequest& operator=(const QRestRequest &aOther);
 

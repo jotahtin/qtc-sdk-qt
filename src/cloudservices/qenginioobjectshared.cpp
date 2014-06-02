@@ -42,10 +42,25 @@
 #include "stdafx.h"
 
 #include "QtCloudServices/private/qenginioobjectshared_p.h"
+#include "QtCloudServices/private/qenginiocollectionshared_p.h"
 #include "QtCloudServices/private/qcloudservicesconstants_p.h"
 
 QT_BEGIN_NAMESPACE
 
+QEnginioObjectShared::SaveCompletedFunctor::SaveCompletedFunctor(QSharedPointer<QEnginioObjectShared> aSelf)
+    : iSelf(aSelf)
+{}
+void QEnginioObjectShared::SaveCompletedFunctor::operator ()
+    (QSharedPointer<QRestOperationShared> aOperation)
+{
+    QSharedPointer<QEnginioOperationShared> op;
+    op=qSharedPointerCast<QEnginioOperationShared>(aOperation);
+        if (op.isNull() || op->isError()) {
+            emit iSelf->operationFailed(op->errorString());
+        } else {
+            iSelf->markAsSynced();
+        }
+}
 
 QEnginioObjectShared::QEnginioObjectShared()
 {
@@ -127,35 +142,35 @@ const QJsonObject QEnginioObjectShared::jsonObject() const
     return iJsonObject;
 }
 
-const QString QEnginioObjectShared::objectId() const
+QString QEnginioObjectShared::objectId() const
 {
     return value(QtCloudServicesConstants::id).toString();
 }
-const QString QEnginioObjectShared::objectType() const
+QString QEnginioObjectShared::objectType() const
 {
     return value(QtCloudServicesConstants::objectType).toString();
 }
-const QTime QEnginioObjectShared::createAt() const
+QTime QEnginioObjectShared::createAt() const
 {
     return iCreatedAt;
 }
-const QEnginioUser QEnginioObjectShared::creator() const
+QSharedPointer<QEnginioUserShared> QEnginioObjectShared::creator() const
 {
     return iCreator;
 }
-const QTime QEnginioObjectShared::updatedAt() const
+QTime QEnginioObjectShared::updatedAt() const
 {
     return iUpdatedAt;
 }
-const QEnginioUser QEnginioObjectShared::updater() const
+QSharedPointer<QEnginioUserShared> QEnginioObjectShared::updater() const
 {
     return iUpdater;
 }
 
-QSharedPointer<QEnginioOperationShared> QEnginioObjectShared::save()
+QSharedPointer<QEnginioOperationShared> QEnginioObjectShared::save(QSharedPointer<QEnginioObjectShared> aSelf)
 {
     if (!isModified()) {
-        return QEnginioOperation();
+        return QSharedPointer<QEnginioOperationShared>();
     }
 
     QJsonObject update;
@@ -176,11 +191,9 @@ QSharedPointer<QEnginioOperationShared> QEnginioObjectShared::save()
         update.insert(i.key(), i.value());
     }
 
-    QEnginioObject::dvar self = getThis<QEnginioObject>();
-    return iEnginioCollection.update(objectId(), update,
-    [ = ](QEnginioOperation & op) {
-        self->saveCompleted(op);
-    });
+    return iEnginioCollection->update(iEnginioCollection,
+                                      objectId(), update,
+                                      SaveCompletedFunctor(aSelf));
 }
 
 void QEnginioObjectShared::setEnginioCollection(QSharedPointer<QEnginioCollectionShared> aEnginioCollection)
@@ -198,15 +211,6 @@ void QEnginioObjectShared::markAsSynced()
 {
     iPersistentJsonObject = iJsonObject;
     emit objectChanged();
-}
-
-void QEnginioObjectShared::saveCompleted(QEnginioOperation & op)
-{
-    if (!op) {
-        emit operationFailed(op.errorString());
-    } else {
-        markAsSynced();
-    }
 }
 
 QT_END_NAMESPACE

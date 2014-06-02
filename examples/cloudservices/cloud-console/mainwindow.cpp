@@ -16,15 +16,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui.setupUi(this);
 
     ui.lineEditEdsBackendId->setText(iEnginioDataStorage.backendId());
-    ui.lineEditEdsinstanceAddress->setText(iEnginioDataStorage.instanceAddress().toString());
+    ui.lineEditEdsinstanceAddress->setText(iEnginioDataStorage.endpointAddress().toString());
 
     connect(ui.lineEditEdsBackendId, &QLineEdit::textChanged,
-            &iEnginioDataStorage, &QEnginioDataStorage::setBackendId);
+            iEnginioDataStorage.object(), &QEnginioDataStorageObject::setBackendId);
     connect(ui.lineEditEdsinstanceAddress, &QLineEdit::textChanged,
-            &iEnginioDataStorage, &QEnginioDataStorage::setInstanceAddressString);
-    connect(&iEnginioDataStorage, &QEnginioDataStorage::backendIdChanged,
+            iEnginioDataStorage.object(), &QEnginioDataStorageObject::setEndpointAddressString);
+    connect(iEnginioDataStorage.object(), &QEnginioDataStorageObject::backendIdChanged,
             ui.lineEditEdsBackendId, &QLineEdit::setText);
-    connect(&iEnginioDataStorage, &QEnginioDataStorage::instanceAddressChanged,
+    connect(iEnginioDataStorage.object(), &QEnginioDataStorageObject::endpointAddressChanged,
     [ = ](const QUrl & instanceAddress) {
         this->ui.lineEditEdsinstanceAddress->setText(instanceAddress.toString());
     });
@@ -150,7 +150,7 @@ void MainWindow::doSwitchToMws()
     ui.stackedWidget->setCurrentIndex(1);
 }
 
-void MainWindow::handleOperationReply(QEnginioOperation & op)
+void MainWindow::handleOperationReply(QEnginioOperation op)
 {
     if (!op) {
         this->ui.plainTextEditOutput->insertPlainText(
@@ -171,7 +171,7 @@ void MainWindow::handleOperationReply(QEnginioOperation & op)
     );
 
     ui.plainTextEditOutput->insertPlainText(
-        QString::fromLatin1(QJsonDocument(op.result()).toJson())
+        QString::fromLatin1(QJsonDocument(op.resultJson()).toJson())
     );
 
 

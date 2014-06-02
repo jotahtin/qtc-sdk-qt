@@ -56,7 +56,6 @@ private:
 public:
     // Default Constructor
     QManagedWebSocketObjectPrivate();
-    QManagedWebSocketObjectPrivate(const QUrl &aInstanceAddress, const QString &aGatewayId);
     ~QManagedWebSocketObjectPrivate();
 
     // IsValid

@@ -72,21 +72,13 @@ QEnginioCollectionObjectPrivate::find(const QEnginioQueryObject *aQuery,
                                       QEnginioOperationObject::Callback aCallback)
 {
     QEnginioOperationObject *op;
-    QEnginioOperationObjectPrivate *opPrv;
     QSharedPointer<QEnginioOperationShared> opShared;
-
-    QEnginioQueryObjectPrivate *queryPrv;
 
     if (!aQuery) {
         return NULL;
     }
 
-    queryPrv=reinterpret_cast<QEnginioQueryObjectPrivate *>(aQuery->d_ptr);
-    if (!queryPrv) {
-        return NULL;
-    }
-
-    opShared = iShared->find(iShared,queryPrv->sharedInstance(),
+    opShared = iShared->find(iShared,aQuery->d_func()->sharedInstance(),
                 [=](QSharedPointer<QEnginioOperationShared> aOperation) {
                     handleCompletedOperation(aOperation,aCallback);
                 });
@@ -96,8 +88,7 @@ QEnginioCollectionObjectPrivate::find(const QEnginioQueryObject *aQuery,
     }
 
     op=new QEnginioOperationObject;
-    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
-    opPrv->setSharedInstance(opShared);
+    op->d_func()->setSharedInstance(opShared);
 
     return op;
 }
@@ -107,12 +98,7 @@ QEnginioCollectionObjectPrivate::findOne(const QString &aObjectId,
                                          QEnginioOperationObject::Callback aCallback)
 {
     QEnginioOperationObject *op;
-    QEnginioOperationObjectPrivate *opPrv;
     QSharedPointer<QEnginioOperationShared> opShared;
-
-    if (!aQuery) {
-        return NULL;
-    }
 
     opShared = iShared->findOne(iShared,aObjectId,
                 [=](QSharedPointer<QEnginioOperationShared> aOperation) {
@@ -124,8 +110,7 @@ QEnginioCollectionObjectPrivate::findOne(const QString &aObjectId,
     }
 
     op=new QEnginioOperationObject;
-    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
-    opPrv->setSharedInstance(opShared);
+    op->d_func()->setSharedInstance(opShared);
 
     return op;
 }
@@ -135,21 +120,13 @@ QEnginioCollectionObjectPrivate::insert(const QEnginioObjectObject *aObject,
                                         QEnginioOperationObject::Callback aCallback)
 {
     QEnginioOperationObject *op;
-    QEnginioOperationObjectPrivate *opPrv;
     QSharedPointer<QEnginioOperationShared> opShared;
-
-    QEnginioObjectObjectPrivate *objPrv;
 
     if (!aObject) {
         return NULL;
     }
 
-    objPrv=reinterpret_cast<QEnginioOperationObjectPrivate *>(aObject->d_ptr);
-    if (!objPrv) {
-        return NULL;
-    }
-
-    opShared = iShared->insert(iShared,objPrv->sharedInstance(),
+    opShared = iShared->insert(iShared,aObject->d_func()->sharedInstance(),
                 [=](QSharedPointer<QEnginioOperationShared> aOperation) {
                     handleCompletedOperation(aOperation,aCallback);
                 });
@@ -159,8 +136,7 @@ QEnginioCollectionObjectPrivate::insert(const QEnginioObjectObject *aObject,
     }
 
     op=new QEnginioOperationObject;
-    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
-    opPrv->setSharedInstance(opShared);
+    op->d_func()->setSharedInstance(opShared);
 
     return op;
 }
@@ -171,7 +147,6 @@ QEnginioCollectionObjectPrivate::update(const QString &aObjectId,
                                         QEnginioOperationObject::Callback aCallback)
 {
     QEnginioOperationObject *op;
-    QEnginioOperationObjectPrivate *opPrv;
     QSharedPointer<QEnginioOperationShared> opShared;
 
     opShared = iShared->update(iShared,aObjectId, aObject,
@@ -184,8 +159,7 @@ QEnginioCollectionObjectPrivate::update(const QString &aObjectId,
     }
 
     op=new QEnginioOperationObject;
-    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
-    opPrv->setSharedInstance(opShared);
+    op->d_func()->setSharedInstance(opShared);
 
     return op;
 }
@@ -195,7 +169,6 @@ QEnginioCollectionObjectPrivate::remove(const QString &aObjectId,
                                         QEnginioOperationObject::Callback aCallback)
 {
     QEnginioOperationObject *op;
-    QEnginioOperationObjectPrivate *opPrv;
     QSharedPointer<QEnginioOperationShared> opShared;
 
     opShared = iShared->remove(iShared,aObjectId,
@@ -208,23 +181,30 @@ QEnginioCollectionObjectPrivate::remove(const QString &aObjectId,
     }
 
     op=new QEnginioOperationObject;
-    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
-    opPrv->setSharedInstance(opShared);
+    op->d_func()->setSharedInstance(opShared);
 
     return op;
 }
 
 QEnginioObjectObject *QEnginioCollectionObjectPrivate::fromJsonObject(const QJsonObject &aJsonObject) {
     QEnginioObjectObject *obj;
-    QSharedPointer<QEnginioObjectShared> objShared;
 
-    objShared = iShared->fromJsonObject();
     obj = new QEnginioObjectObject();
-
-    reinterpret_cast<QEnginioObjectObjectPrivate *>(obj->d_ptr)->setSharedInstance(objShared);
+    obj->d_func()->setSharedInstance(iShared->fromJsonObject(iShared,aJsonObject));
 
     return obj;
 }
+
+/*
+QSharedPointer<QRestConnectionShared> QEnginioCollectionObjectPrivate::buildSharedInstance(QSharedPointer<QRestEndpointShared> aEndpoint)
+{
+    QSharedPointer<QEnginioDataStorageObject> eds;
+
+    eds=qSharedPointerCast<QEnginioDataStorageObject>(aEndpoint);
+
+    return QSharedPointer<QRestConnectionShared>(new QEnginioConnectionShared(eds));
+}
+*/
 
 void QEnginioCollectionObjectPrivate::init() {
 
@@ -254,15 +234,13 @@ void QEnginioCollectionObjectPrivate::handleCompletedOperation(QSharedPointer<QE
                               QEnginioOperationObject::Callback aCallback)
 {
     QEnginioOperationObject *obj;
-    QEnginioOperationObjectPrivate *objPrv;
 
     if (!aCallback) {
         return;
     }
 
     obj = new QEnginioOperationObject();
-    objPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(obj->d_ptr);
-    objPrv->setSharedInstance(aOperation);
+    obj->d_func()->setSharedInstance(aOperation);
 
     aCallback(obj);
 }
@@ -328,13 +306,8 @@ QEnginioObjectObject *QEnginioCollectionObject::fromJsonObject(const QJsonObject
 }
 
 void QEnginioCollectionObject::setSharedInstanceFrom(const QEnginioCollectionObject *aOther) {
-    const QEnginioCollectionObjectPrivate *otherPrivate;
     Q_D(QEnginioCollectionObject);
-
-    otherPrivate=reinterpret_cast<QEnginioCollectionObjectPrivate *>(aOther->d_ptr);
-    if (otherPrivate) {
-        d->setSharedInstance(otherPrivate->sharedInstance());
-    }
+    d->setSharedInstance(aOther->d_func()->sharedInstance());
 }
 
 QT_END_NAMESPACE

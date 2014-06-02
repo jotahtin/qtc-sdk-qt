@@ -81,7 +81,9 @@ QSharedPointer<QRestOperationShared> QEnginioConnectionShared::buildOperationIns
     self=qSharedPointerCast<QEnginioConnectionShared>(aSelf);
     request=qSharedPointerCast<QEnginioRequestShared>(aRequest);
 
-    return QSharedPointer<QRestOperationShared>(new QEnginioOperationShared(self,request));
+    QSharedPointer<QRestOperationShared> shared(new QEnginioOperationShared(self,request));
+
+    return shared;
 }
 
 bool QEnginioConnectionShared::prepareRequest(QNetworkRequest &aRequest,

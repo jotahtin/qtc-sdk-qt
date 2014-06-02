@@ -58,6 +58,7 @@ public:
     QEnginioUser();
     QEnginioUser(const QJsonObject &aJsonObject);
     QEnginioUser(const QEnginioUser &aOther);
+    virtual ~QEnginioUser();
 
     QEnginioUser& operator=(const QEnginioUser &aOther);
 
@@ -65,10 +66,6 @@ public:
     QString email() const Q_REQUIRED_RESULT;
     QString firstName() const Q_REQUIRED_RESULT;
     QString lastName() const Q_REQUIRED_RESULT;
-protected:
-    virtual void lazyInitialization();
-Q_SIGNALS:
-    void objectChanged();
 };
 
 QT_END_NAMESPACE

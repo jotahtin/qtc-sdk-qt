@@ -47,37 +47,64 @@
 #include <QtNetwork/qnetworkreply.h>
 
 #include <QtCloudServices/private/qenginiooperationobject_p.h>
+#include <QtCloudServices/private/qenginiooperationshared_p.h>
+#include <QtCloudServices/private/qenginioconnectionobject_p.h>
+#include <QtCloudServices/private/qenginiorequestobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
+/*
+** Private
+*/
+
+QEnginioOperationObjectPrivate::QEnginioOperationObjectPrivate() {
+
+}
+
+int QEnginioOperationObjectPrivate::resultObjectCount() const {
+    QSharedPointer<const QEnginioOperationShared> shared;
+    shared = qSharedPointerCast<const QEnginioOperationShared>(sharedInstance());
+    return shared->resultObjectCount();
+}
+QEnginioObject QEnginioOperationObjectPrivate::resultObject() const {
+    QSharedPointer<const QEnginioOperationShared> shared;
+    shared = qSharedPointerCast<const QEnginioOperationShared>(sharedInstance());
+    return shared->resultObject();
+}
+QList<QEnginioObject> QEnginioOperationObjectPrivate::resultObjects() const {
+    QSharedPointer<const QEnginioOperationShared> shared;
+    shared = qSharedPointerCast<const QEnginioOperationShared>(sharedInstance());
+    return shared->resultObjects();
+}
+
+QRestConnectionObject *QEnginioOperationObjectPrivate::buildConnectionObject() const {
+    return new QEnginioConnectionObject;
+}
+QRestRequestObject *QEnginioOperationObjectPrivate::buildRequestObject() const {
+    return new QEnginioRequestObject;
+}
 
 /*
 ** Public
 */
 
-QEnginioOperationObject::QEnginioOperationObject(const QEnginioConnectionObject *aEnginioConnection,
-                        const QEnginioRequestObject *aEnginioRequest,
-                        QObject *aParent)
-    : QObject(*new QEnginioOperationObjectPrivate(aEnginioConnection,aEnginioRequest),aParent)
+QEnginioOperationObject::QEnginioOperationObject(QObject *aParent)
+    : QRestOperationObject(*new QEnginioOperationObjectPrivate,aParent)
 {
 
 }
 
 int QEnginioOperationObject::resultObjectCount() const {
-
+    Q_D(const QEnginioOperationObject);
+    return d->resultObjectCount();
 }
 QEnginioObject QEnginioOperationObject::resultObject() const {
-
+    Q_D(const QEnginioOperationObject);
+    return d->resultObject();
 }
 QList<QEnginioObject> QEnginioOperationObject::resultObjects() const {
-
-}
-
-QString QEnginioOperationObject::requestId() const {
-
-}
-int QEnginioOperationObject::backendStatus() const {
-
+    Q_D(const QEnginioOperationObject);
+    return d->resultObjects();
 }
 
 QT_END_NAMESPACE

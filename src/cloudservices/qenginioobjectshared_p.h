@@ -43,17 +43,29 @@
 #define QCLOUDSERVICES_QENGINIOOBJECT_SHARED_P_H
 
 #include <QTime>
+#include <QJsonObject>
 #include <QJsonValueRef>
 
 #include <QtCloudServices/qtcloudservices_global.h>
 
 QT_BEGIN_NAMESPACE
 
+class QRestOperationShared;
 class QEnginioUserShared;
 class QEnginioOperationShared;
 class QEnginioCollectionShared;
 class QEnginioObjectShared : public QObject {
     Q_OBJECT
+    friend class QEnginioCollectionShared;
+    friend class QEnginioObjectObjectPrivate;
+private:
+    class SaveCompletedFunctor {
+    public:
+        SaveCompletedFunctor(QSharedPointer<QEnginioObjectShared> aSelf);
+        void operator ()(QSharedPointer<QRestOperationShared> aOperation);
+    private:
+        QSharedPointer<QEnginioObjectShared> iSelf;
+    };
 public:
     QEnginioObjectShared();
     QEnginioObjectShared(const QJsonObject &aJsonObject);
@@ -71,15 +83,19 @@ public:
     const QJsonObject jsonObject() const Q_REQUIRED_RESULT;
 
     QString objectId() const Q_REQUIRED_RESULT;
+    QString objectType() const Q_REQUIRED_RESULT;
+
     QTime createAt() const Q_REQUIRED_RESULT;
     QSharedPointer<QEnginioUserShared> creator() const Q_REQUIRED_RESULT;
-    QString objectType() const Q_REQUIRED_RESULT;
     QTime updatedAt() const Q_REQUIRED_RESULT;
     QSharedPointer<QEnginioUserShared> updater() const Q_REQUIRED_RESULT;
 
-    QSharedPointer<QEnginioOperationShared> save();
+    QSharedPointer<QEnginioOperationShared> save(QSharedPointer<QEnginioObjectShared> aSelf);
 protected:
     void setEnginioCollection(QSharedPointer<QEnginioCollectionShared> aEnginioCollection);
+public:
+    void setUpdatedContent(const QJsonObject &aJsonObject);
+    void markAsSynced();
 Q_SIGNALS:
     void objectChanged();
     void operationFailed(QString);
