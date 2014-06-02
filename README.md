@@ -46,6 +46,146 @@ This SDK provides connectivity support to QtCloudServices for both Qt/C++ and Qt
 
 #### Qt/QML
 
+Include QtCloudServices module.
+
+''
+import QtQuick 2.2
+import QtCloudServices 1.0
+''
+
+Create QnginioDataStorage instance in some suitable data area in QML, take note to id 'eds' this is used
+later to reference this data storage instance. 
+
+''
+Item {
+   ...
+   Rectangle {
+       data: [
+           QEnginioDataStorage {
+               id: eds
+               backendId: "123456789abcdef123456789"     // backend id
+               endpointAddress: "https://api.engin.io"   // instance addres
+           }
+       ]
+   }
+   ...
+''
+
+##### QEnginioDataStorage.collection
+''
+        var collection = eds.collection(name)
+        
+        // for example
+        var todos = eds.collection("todos")
+''
+
+Assign collection instance. Arguments:
+
+* name - A name of the collection
+
+##### QEnginioDataStorage.collection.find
+
+''
+    collection.find(query, resultHandler)
+
+    // for example
+    function handleResult(op) {
+        if (op.isValid) {
+            console.log("Operation Success")
+            //console.log("DATA: " + op.resultJson["id"])
+            //console.log("DATA: " + op.resultJson)
+            console.log("DATA: " + op.resultBytes)
+        } else {
+            console.log("Operation Error: " + op.errorString)
+        }
+    }
+
+    var todos = eds.collection("todos")
+    todos.find({
+                "q": {
+                       "name": "John"
+                     },
+                "limit":   5,
+                "offset":  0
+               },
+               handleResult)
+
+''
+Query for objects in a collection. Arguments:
+
+* query : Query definition
+  * q      - Query definition see [Enginio documentation](https://developer.qtcloudservices.com/eds/key-concepts/files)
+  * limit  - Result set limit
+  * offset - Result set offset
+  * ...
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.findOne
+
+''
+    collection.find(objectId, resultHandler)
+
+    // for example
+    var todos = eds.collection("todos")
+    todos.findOne("538cebdce5bde532110096c6",
+                  handleResult)
+''
+Find an object in collection. Arguments:
+
+* objectId - Object Identifier
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.insert
+
+''
+    collection.insert(object, resultHandler)
+
+    // for example
+    var todos = eds.collection("todos")
+    todos.insert({
+                "name": "John Doe",
+                "age": 31,
+                "completed": true
+                },handleResult)
+''
+Insert an object into a collection. Arguments:
+
+* object - Object
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.update
+
+''
+    collection.update(objectId, object, resultHandler)
+
+    // for example
+    var todos = eds.collection("todos")
+    todos.update("538cf0be5a3d8b1a1900db53",
+                {
+                    "title": "Proper title",  
+                },handleResult)
+''
+Update an existing object. Arguments:
+
+* objectId - ObjectId for object to be updated
+* object - Object with field that are to be reassigned.
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.remove
+
+''
+    collection.remove(objectId, resultHandler)
+    
+    // for example
+    var todos = eds.collection("todos")
+    todos.remove("538cf0be5a3d8b1a1900db53",
+                handleResult)
+''
+Remove an object from a collection. Arguments:
+
+* objectId - ObjectId for object to be removed
+* resultHandler - Callback for handling results/errors
+
 ### Managed Web Sockets
 
 
@@ -55,43 +195,3 @@ See the product specific SDK API References:
 
 * [Enginio Data Storage](https://github.com/jotahtin/qtc-sdk-qt/wiki/Enginio-Data-Storage-SDK-API)
 * [Managed WebSocket](https://github.com/jotahtin/qtc-sdk-qt/wiki/Managed-WebSocket-SDK-API)
-
-=======
-qtc-sdk-qt
-==========
-
-# Qt Cloud Services SDK for Qt
-
-This is Qt Cloud Services SDK for Qt. What is Qt Cloud Services? See below:
-
-* The Qt Cloud Services home page is at https://www.qtc.io
-* The Developer Documentation page is at https://developer.qtc.io
-
-## Installing
-
-### Using precompiled binaries
-
-TODO
-
-### Compiling from source
-
-TODO
-
-## Getting Started
-
-TODO
-
-## Quick Start
-
-TODO
-
-## SDK API References
-
-See the product specific SDK API References:
-
-* [Enginio Data Storage](https://github.com/jotahtin/qtc-sdk-qt/wiki/Enginio-Data-Storage-SDK-API)
-* [Managed WebSocket](https://github.com/jotahtin/qtc-sdk-qt/wiki/Managed-WebSocket-SDK-API)
-
-=======
-Qt Cloud Services SDK for Qt
-
