@@ -22,27 +22,32 @@ This is QtCloudServices SDK for Qt. What is QtCloudServices? See below:
 # Usage
 * In C++ applications 
     * Use QtCloudServices module by adding `QT += cloudservices` to application `.pro` file
-    * Include QtCloudServices headers with `<QtCloudServices/...>` (for example: `#include <QtCloudServices/enginioclient.h>`) 
+    * Include QtCloudServices headers with `<QtCloudServices/...>` (for example: `#include <QtCloudServices/QEnginioDataStorage>`) 
 * In QML applications 
     * Import QtCloudServices components with `import QtCloudServices 1.0`
   
 ## Installing
 
-### Using precompiled binaries
-
-TODO
-
-### Compiling from source
-
-TODO
-
-## Getting Started
-
-TODO
-
 ## Quick Start
 
-TODO
+This SDK provides connectivity support to QtCloudServices for both Qt/C++ and Qt/QML.
+
+* Enginio Data Storage
+   * Primitive database operations (find, findOne, insert, update, remove)
+   * Model based views (QAbstractItemModel) - Flat list / Hierarchial views.
+   * Object Manager - Automatically track object properties.
+* Managed Web Sockets. This can be used for example to augment Enginio Data Storage Model .
+
+### Enginio Data Storage
+
+#### Qt/C++
+
+
+
+#### Qt/QML
+
+### Managed Web Sockets
+
 
 ## SDK API References
 
