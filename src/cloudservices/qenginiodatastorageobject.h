@@ -47,15 +47,15 @@
 #include <QString>
 #include <QSharedPointer>
 
-#include <QtCloudServices/QEnginioConnection>
-#include <QtCloudServices/QEnginioCollection>
-
-#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qrestendpointobject.h>
+#include <QtCloudServices/qenginiocollectionobject.h>
+#include <QtCloudServices/qenginioconnectionobject.h>
+#include <QtCloudServices/qenginiooperation.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEnginioDataStorageObjectPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioDataStorageObject : public QObject {
+class QTCLOUDSERVICES_EXPORT QEnginioDataStorageObject : public QRestEndpointObject {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEnginioDataStorageObject)
     Q_PROPERTY(QString backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged)
@@ -72,14 +72,8 @@ public:
     // IsValid
     Q_INVOKABLE bool isValid() const Q_REQUIRED_RESULT;
 
-    // Set backend from other instance
-    void setBackend(const QEnginioDataStorageObject *aOther);
-
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
-
-    Q_INVOKABLE QUrl instanceAddress() const Q_REQUIRED_RESULT;
-    Q_INVOKABLE void setInstanceAddress(const QUrl &aInstanceAddress);
 
     Q_INVOKABLE QString backendId() const Q_REQUIRED_RESULT;
     Q_INVOKABLE void setBackendId(const QString &aBackendId);
@@ -89,23 +83,19 @@ public:
     Q_INVOKABLE QString password() const Q_REQUIRED_RESULT;
 
     // Get object collection
-    Q_INVOKABLE QEnginioCollection collection(const QString &aCollectionName);
-
-    // Get Plain connection
-    Q_INVOKABLE QEnginioConnection reserveConnection();
-    Q_INVOKABLE void releaseConnection(const QEnginioConnection &aConnection);
+    Q_INVOKABLE QEnginioCollectionObject *collection(const QString &aCollectionName);
 public Q_SLOTS:
     void setUsername(const QString &aUsername);
     void setPassword(const QString &aPassword);
 Q_SIGNALS:
-    void backendIdChanged(const QString &backendId);
-    void instanceAddressChanged(const QUrl &instanceAddress);
+    void backendIdChanged(QString backendId);
+    void instanceAddressChanged(QUrl instanceAddress);
     void backendChanged();
 
-    void usernameChanged(const QString &aUsername);
-    void passwordChanged(const QString &aPassword);
+    void usernameChanged(QString aUsername);
+    void passwordChanged(QString aPassword);
 
-    void operationError(const QEnginioOperation &aOperation);
+    void operationError(QEnginioOperation aOperation);
 };
 
 // Q_DECLARE_TYPEINFO(QEnginioDataStorageObject, Q_COMPLEX_TYPE);

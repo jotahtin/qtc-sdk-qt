@@ -45,15 +45,17 @@
 #include <QObject>
 #include <QSharedPointer>
 
-#include <QtCloudServices/qcloudservicesobject.h>
 #include <QtCloudServices/qenginiooperation.h>
 #include <QtCloudServices/qenginiocollectionobject.h>
 
 QT_BEGIN_NAMESPACE
 
+class QEnginioQuery;
 class QEnginioDataStorage;
 class QEnginioCollectionObject;
 class QTCLOUDSERVICES_EXPORT QEnginioCollection {
+    friend class QEnginioDataStorage;
+    friend class QEnginioRequest;
 protected:
     // Constructor for valid connection.
     explicit QEnginioCollection(QEnginioCollectionObject *aEnginioCollectionObject);
@@ -87,8 +89,11 @@ public:
                                          QEnginioOperation::Callback aCallback);
 
     QEnginioObject fromJsonObject(const QJsonObject &aJsonObject);
+public:
+    // Get implementation object
+    const QEnginioCollectionObject* object() const;
 private:
-    QEnginioCollectionObject *iEnginioCollectionObject;
+    QEnginioCollectionObject *iObject;
 };
 
 QT_END_NAMESPACE

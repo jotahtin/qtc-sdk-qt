@@ -45,19 +45,37 @@
 #include <QtCore/qjsonobject.h>
 
 #include <QtCloudServices/qtcloudservices_global.h>
-
-#include <QtCloudServices/qrestoperationshared_p.h>
+#include <QtCloudServices/qtcloudservices.h>
 
 QT_BEGIN_NAMESPACE
 
-/*
-** QRestRequestShared
-*/
+class QRestOperationShared;
+class QRestOperationObject;
 class QRestRequestShared : public QObject {
     Q_OBJECT
+    Q_DISABLE_COPY(QRestRequestShared)
 public:
     QRestRequestShared();
+    QRestRequestShared(QtCloudServices::RESTOperation aOperation, QString aPath);
+    virtual ~QRestRequestShared();
+public:
+    QtCloudServices::RESTOperation operation() const Q_REQUIRED_RESULT;
+    QString path() const Q_REQUIRED_RESULT;
 
+    QUrlQuery urlQuery() const Q_REQUIRED_RESULT;
+    void setUrlQuery(const QUrlQuery &aUrlQuery);
+
+    QJsonObject payload() const Q_REQUIRED_RESULT;
+    void setPayload(const QJsonObject &aPayload);
+
+    QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
+    void setExtraHeaders(const QJsonObject &aExtraHeaders);
+
+    void setCallback(std::function<void(QSharedPointer<QRestOperationObject>)> aCallback);
+Q_SIGNALS:
+    void urlQueryChanged(const QUrlQuery &aUrlQuery);
+    void payloadChanged(const QJsonObject &aPayload);
+    void extraHeadersChanged(const QJsonObject &aExtraHeaders);
 private:
     QtCloudServices::RESTOperation iOperation;
     QString iPath;
@@ -70,4 +88,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QENGINIOREQUEST_P_H */
+#endif /* QCLOUDSERVICES_QRESTREQUEST_SHARED_P_H */

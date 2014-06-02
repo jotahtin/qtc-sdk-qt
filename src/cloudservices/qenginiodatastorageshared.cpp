@@ -43,25 +43,25 @@
 
 #include "QtCloudServices/private/qenginiodatastorageshared_p.h"
 
-#include "QtCloudServices/private/qenginiocollection_p.h"
-#include "QtCloudServices/private/qenginioconnection_p.h"
+#include "QtCloudServices/QEnginioConnectionObject"
+#include "QtCloudServices/QEnginioOperationObject"
 
 QT_BEGIN_NAMESPACE
 
-QEnginioDataStorageShared::QEnginioDataStorageShared()
-{
+QEnginioDataStorageShared::QEnginioDataStorageShared() {
 
 }
 
 QEnginioDataStorageShared::QEnginioDataStorageShared(const QUrl &aInstanceAddress, const QString &aBackendId,
-        QEnginioDataStorageShared *aPrevInstance)
-    : iInstanceAddress(aInstanceAddress), iBackendId(aBackendId)
+                                                     QEnginioDataStorageShared *aPrevInstance)
+    : QRestEndpointShared(aInstanceAddress),
+      iBackendId(aBackendId)
 {
     static bool firstInstance = true;
     if (firstInstance) {
         firstInstance=false;
-        qRegisterMetaType<QEnginioConnection*>();
-        qRegisterMetaType<QEnginioOperation*>();
+        qRegisterMetaType<QEnginioConnectionObject *>();
+        qRegisterMetaType<QEnginioOperationObject*>();
 
         /*
         qRegisterMetaType<EnginioModel*>();
@@ -85,7 +85,11 @@ QEnginioDataStorageShared::~QEnginioDataStorageShared()
 
 bool QEnginioDataStorageShared::isValid() const
 {
-    if (instanceAddress().isEmpty() || backendId().isEmpty()) {
+    if (!QRestEndpointShared::isValid()) {
+        return false;
+    }
+
+    if (backendId().isEmpty()) {
         return false;
     }
 
@@ -94,7 +98,7 @@ bool QEnginioDataStorageShared::isValid() const
 
 QUrl QEnginioDataStorageShared::instanceAddress() const
 {
-    return iInstanceAddress;
+    return endpointAddress();
 }
 
 QString QEnginioDataStorageShared::backendId() const
@@ -134,246 +138,30 @@ void QEnginioDataStorageShared::setPassword(const QString &aPassword)
     emit passwordChanged(aPassword);
 }
 
-QEnginioConnection QEnginioDataStorageShared::reserveConnection(QSharedPointer<QEnginioDataStorageShared> aSelf)
-{
-    QEnginioConnection connection;
-    QMutexLocker locker(&iLock);
-
-    if (!iConnectionPool.empty()) {
-        connection = iConnectionPool.front();
-        iConnectionPool.pop_front();
-    }
-
-    if (!connection) {
-        // TODO
-        // connection = QEnginioConnection(aSelf);
-    }
-
-    return connection;
-}
-
-void QEnginioDataStorageShared::releaseConnection(const QEnginioConnection &aConnection)
+QSharedPointer<QEnginioCollectionShared>
+QEnginioDataStorageShared::collection(QSharedPointer<QEnginioDataStorageShared> aSelf,
+                                      const QString &aCollectionName)
 {
     QMutexLocker locker(&iLock);
 
-    iConnectionPool.push_back(aConnection);
-}
-
-QEnginioCollection QEnginioDataStorageShared::collection(const QString &aCollectionName)
-{
-    QMutexLocker locker(&iLock);
-
-    QEnginioCollection collection;
-    QMap<QString, QEnginioCollection>::iterator i;
+    QSharedPointer<QEnginioCollectionShared> collection;
+    QMap<QString, QSharedPointer<QEnginioCollectionShared> >::iterator i;
 
     i = iCollections.find(aCollectionName);
 
     if (i != iCollections.end()) {
         collection = i.value();
     } else {
-        //
-        // collection = QEnginioCollection(*q<QEnginioDataStorage>(), aCollectionName);
-        // iCollections.insert(aCollectionName, collection);
+        collection=QSharedPointer<QEnginioCollectionShared>(new QEnginioCollectionShared(aSelf,aCollectionName));
+        iCollections.insert(aCollectionName, collection);
     }
 
     return collection;
 }
 
+QSharedPointer<QRestConnectionShared>
+QEnginioDataStorageShared::buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf) {
+    return QSharedPointer<QRestConnectionShared>(new QEnginioConnectionShared(qSharedPointerCast<QEnginioDataStorageShared>(aSelf)));
+}
+
 QT_END_NAMESPACE
-
-
-#if 0
-
-#include "stdafx.h"
-
-#include <QtCloudServices/enginioidentity.h>
-#include <QtCloudServices/enginiooauth2authentication.h>
-#include <QtCloudServices/private/qenginioconnection_p.h>
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
-#include <QtCloudServices/QEnginioOperation.h>
-
-#include <QtCore/qjsonobject.h>
-#include <QtCore/qjsondocument.h>
-#include <QtCore/qstring.h>
-#include <QtNetwork/qnetworkreply.h>
-
-QT_BEGIN_NAMESPACE
-
-class EnginioUserPassAuthenticationPrivate : public EnginioIdentityPrivate {
-    template<typename T>
-    class SessionSetterFunctor {
-        QEnginioConnectionPrivate *_enginio;
-        QNetworkReply *_reply;
-        EnginioUserPassAuthenticationPrivate *_auth;
-    public:
-        SessionSetterFunctor(QEnginioConnectionPrivate *enginio, QNetworkReply *reply, EnginioUserPassAuthenticationPrivate *auth)
-            : _enginio(enginio)
-            , _reply(reply)
-            , _auth(auth)
-        {}
-        void operator ()()
-        {
-            QEnginioOperation *ereply = _enginio->createReply(_reply);
-
-            if (_reply->error() != QNetworkReply::NoError) {
-                emit _enginio->emitSessionAuthenticationError(ereply);
-            } else {
-                _auth->thisAs<T>()->proccessToken(_enginio, ereply);
-                _enginio->emitSessionAuthenticated(ereply);
-            }
-        }
-    };
-
-    QPointer<QNetworkReply> _reply;
-    QMetaObject::Connection _replyFinished;
-    QMetaObject::Connection _enginioDestroyed;
-
-public:
-    EnginioUserPassAuthenticationPrivate()
-        : EnginioIdentityPrivate()
-    {}
-public:
-
-    ~EnginioUserPassAuthenticationPrivate();
-
-    template<class Derived>
-    Derived *thisAs()
-    {
-        return static_cast<Derived*>(this);
-    }
-
-    void cleanupConnections()
-    {
-        if (_reply) {
-            QObject::disconnect(_replyFinished);
-            QObject::disconnect(_enginioDestroyed);
-            QObject::connect(_reply.data(), &QNetworkReply::finished, _reply.data(), &QNetworkReply::deleteLater);
-            _reply = 0;
-        }
-    }
-
-    template<typename Derived>
-    void prepareSessionToken(QEnginioConnectionPrivate *enginio)
-    {
-        cleanupConnections();
-
-        _reply = thisAs<Derived>()->makeRequest(enginio);
-        enginio->setAuthenticationState(QtCloudServices::Authenticating);
-        _replyFinished = QObject::connect(_reply.data(), &QNetworkReply::finished, SessionSetterFunctor<Derived>(enginio, _reply.data(), this));
-        _enginioDestroyed = QObject::connect(QTC_Q_PTR(enginio), &QEnginioConnection::destroyed, DisconnectConnection(this));
-    }
-
-    template<typename Derived>
-    void removeSessionToken(QEnginioConnectionPrivate *enginio)
-    {
-        cleanupConnections();
-        thisAs<Derived>()->cleanupClient(enginio);
-        _reply = 0;
-        enginio->emitSessionTerminated();
-    }
-};
-
-
-QNetworkReply *makeRequest(QEnginioConnectionPrivate *enginio)
-{
-    QByteArray data;
-    {
-        QUrlQuery urlQuery;
-        urlQuery.addQueryItem(QtCloudServicesConstants::grant_type, QtCloudServicesConstants::password);
-        urlQuery.addQueryItem(QtCloudServicesConstants::username, _user);
-        urlQuery.addQueryItem(QtCloudServicesConstants::password, _pass);
-        data = urlQuery.query().toUtf8();
-    }
-
-    QUrl url(enginio->_serviceUrl);
-    url.setPath(QtCloudServicesConstants::v1_auth_oauth2_token);
-
-    QNetworkRequest request(enginio->prepareRequest(url));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QtCloudServicesConstants::Application_x_www_form_urlencoded);
-    request.setRawHeader(QtCloudServicesConstants::Accept, QtCloudServicesConstants::Application_json);
-
-    return enginio->networkManager()->post(request, data);
-}
-
-void proccessToken(QEnginioConnectionPrivate *enginio, QEnginioOperation *ereply)
-{
-    QByteArray header;
-    header = QtCloudServicesConstants::Bearer_ + ereply->data()[QtCloudServicesConstants::access_token].toString().toUtf8();
-    enginio->_request.setRawHeader(QtCloudServicesConstants::Authorization, header);
-}
-
-void cleanupClient(QEnginioConnectionPrivate *enginio)
-{
-    enginio->_request.setRawHeader(QtCloudServicesConstants::Authorization, QByteArray());
-}
-};
-
-/*!
-\class EnginioOAuth2Authentication
-\since 5.3
-\inmodule enginio-qt
-\ingroup enginio-client
-\brief Represents a user that is authenticated directly by the backend using OAuth2 standard.
-
-This class can authenticate a user by verifying the user's login and password.
-The user has to exist in the backend already.
-
-To authenticate an instance of QEnginioConnection called \a client such code may be used:
-\code
-EnginioOAuth2Authentication identity;
-identity.setUser(_user);
-identity.setPassword(_user);
-
-client.setIdentity(&identity);
-\endcode
-
-Setting the identity will trigger an asynchronous request, resulting in QEnginioConnection::authenticationState()
-changing.
-
-\sa QEnginioConnection::authenticationState() QEnginioConnection::identity() QEnginioConnection::sessionAuthenticated()
-\sa QEnginioConnection::sessionAuthenticationError() QEnginioConnection::sessionTerminated()
-*/
-
-/*!
-Constructs a EnginioPasswordOAuth2 instance with \a parent as QObject parent.
-*/
-EnginioOAuth2Authentication::EnginioOAuth2Authentication(QObject *parent)
-    : EnginioIdentity(*new EnginioOAuth2AuthenticationPrivate(), parent)
-{
-    connect(this, &EnginioOAuth2Authentication::userChanged, this, &EnginioIdentity::dataChanged);
-    connect(this, &EnginioOAuth2Authentication::passwordChanged, this, &EnginioIdentity::dataChanged);
-}
-
-/*!
-Destructs this EnginioPasswordOAuth2 instance.
-*/
-EnginioOAuth2Authentication::~EnginioOAuth2Authentication()
-{
-    emit aboutToDestroy();
-}
-void EnginioOAuth2Authentication::prepareSessionToken(QEnginioConnectionPrivate *enginio)
-{
-    Q_ASSERT(enginio);
-    Q_ASSERT(enginio->identity());
-    QTC_D(EnginioOAuth2Authentication);
-    d->prepareSessionToken<EnginioOAuth2AuthenticationPrivate>(enginio);
-}
-
-void EnginioOAuth2Authentication::removeSessionToken(QEnginioConnectionPrivate *enginio)
-{
-    Q_ASSERT(enginio);
-    Q_ASSERT(enginio->identity());
-    QTC_D(EnginioOAuth2Authentication);
-    d->removeSessionToken<EnginioOAuth2AuthenticationPrivate>(enginio);
-}
-
-void DisconnectConnection::operator ()() const
-{
-    auth->cleanupConnections();
-}
-
-EnginioUserPassAuthenticationPrivate::~EnginioUserPassAuthenticationPrivate()
-{
-    cleanupConnections();
-}
-#endif

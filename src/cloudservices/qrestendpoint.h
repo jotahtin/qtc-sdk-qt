@@ -55,27 +55,21 @@ QT_BEGIN_NAMESPACE
 class QRestEndpointObject;
 class QTCLOUDSERVICES_EXPORT QRestEndpoint {
 protected:
-    QRestEndPoint(QRestEndpointObject *aObject);
+    QRestEndpoint(QRestEndpointObject *aObject);
 public:
     // Constructors
-    QRestEndpointObject();
-    QRestEndpointObject(const QUrl &aEndpointAddress);
-    QRestEndpointObject(const QString &aEndpointAddress);
-    QRestEndpointObject(const QEnginioDataStorage &aOther);
-    ~QRestEndpointObject();
+    QRestEndpoint();
+    QRestEndpoint(const QUrl &aEndpointAddress);
+    QRestEndpoint(const QString &aEndpointAddress);
+    QRestEndpoint(const QRestEndpoint &aOther);
+    ~QRestEndpoint();
 
     // Assignment
-    QRestEndpointObject& operator=(const QRestEndpointObject &aOther);
-
-    // Get implementation object
-    const QRestEndpointObject* restEndpointObject() const;
+    QRestEndpoint& operator=(const QRestEndpoint &aOther);
 
     // IsValid
     virtual bool operator!() const Q_REQUIRED_RESULT;
     virtual bool isValid() const Q_REQUIRED_RESULT;
-
-    // Backend Address & Identification
-    void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
 
     QUrl enpointAddress() const Q_REQUIRED_RESULT;
     void setEndpointAddress(const QUrl &aEndpointAddress);
@@ -84,8 +78,12 @@ public:
     // Get Plain connection
     QRestConnection reserveConnection() Q_REQUIRED_RESULT;
     void releaseConnection(const QRestConnection &aConnection);
+public:
+    // Get implementation object
+    const QRestEndpointObject* object() const;
+    QRestEndpointObject* object();
 private:
-    QEnginioDataStorageObject *iEnginioDataStorageObject;
+    QRestEndpointObject *iObject;
 };
 
 QT_END_NAMESPACE

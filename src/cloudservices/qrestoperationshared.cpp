@@ -82,7 +82,7 @@ bool QRestOperationShared::isError() const
 }
 bool QRestOperationShared::isFinished() const
 {
-    return iNetworkReply->isFinished() && Q_LIKELY(!iDelay);
+    return iNetworkReply->isFinished();
 }
 
 QSharedPointer<QRestConnectionShared> QRestOperationShared::connection() const {
@@ -93,6 +93,28 @@ QSharedPointer<QRestRequestShared> QRestOperationShared::request() const {
     return iRequest;
 }
 
+int QRestOperationShared::backendStatus() const
+{
+    return iNetworkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).value<int>();
+}
+
+QString QRestOperationShared::requestId() const
+{
+    return QString::fromUtf8(iNetworkReply->request().rawHeader(QtCloudServicesConstants::X_Request_Id));
+}
+
+QtCloudServices::ErrorType QRestOperationShared::errorType() const
+{
+    if (errorCode() == QNetworkReply::NoError) {
+        return QtCloudServices::NoError;
+    }
+
+    if (resultBytes().isEmpty()) {
+        return QtCloudServices::NetworkError;
+    }
+
+    return QtCloudServices::BackendError;
+}
 
 QNetworkReply::NetworkError QRestOperationShared::errorCode() const
 {
@@ -101,6 +123,10 @@ QNetworkReply::NetworkError QRestOperationShared::errorCode() const
 
 QString QRestOperationShared::errorString() const
 {
+    if (errorType() == QtCloudServices::BackendError) {
+        return QString::fromUtf8(resultBytes());
+    }
+
     return iNetworkReply->errorString();
 }
 

@@ -47,9 +47,9 @@
 #include <QtCore/qscopedpointer.h>
 
 #include <QtCloudServices/qtcloudservices_global.h>
-#include <QtCloudServices/qcloudservicesobject.h>
 #include <QtCloudServices/qenginiocollection.h>
 #include <QtCloudServices/qenginiomodelnode.h>
+#include <QtCloudServices/qenginioquery.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,7 +61,7 @@ class QTCLOUDSERVICES_EXPORT QEnginioModel : public QAbstractItemModel {
     // Q_PROPERTY(QEnginioConnection *client READ client WRITE setClient NOTIFY clientChanged)
     // Q_PROPERTY(QJsonObject query READ query WRITE setQuery NOTIFY queryChanged)
     Q_DISABLE_COPY(QEnginioModel)
-    QTC_DECLARE_PRIVATE(QEnginioModel)
+    Q_DECLARE_PRIVATE(QEnginioModel)
     friend class QEnginioModelNodePrivate;
 public:
     explicit QEnginioModel(QObject *aParent = 0);
@@ -125,36 +125,8 @@ Q_SIGNALS:
     void collectionChanged(const QEnginioCollection &aCollection);
     // void queryChanged(const QJsonObject &query);
     // void operationChanged(QtCloudServices::Operation operation);
-public:
-#if QCLOUDSERVICES_USE_STD_SHARED_PTR
-    template<class T>
-    std::shared_ptr<typename T::private_type> d()
-    {
-        return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
-    }
-    template<class T>
-    const std::shared_ptr<typename T::private_type> d() const
-    {
-        return std::dynamic_pointer_cast <typename T::private_type>(iPIMPL);
-    }
-#else
-    template<class T>
-    QSharedPointer<typename T::private_type> d()
-    {
-        return qSharedPointerCast <typename T::private_type>(iPIMPL);
-    }
-    template<class T>
-    const QSharedPointer<typename T::private_type> d() const
-    {
-        return qSharedPointerCast <typename T::private_type>(iPIMPL);
-    }
-#endif
-protected:
-    QEnginioModel::dvar iPIMPL;
 };
 
 QT_END_NAMESPACE
 
 #endif /* QCLOUDSERVICES_QENGINIOMODEL_H */
-
-

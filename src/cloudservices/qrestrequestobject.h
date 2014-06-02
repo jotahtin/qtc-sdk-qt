@@ -46,19 +46,21 @@
 
 #include <QUrlQuery>
 
+#include <QtCloudServices/qtcloudservices_global.h>
 #include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
 
 QT_BEGIN_NAMESPACE
 
-class QRestRequestPrivate;
+class QRestOperationObject;
+class QRestRequestObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QRestRequestObject : public QObject {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QRestRequestObject)
 private:
     Q_DISABLE_COPY(QRestRequestObject)
+protected:
+    QRestRequestObject(QRestRequestObjectPrivate &dd,QObject *aParent);
 public:
-    QRestRequestObject(QObject *aParent = 0);
     QRestRequestObject(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent = 0);
 
     QtCloudServices::RESTOperation operation() const Q_REQUIRED_RESULT;
@@ -73,7 +75,9 @@ public:
     QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
     void setExtraHeaders(const QJsonObject &aExtraHeaders);
 
-    QEnginioRequest &then(std::function<void(QEnginioOperation &)> aCallback);
+    void setCallback(std::function<void(QRestOperationObject *)> aCallback);
+public:
+    void setSharedInstanceFrom(const QRestRequestObject *aOther);
 };
 
 QT_END_NAMESPACE

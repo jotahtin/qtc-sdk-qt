@@ -44,23 +44,20 @@
 
 #include <QJsonObject>
 
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
+#include <QtCloudServices/qtcloudservices_global.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioOperation;
-class QEnginioQueryPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioQuery : public QCloudServicesObject {
-    Q_OBJECT
+class QEnginioQueryObject;
+class QTCLOUDSERVICES_EXPORT QEnginioQuery {
 public:
-    QEnginioQuery(QObject *aParent = 0);
-    QEnginioQuery(const QJsonObject &aQuery, QObject *aParent = 0);
+    QEnginioQuery();
+    QEnginioQuery(const QJsonObject &aQuery);
     QEnginioQuery(const QEnginioQuery &aOther);
 
     QEnginioQuery& operator=(const QEnginioQuery &aOther);
 
-    QEnginioQuery &limit(int aLimit);
+    QEnginioQuery &limit(int aLimit);    
     QEnginioQuery &offset(int aOffset);
 
     // QEnginioQuery &objectType(const QString &aObjectType);
@@ -69,8 +66,12 @@ public:
     const QJsonObject &query() const;
     int limit() const;
     int offset() const;
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioQuery)
+public:
+    // Get implementation object
+    const QEnginioQueryObject* object() const;
+    QEnginioQueryObject* object();
+private:
+    QEnginioQueryObject *iObject;
 };
 
 QT_END_NAMESPACE

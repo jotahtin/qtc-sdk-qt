@@ -43,19 +43,12 @@
 #define QCLOUDSERVICES_QRESTCONNECTION_H
 
 #include <QObject>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qurl.h>
-#include <QtCore/qjsonobject.h>
 
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/QEnginioOperation>
-#include <QtCloudServices/QEnginioRequest>
+#include <QtCloudServices/qrestoperation.h>
 
 QT_BEGIN_NAMESPACE
 
+class QRestRequest;
 class QRestConnectionObject;
 class QTCLOUDSERVICES_EXPORT QRestConnection {
 protected:
@@ -63,22 +56,23 @@ protected:
 public:
     // Constructors
     QRestConnection();
-    QRestConnection(const QEnginioConnection &aOther);
+    QRestConnection(const QRestConnection &aOther);
     ~QRestConnection();
 
     // Assignment
     QRestConnection& operator=(const QRestConnection &aOther);
-
-    // Get implementation object.
-    const QRestConnectionObject* object() const;
 
     // IsValid
     bool operator!() const Q_REQUIRED_RESULT;
     bool isValid() const Q_REQUIRED_RESULT;
 
     QRestOperation restRequest(const QRestRequest &aRequest);
+public:
+    // Get implementation object
+    const QRestConnectionObject* object() const;
+    QRestConnectionObject* object();
 private:
-    QRestConnectionObject *iRestConnectionObject;
+    QRestConnectionObject *iObject;
 };
 
 QT_END_NAMESPACE

@@ -39,34 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QENGINIOREQUEST_P_H
-#define QCLOUDSERVICES_QENGINIOREQUEST_P_H
+#ifndef QCLOUDSERVICES_QENGINIOREQUEST_OBJECT_P_H
+#define QCLOUDSERVICES_QENGINIOREQUEST_OBJECT_P_H
 
-#include <QtCore/qjsonobject.h>
-
-#include "QtCloudServices/qenginiorequest.h"
-#include "QtCloudServices/qenginiocollection.h"
-#include "QtCloudServices/private/qcloudservicesobject_p.h"
+#include <QtCloudServices/qenginiorequestobject.h>
+#include <QtCloudServices/private/qrestrequestobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-/*
-** QEnginioRequestPrivate
-*/
-class QEnginioRequestPrivate : public QCloudServicesObjectPrivate {
-    QTC_DECLARE_PUBLIC(QEnginioRequest)
+class QEnginioCollectionObject;
+class QEnginioRequestShared;
+class QTCLOUDSERVICES_EXPORT QEnginioRequestObjectPrivate : public QRestRequestObjectPrivate {
+    Q_DECLARE_PUBLIC(QEnginioRequestObject)
+private:
+    Q_DISABLE_COPY(QEnginioRequestObjectPrivate)
 public:
-    QEnginioRequestPrivate();
-public:
-    QtCloudServices::RESTOperation iOperation;
-    QString iPath;
-    QUrlQuery iUrlQuery;
-    QJsonObject iPayload;
-    QJsonObject iExtraHeaders;
-    QEnginioCollection iEnginioCollection;
-    std::function<void(QEnginioOperation &)> iCallback;
+    QEnginioRequestObjectPrivate();
+    QEnginioRequestObjectPrivate(QtCloudServices::RESTOperation aOperation, QString aPath);
+
+    QEnginioCollectionObject *enginioCollection() const Q_REQUIRED_RESULT;
+    void setEnginioCollection(const QEnginioCollectionObject *aEnginioCollection);
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QENGINIOREQUEST_P_H */
+#endif /* QCLOUDSERVICES_QENGINIOREQUEST_OBJECT_P_H */

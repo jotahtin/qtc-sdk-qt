@@ -47,12 +47,13 @@
 #include <QUrlQuery>
 
 #include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qtcloudservices.h>
 
 QT_BEGIN_NAMESPACE
 
+class QRestOperation;
 class QRestRequestObject;
 class QTCLOUDSERVICES_EXPORT QRestRequest {
-    Q_OBJECT
 protected:
     QRestRequest(QRestRequestObject *aObject);
 public:
@@ -61,9 +62,6 @@ public:
     QRestRequest(const QRestRequest &aOther);
 
     QRestRequest& operator=(const QRestRequest &aOther);
-
-    // Get implementation object - for binding signals.
-    const QRestRequestObject* object() const;
 
     QtCloudServices::RESTOperation operation() const Q_REQUIRED_RESULT;
     QString path() const Q_REQUIRED_RESULT;
@@ -77,7 +75,13 @@ public:
     QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
     void setExtraHeaders(const QJsonObject &aExtraHeaders);
 
-    QRestRequest &then(std::function<void(QRestRequest &)> aCallback);
+    QRestRequest &then(std::function<void(QRestOperation)> aCallback);
+public:
+    // Get implementation object
+    const QRestRequestObject* object() const;
+    QRestRequestObject* object();
+private:
+    QRestRequestObject *iObject;
 };
 
 QT_END_NAMESPACE

@@ -45,27 +45,27 @@
 #include <QMap>
 #include <QUrl>
 
-#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/private/qrestendpointshared_p.h>
+#include <QtCloudServices/private/qenginiocollectionshared_p.h>
+#include <QtCloudServices/private/qenginioconnectionshared_p.h>
 
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
-#include <QtCloudServices/private/qenginiocollection_p.h>
-#include <QtCloudServices/private/qenginioconnection_p.h>
+#include <QtCloudServices/QEnginioOperation>
 
 QT_BEGIN_NAMESPACE
 
 /*
 ** QEnginioDataStorageShared
 */
-class QEnginioDataStorageShared : public QObject {
+class QEnginioDataStorageShared : public QRestEndpointShared {
     Q_OBJECT
-    friend class QEnginioCollectionPrivate;
+    Q_DISABLE_COPY(QEnginioDataStorageShared)
 public:
     QEnginioDataStorageShared();
     QEnginioDataStorageShared(const QUrl &aInstanceAddress, const QString &aBackendId,
                                QEnginioDataStorageShared *aPrevInstance = 0);
     ~QEnginioDataStorageShared();
 public:
-    bool isValid() const;
+    virtual bool isValid() const;
 
     QUrl instanceAddress() const Q_REQUIRED_RESULT;
     QString backendId() const Q_REQUIRED_RESULT;
@@ -76,18 +76,19 @@ public:
     QString password() const Q_REQUIRED_RESULT;
     void setPassword(const QString &aPassword);
 
-    QEnginioConnection reserveConnection(QSharedPointer<QEnginioDataStorageShared> aSelf) Q_REQUIRED_RESULT;
-    void releaseConnection(const QEnginioConnection &aConnection);
-
-    QEnginioCollection collection(const QString &aCollectionName);
+    QSharedPointer<QEnginioCollectionShared>
+    collection(QSharedPointer<QEnginioDataStorageShared> aSelf,
+               const QString &aCollectionName);
+protected:
+    virtual QSharedPointer<QRestConnectionShared>
+    buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf);
 Q_SIGNALS:
     void usernameChanged(const QString &aUsername);
     void passwordChanged(const QString &aPassword);
 
     void operationError(const QEnginioOperation &aOperation);
-protected:
+private:
     QString iBackendId;
-    QUrl iInstanceAddress;
 
     // Mutable objects
     QMutex iLock;
@@ -95,8 +96,7 @@ protected:
     QString iUsername;
     QString iPassword;
 
-    QVector< QEnginioConnection > iConnectionPool;
-    QMap<QString, QEnginioCollection > iCollections;
+    QMap<QString, QSharedPointer<QEnginioCollectionShared> > iCollections;
 };
 
 QT_END_NAMESPACE

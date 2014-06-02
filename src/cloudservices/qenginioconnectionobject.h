@@ -42,84 +42,56 @@
 #ifndef QCLOUDSERVICES_QENGINIOCONNECTION_OBJECT_H
 #define QCLOUDSERVICES_QENGINIOCONNECTION_OBJECT_H
 
-#include <QObject>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qurl.h>
-#include <QtCore/qjsonobject.h>
-
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/qenginiooperation.h>
-#include <QtCloudServices/qenginiorequest.h>
+#include <QtCloudServices/qrestconnectionobject.h>
+#include <QtCloudServices/qenginiorequestobject.h>
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkAccessManager;
-class QNetworkReply;
-
-class EnginioIdentity;
-class QEnginioDataStorage;
-class QEnginioConnectionPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioConnection : public QCloudServicesObject {
+class QEnginioDataStorageObject;
+class QEnginioOperationObject;
+class QEnginioConnectionObjectPrivate;
+class QTCLOUDSERVICES_EXPORT QEnginioConnectionObject : public QRestConnectionObject {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QEnginioConnectionObject)
 
     // Q_PROPERTY(QByteArray backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged FINAL)
     // Q_PROPERTY(QUrl serviceUrl READ serviceUrl WRITE setServiceUrl NOTIFY serviceUrlChanged FINAL)
 
-    Q_PROPERTY(EnginioIdentity *identity READ identity WRITE setIdentity NOTIFY identityChanged FINAL)
-    Q_PROPERTY(QtCloudServices::AuthenticationState authenticationState READ authenticationState NOTIFY authenticationStateChanged FINAL)
+    // Q_PROPERTY(EnginioIdentity *identity READ identity WRITE setIdentity NOTIFY identityChanged FINAL)
+    // Q_PROPERTY(QtCloudServices::AuthenticationState authenticationState READ authenticationState NOTIFY authenticationStateChanged FINAL)
 
-    Q_ENUMS(QtCloudServices::Operation); // TODO remove me QTBUG-33577
-    Q_ENUMS(QtCloudServices::AuthenticationState); // TODO remove me QTBUG-33577
-
-    QTC_DECLARE_PRIVATE(QEnginioConnection)
-    friend class QEnginioDataStoragePrivate;
+    // Q_ENUMS(QtCloudServices::Operation); // TODO remove me QTBUG-33577
+    // Q_ENUMS(QtCloudServices::AuthenticationState); // TODO remove me QTBUG-33577
+private:
+    Q_DISABLE_COPY(QEnginioConnectionObject)
 protected:
-    // Constructor for valid connection.
-    QEnginioConnection(const QEnginioDataStorage &aEnginioDataStorage);
+    QEnginioConnectionObject(QEnginioConnectionObjectPrivate &dd,QObject *aParent);
 public:
-    QEnginioConnection(QObject *aParent = 0);
-    QEnginioConnection(const QEnginioConnection &aOther);
-    QEnginioConnection& operator=(const QEnginioConnection &aOther);
-    ~QEnginioConnection();
+    QEnginioConnectionObject(const QEnginioDataStorageObject *aEnginioDataStorageObject = 0,
+                             QObject *aParent = 0);
 
-    bool operator!() const;
+    Q_INVOKABLE QEnginioOperationObject *customRequest(const QEnginioRequestObject *aRequest);
 
-    virtual bool isValid() const;
-    QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
-
-    Q_INVOKABLE QEnginioOperation customRequest(const QEnginioRequest &aRequest);
-
-    EnginioIdentity *identity() const Q_REQUIRED_RESULT;
-    void setIdentity(EnginioIdentity *identity);
-    QtCloudServices::AuthenticationState authenticationState() const Q_REQUIRED_RESULT;
-
-    bool finishDelayedReplies();
-
+    // EnginioIdentity *identity() const Q_REQUIRED_RESULT;
+    // void setIdentity(EnginioIdentity *identity);
+    // QtCloudServices::AuthenticationState authenticationState() const Q_REQUIRED_RESULT;
+    // bool finishDelayedReplies();
     // From QEnginioConnection.h
-    Q_INVOKABLE QEnginioOperation fullTextSearch(const QJsonObject &query);
-    Q_INVOKABLE QEnginioOperation query(const QJsonObject &query, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
-    Q_INVOKABLE QEnginioOperation create(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
-    Q_INVOKABLE QEnginioOperation update(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
-    Q_INVOKABLE QEnginioOperation remove(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
-
-    Q_INVOKABLE QEnginioOperation uploadFile(const QJsonObject &associatedObject, const QUrl &file);
-    Q_INVOKABLE QEnginioOperation downloadUrl(const QJsonObject &object);
+    //Q_INVOKABLE QEnginioOperation fullTextSearch(const QJsonObject &query);
+    //Q_INVOKABLE QEnginioOperation query(const QJsonObject &query, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
+    //Q_INVOKABLE QEnginioOperation create(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
+    //Q_INVOKABLE QEnginioOperation update(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
+    //Q_INVOKABLE QEnginioOperation remove(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
+    //Q_INVOKABLE QEnginioOperation uploadFile(const QJsonObject &associatedObject, const QUrl &file);
+    //Q_INVOKABLE QEnginioOperation downloadUrl(const QJsonObject &object);
 Q_SIGNALS:
 //    void backendIdChanged(const QByteArray &backendId);
 //    void serviceUrlChanged(const QUrl& url);
-    void authenticationStateChanged(QtCloudServices::AuthenticationState state);
-    void identityChanged(EnginioIdentity *identity);
-
-
-Q_SIGNALS: // From QEnginioConnection.h
-    void sessionAuthenticated(const QEnginioOperation &aReply) const;
-    void sessionAuthenticationError(const QEnginioOperation &aReply) const;
-    void sessionTerminated() const;
-    void finished(const QEnginioOperation &aReply);
-    void error(const QEnginioOperation &aReply);
+//    void authenticationStateChanged(QtCloudServices::AuthenticationState state);
+//    void identityChanged(EnginioIdentity *identity);
+//    void sessionAuthenticated(const QEnginioOperation &aReply) const;
+//    void sessionAuthenticationError(const QEnginioOperation &aReply) const;
+//    void sessionTerminated() const;
 };
 
 QT_END_NAMESPACE

@@ -43,9 +43,6 @@
 
 #include "QtCloudServices/qenginiodatastorage.h"
 #include "QtCloudServices/private/qenginiodatastorageobject_p.h"
-#include "QtCloudServices/private/qenginiocollection_p.h"
-#include "QtCloudServices/private/qenginioconnection_p.h"
-
 
 QT_BEGIN_NAMESPACE
 
@@ -87,52 +84,35 @@ a model is provided by \l {EnginioModelCpp}{EnginioModel}.
 */
 
 QEnginioDataStorage::QEnginioDataStorage(QEnginioDataStorageObject *aObject)
-: iObject(aObject)
+    : QRestEndpoint(aObject)
 {
-    Q_ASSERT(iObject);
 }
 
 QEnginioDataStorage::QEnginioDataStorage()
-    : iObject(new QEnginioDataStorageObject)
+    : QRestEndpoint(new QEnginioDataStorageObject)
 {
 
 }
 
 QEnginioDataStorage::QEnginioDataStorage(const QUrl &aInstanceAddress, const QString &aBackendId)
-    : iObject(new QEnginioDataStorageObject(aInstanceAddress,aBackendId))
+    : QRestEndpoint(new QEnginioDataStorageObject(aInstanceAddress,aBackendId))
 {
 }
 
 QEnginioDataStorage::QEnginioDataStorage(const QString &aInstanceAddress, const QString &aBackendId)
-    : iObject(new QEnginioDataStorageObject(QUrl(aInstanceAddress),aBackendId))
+    : QRestEndpoint(new QEnginioDataStorageObject(QUrl(aInstanceAddress),aBackendId))
 {
 }
 
 QEnginioDataStorage::QEnginioDataStorage(const QEnginioDataStorage &aOther)
-    : iObject(new QEnginioDataStorageObject)
+    : QRestEndpoint(new QEnginioDataStorageObject)
 {
-    iObject->setBackend(aOther.object());
-}
-QEnginioDataStorage::QEnginioDataStorage::~QEnginioDataStorage() {
-    if (iObject) {
-        delete iObject;
-    }
+    object()->setSharedInstanceFrom(aOther.object());
 }
 
 QEnginioDataStorage& QEnginioDataStorage::operator=(const QEnginioDataStorage &aOther) {
-    iObject->setBackend(aOther.object());
+    object()->setSharedInstanceFrom(aOther.object());
     return *this;
-}
-
-const QEnginioDataStorageObject* QEnginioDataStorage::object() const {
-    return iObject;
-}
-
-bool QEnginioDataStorage::operator!() const {
-    return !isValid();
-}
-bool QEnginioDataStorage::isValid() const {
-    return iObject->isValid();
 }
 
 /*!
@@ -154,52 +134,67 @@ resources (for example QEnginioCollection's) are requested from QEnginioDataStor
 \endcode
 */
 void QEnginioDataStorage::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId) {
-    iObject->setBackend(aInstanceAddress,aBackendId);
-}
-
-QUrl QEnginioDataStorage::instanceAddress() const {
-    return iObject->instanceAddress();
-}
-void QEnginioDataStorage::setInstanceAddress(const QUrl &aInstanceAddress) {
-    iObject->setInstanceAddress(aInstanceAddress);
-}
-
-void QEnginioDataStorage::setInstanceAddress(const QString &aInstanceAddress) {
-    iObject->setInstanceAddress(QUrl(aInstanceAddress));
+    QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
+    obj->setBackend(aInstanceAddress,aBackendId);
 }
 
 QString QEnginioDataStorage::backendId() const {
-    return iObject->backendId();
+    const QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<const QEnginioDataStorageObject *>(object());
+    return obj->backendId();
 }
 void QEnginioDataStorage::setBackendId(const QString &aBackendId) {
-    iObject->setBackendId(aBackendId);
+    QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
+    obj->setBackendId(aBackendId);
 }
 
 QString QEnginioDataStorage::username() const {
-    return iObject->username();
+    const QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<const QEnginioDataStorageObject *>(object());
+    return obj->username();
 }
 
 void QEnginioDataStorage::setUsername(const QString &aUsername) {
-    iObject->setUsername(aUsername);
+    QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
+    obj->setUsername(aUsername);
 }
 
 QString QEnginioDataStorage::password() const {
-    return iObject->password();
+    const QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<const QEnginioDataStorageObject *>(object());
+    return obj->password();
 }
 void QEnginioDataStorage::setPassword(const QString &aPassword) {
-    iObject->setPassword(aPassword);
+    QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
+    obj->setPassword(aPassword);
 }
 
 QEnginioCollection QEnginioDataStorage::collection(const QString &aCollectionName) {
-    return iObject->collection(aCollectionName);
+    QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
+    return QEnginioCollection(obj->collection(aCollectionName));
 }
 
 QEnginioConnection QEnginioDataStorage::reserveConnection() {
-    return iObject->reserveConnection();
+    QRestConnectionObject *obj;
+    QEnginioConnectionObject *engObj;
+
+    obj = object()->reserveConnection();
+    if (obj == NULL) {
+        return QEnginioConnection();
+    }
+
+    engObj = reinterpret_cast<QEnginioConnectionObject *>(obj);
+
+    return QEnginioConnection(engObj);
 }
 
 void QEnginioDataStorage::releaseConnection(const QEnginioConnection &aConnection) {
-    iObject->releaseConnection(aConnection);
+    object()->releaseConnection(aConnection.object());
 }
 
 QT_END_NAMESPACE

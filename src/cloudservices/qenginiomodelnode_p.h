@@ -42,8 +42,9 @@
 #ifndef QCLOUDSERVICES_QENGINIOMODEL_NODE_P_H
 #define QCLOUDSERVICES_QENGINIOMODEL_NODE_P_H
 
+#include <QtCore/private/qobject_p.h>
+
 #include <QtCloudServices/qenginiomodelnode.h>
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
 
 /*
 #include <QtCloudServices/private/qenginioconnection_p.h>
@@ -60,9 +61,9 @@ QT_BEGIN_NAMESPACE
 ** Private Implementation
 */
 class QEnginioModelPrivate;
-class QEnginioModelNodePrivate : public QCloudServicesObjectPrivate {
+class QEnginioModelNodePrivate : public QObjectPrivate {
     Q_OBJECT
-    QTC_DECLARE_PUBLIC(QEnginioModelNode)
+    Q_DECLARE_PUBLIC(QEnginioModelNode)
     friend class QEnginioModelPrivate;
 public:
     enum HandleOperationType {
@@ -121,7 +122,7 @@ protected:
     void setModel(QEnginioModel *aModel);
     void setParentNode(QEnginioModelNode *aParentNode);
     void setEnginioObject(const QEnginioObject &aEnginoObject);
-private Q_SLOTS:
+public:
     void refreshEnginoObjectDisplay();
 private:
     QEnginioModel *iModel;
@@ -130,7 +131,6 @@ private:
 
     QEnginioObject iEnginoObject;
     QMetaObject::Connection iConnectionForObjectChange;
-
 
     QEnginioCollection iCollection; // QEnginioConnectionPrivate *_enginio;
     QEnginioQuery iQuery;

@@ -51,20 +51,13 @@
 #include <QtCore/quuid.h>
 #include <QtCore/qvector.h>
 
+#include <QtCore/private/qabstractitemmodel_p.h>
+
 #include <QtCloudServices/qenginiomodel.h>
 
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
-#include <QtCloudServices/private/qenginioconnection_p.h>
-#include <QtCloudServices/private/qenginiooperation_p.h>
-#include <QtCloudServices/private/qenginiomodelnode_p.h>
-
-#include <QtCloudServices/private/enginiofakereply_p.h>
-#include <QtCloudServices/private/enginiodummyreply_p.h>
-#include <QtCloudServices/private/enginiobackendconnection_p.h>
-
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-# include <QtCore/private/qabstractitemmodel_p.h>
-#endif
+#include <QtCloudServices/qenginioconnection.h>
+#include <QtCloudServices/qenginiooperation.h>
+#include <QtCloudServices/qenginiomodelnode.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -266,20 +259,15 @@ public:
 /*
 ** QEnginioModelPrivate
 */
-class QEnginioModelPrivate
-#if QTCLOUDSERVICES_USE_QOBJECT_PRIVATE
-    : public QAbstractItemModelPrivate
-#else
-    : public QObject
-#endif
+class QEnginioModelPrivate : public QAbstractItemModelPrivate
 {
     Q_OBJECT
+    Q_DECLARE_PUBLIC(QEnginioModel)
 public:
-    QEnginioModelPrivate(QEnginioModel *aInterface);
+    QEnginioModelPrivate();
     virtual ~QEnginioModelPrivate();
 
-    QEnginioModel *model();
-    const QEnginioModel *model() const;
+    void init();
 
     virtual Qt::ItemFlags flags(const QModelIndex &aIndex) const;
     virtual QModelIndex index(int aRow, int aColumn, const QModelIndex &aParent = QModelIndex()) const;
@@ -902,20 +890,6 @@ public:
     virtual bool queryIsEmpty() const = 0;
     virtual QJsonObject queryAsJson() const = 0;
 #endif
-
-public:
-    template<class T>
-    T* q()
-    {
-        return static_cast<T *>(this->iInterface);
-    }
-    template<class T>
-    const T* q() const
-    {
-        return static_cast<T *>(this->iInterface);
-    }
-
-    QEnginioModel *iInterface;
 };
 
 #if 0

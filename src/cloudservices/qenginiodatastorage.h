@@ -42,11 +42,7 @@
 #ifndef QCLOUDSERVICES_QENGINIODATASTORAGE_H
 #define QCLOUDSERVICES_QENGINIODATASTORAGE_H
 
-#include <QObject>
-#include <QUrl>
-#include <QString>
-#include <QSharedPointer>
-
+#include <QtCloudServices/QRestEndpoint>
 #include <QtCloudServices/QEnginioConnection>
 #include <QtCloudServices/QEnginioCollection>
 #include <QtCloudServices/QEnginioDataStorageObject>
@@ -54,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEnginioDataStorageObject;
-class QTCLOUDSERVICES_EXPORT QEnginioDataStorage {
+class QTCLOUDSERVICES_EXPORT QEnginioDataStorage : public QRestEndpoint {
 protected:
     QEnginioDataStorage(QEnginioDataStorageObject *aObject);
 public:
@@ -68,19 +64,12 @@ public:
     // Assignment
     QEnginioDataStorage& operator=(const QEnginioDataStorage &aOther);
 
-    // Get implementation object
-    const QEnginioDataStorageObject* enginioDataStorageObject() const;
-
     // IsValid
     virtual bool operator!() const Q_REQUIRED_RESULT;
     virtual bool isValid() const Q_REQUIRED_RESULT;
 
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
-
-    QUrl instanceAddress() const Q_REQUIRED_RESULT;
-    void setInstanceAddress(const QUrl &aInstanceAddress);
-    void setInstanceAddress(const QString &aInstanceAddress);
 
     QString backendId() const Q_REQUIRED_RESULT;
     void setBackendId(const QString &aBackendId);
@@ -98,8 +87,6 @@ public:
     // Get Plain connection
     QEnginioConnection reserveConnection() Q_REQUIRED_RESULT;
     void releaseConnection(const QEnginioConnection &aConnection);
-private:
-    QEnginioDataStorageObject *iEnginioDataStorageObject;
 };
 
 QT_END_NAMESPACE

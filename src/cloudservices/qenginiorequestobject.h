@@ -42,37 +42,23 @@
 #ifndef QCLOUDSERVICES_QENGINIOREQUEST_OBJECT_H
 #define QCLOUDSERVICES_QENGINIOREQUEST_OBJECT_H
 
-#include <functional>
-
-#include <QUrlQuery>
-
-#include <QtCloudServices/qtcloudservices.h>
 #include <QtCloudServices/qrestrequestobject.h>
-#include <QtCloudServices/.h>
 
 QT_BEGIN_NAMESPACE
 
+class QEnginioCollectionObject;
 class QEnginioRequestObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioRequestObject : public QRestRequestObject {
     Q_OBJECT
-    QTC_DECLARE_PRIVATE(QEnginioRequestObject)
+    Q_DECLARE_PRIVATE(QEnginioRequestObject)
+private:
+    Q_DISABLE_COPY(QEnginioRequestObject)
 public:
-    QEnginioRequest(QObject *aParent = 0);
-    QEnginioRequest(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent = 0);
+    QEnginioRequestObject();
+    QEnginioRequestObject(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent = 0);
 
-    QEnginioCollection enginioCollection() const Q_REQUIRED_RESULT;
-    void setEnginioCollection(const QEnginioCollection &aEnginioCollection);
-
-    QUrlQuery urlQuery() const Q_REQUIRED_RESULT;
-    void setUrlQuery(const QUrlQuery &aUrlQuery);
-
-    QJsonObject payload() const Q_REQUIRED_RESULT;
-    void setPayload(const QJsonObject &aPayload);
-
-    QJsonObject extraHeaders() const Q_REQUIRED_RESULT;
-    void setExtraHeaders(const QJsonObject &aExtraHeaders);
-
-    QEnginioRequest &then(std::function<void(QEnginioOperation &)> aCallback);
+    QEnginioCollectionObject *enginioCollection() const Q_REQUIRED_RESULT;
+    void setEnginioCollection(const QEnginioCollectionObject *aEnginioCollection);
 };
 
 QT_END_NAMESPACE

@@ -59,14 +59,20 @@ class QRestConnectionObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QRestConnectionObject : public QObject {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QRestConnectionObject)
+private:
+    Q_DISABLE_COPY(QRestConnectionObject)
+protected:
+    QRestConnectionObject(QRestConnectionObjectPrivate &dd,QObject *aParent);
 public:
-    QRestConnectionObject(const QRestEndpointObject *aRestEndpointObject,
+    QRestConnectionObject(const QRestEndpointObject *aRestEndpointObject = 0,
                           QObject *aParent = 0);
 
-    virtual bool isValid() const;
+    bool isValid() const;
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
     Q_INVOKABLE QRestOperationObject *restRequest(const QRestRequestObject *aRequest);
+public:
+    void setSharedInstanceFrom(const QRestConnectionObject *aOther);
 Q_SIGNALS:
     void finished(const QRestOperation aOperation);
     void error(const QRestOperation aOperation);

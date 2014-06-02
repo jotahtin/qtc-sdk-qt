@@ -42,26 +42,29 @@
 #ifndef QCLOUDSERVICES_QENGINIOUSER_H
 #define QCLOUDSERVICES_QENGINIOUSER_H
 
+#include <QJsonObject>
+
 #include <QtCloudServices/qtcloudservices.h>
 #include <QtCloudServices/qenginioobject.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioUserPrivate;
+class QEnginioUserObject;
 class QTCLOUDSERVICES_EXPORT QEnginioUser : public QEnginioObject {
-    Q_OBJECT
-    QTC_DECLARE_PRIVATE(QEnginioUser)
+    friend class QEnginioObject;
+protected:
+    QEnginioUser(QEnginioUserObject *aObject);
 public:
-    QEnginioUser(QObject *aParent = 0);
-    QEnginioUser(const QEnginioUser &aOther);
+    QEnginioUser();
     QEnginioUser(const QJsonObject &aJsonObject);
+    QEnginioUser(const QEnginioUser &aOther);
 
     QEnginioUser& operator=(const QEnginioUser &aOther);
 
-    const QString username() const Q_REQUIRED_RESULT;
-    const QString email() const Q_REQUIRED_RESULT;
-    const QString firstName() const Q_REQUIRED_RESULT;
-    const QString lastName() const Q_REQUIRED_RESULT;
+    QString username() const Q_REQUIRED_RESULT;
+    QString email() const Q_REQUIRED_RESULT;
+    QString firstName() const Q_REQUIRED_RESULT;
+    QString lastName() const Q_REQUIRED_RESULT;
 protected:
     virtual void lazyInitialization();
 Q_SIGNALS:

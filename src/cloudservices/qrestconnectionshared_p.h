@@ -67,6 +67,7 @@ QT_BEGIN_NAMESPACE
 class QRestEndpointShared;
 class QRestConnectionShared : public QObject {
     Q_OBJECT
+private:
     Q_DISABLE_COPY(QRestConnectionShared)
 public:
     class ReplyFinishedFunctor {
@@ -84,23 +85,29 @@ public:
 
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
-    QSharedPointer<QRestOperation> customRequest(QSharedPointer<QRestRequestShared> aRequest);
+    QSharedPointer<QRestOperationShared> restRequest(QSharedPointer<QRestConnectionShared> aSelf,
+                                                     QSharedPointer<QRestRequestShared> aRequest);
 
     void replyFinished(QNetworkReply *aNetworkReply);
 protected:
     void registerReply(QNetworkReply *aNetworkReply,
                        QSharedPointer<QRestOperationShared> aOperation);
     void unregisterReply(QNetworkReply *aNetworkReply);
-private:
+protected:
+    virtual QSharedPointer<QRestOperationShared> buildOperationInstance
+    (QSharedPointer<QRestConnectionShared> aSelf,
+     QSharedPointer<QRestRequestShared> aRequest);
+
     virtual bool prepareRequest(QNetworkRequest &aRequest,
                                 const QString &aPath,
                                 const QUrlQuery &aQuery,
                                 const QJsonObject &aExtraHeaders);
+
 private:
     QSharedPointer<QRestEndpointShared> iRestEndpoint;
     QSharedPointer<QNetworkAccessManager> iNetworkManager;
     QMetaObject::Connection iNetworkManagerConnection;
-    QMap<QNetworkReply*, QEnginioOperation> iReplyOperationMap;
+    QMap<QNetworkReply*, QSharedPointer<QRestOperationShared> > iReplyOperationMap;
 private:
     static QThreadStorage < QWeakPointer<QNetworkAccessManager> > gNetworkManager;
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QENGINIOOPERATION_P_H
-#define QCLOUDSERVICES_QENGINIOOPERATION_P_H
+#ifndef QCLOUDSERVICES_QENGINIOOPERATION_OBJECT_P_H
+#define QCLOUDSERVICES_QENGINIOOPERATION_OBJECT_P_H
 
 #include <QtCore/qhash.h>
 #include <QtCore/qstring.h>
@@ -49,80 +49,37 @@
 #include <QtCore/qjsondocument.h>
 #include <QtNetwork/qnetworkreply.h>
 
-#include <QtCloudServices/qenginiooperation.h>
-
-#include <QtCloudServices/private/qenginioconnection_p.h>
-#include <QtCloudServices/private/qenginiocollection_p.h>
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
+#include <QtCloudServices/qenginiooperationobject.h>
+#include <QtCloudServices/private/qrestoperationobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioOperationPrivate : public QCloudServicesObjectPrivate {
-    Q_OBJECT
-    QTC_DECLARE_PUBLIC(QEnginioOperation)
-    friend class QEnginioConnectionPrivate;
+class QEnginioConnectionShared;
+class QEnginioRequestShared;
+class QEnginioOperationShared;
+class QEnginioOperationObjectPrivate : public QRestOperationObjectPrivate {
+    Q_DECLARE_PUBLIC(QEnginioOperationObject)
+private:
+    Q_DISABLE_COPY(QEnginioOperationObjectPrivate)
 public:
-    QEnginioOperationPrivate();
-    QEnginioOperationPrivate(const QEnginioConnection &aEnginioConnection,
-                             const QEnginioRequest &aRequest);
-    ~QEnginioOperationPrivate();
-public:
-    bool isValid() const Q_REQUIRED_RESULT;
-    bool isError() const Q_REQUIRED_RESULT;
-    bool isFinished() const Q_REQUIRED_RESULT;
+    QEnginioOperationObjectPrivate(const QEnginioConnection &aEnginioConnection,
+                                   const QEnginioRequest &aRequest);
+    ~QEnginioOperationObjectPrivate();
 
-    QNetworkReply::NetworkError errorCode() const Q_REQUIRED_RESULT;
+    virtual QRestConnectionObject *restConnection() const Q_REQUIRED_RESULT;
+    virtual QRestRequestObject *restRequest() const Q_REQUIRED_RESULT;
+
     int backendStatus() const Q_REQUIRED_RESULT;
     QString requestId() const Q_REQUIRED_RESULT;
-    QString errorString() const Q_REQUIRED_RESULT;
-    QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
-
-    QJsonObject result() const Q_REQUIRED_RESULT;
-    QByteArray resultBytes() const Q_REQUIRED_RESULT; // pData
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
     QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
-
-#if 0
-    static QEnginioOperationPrivate *get(QEnginioOperation *p)
-    {
-        return QTC_D_FUNC(p);
-    }
-
-    QEnginioOperationPrivate(QEnginioConnectionPrivate *p, QNetworkReply *reply)
-        : QCloudServicesObjectPrivate(),
-          _client(p)
-          , _nreply(reply)
-    {
-
-    }
-#endif
-
-    QEnginioRequest enginioRequest() const Q_REQUIRED_RESULT;
-
-    void dumpDebugInfo() const;
 protected:
-    void setEnginioRequest(const QEnginioRequest &aEnginioRequest);
-    void setNetworkReply(QNetworkReply *aNetworkReply);
-    void operationFinished();
-public:
-
-
-    void emitFinished();
-// void swapNetworkReply(QEnginioOperationPrivate *other);
-
-private:
-    QEnginioConnection iEnginioConnection; // Client
-    QEnginioRequest iEnginioRequest;
-    QNetworkReply *iNetworkReply; //  _nreply;
-    bool iDelay; //  _delay;
-    mutable QByteArray iData; //  _data;
-
-    QJsonObject iJsonObject;
-    QList<QEnginioObject> iResultObjects;
+    virtual void init();
+    virtual void deinit();
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QENGINIOOPERATION_P_H */
+#endif /* QCLOUDSERVICES_QENGINIOOPERATION_OBJECT_P_H */

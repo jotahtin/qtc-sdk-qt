@@ -41,95 +41,64 @@
 
 #include "stdafx.h"
 
-#include "QtCloudServices/private/qenginiorequest_p.h"
+#include <QtCloudServices/qenginiorequest.h>
+#include <QtCloudServices/qenginiooperation.h>
+#include <QtCloudServices/qenginiocollection.h>
+
+#include <QtCloudServices/private/qenginiorequestobject_p.h>
+#include <QtCloudServices/private/qenginiooperationobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-/*
-** Private Implementation
-*/
-
-QEnginioRequestPrivate::QEnginioRequestPrivate()
+QEnginioRequest::QEnginioRequest(QEnginioRequestObject *aObject)
+    : QRestRequest(aObject)
 {
 
 }
 
-/*
-** Public Interface
-*/
-QEnginioRequest::QEnginioRequest(QObject *aParent)
-    : QCloudServicesObject(QEnginioRequest::dvar(new QEnginioRequestPrivate), aParent)
+QEnginioRequest::QEnginioRequest()
+    : QRestRequest(new QEnginioRequestObject)
 {
 
 }
-QEnginioRequest::QEnginioRequest(QtCloudServices::RESTOperation aOperation, QString aPath, QObject *aParent)
-    : QCloudServicesObject(QEnginioRequest::dvar(new QEnginioRequestPrivate), aParent)
+
+QEnginioRequest::QEnginioRequest(QtCloudServices::RESTOperation aOperation, QString aPath)
+    : QRestRequest(new QEnginioRequestObject(aOperation,aPath))
 {
-    QEnginioRequest::dvar pimpl = d<QEnginioRequest>();
-    pimpl->iOperation = aOperation;
-    pimpl->iPath = aPath;
+
 }
+
 QEnginioRequest::QEnginioRequest(const QEnginioRequest &aOther)
-    : QCloudServicesObject(aOther.d<QEnginioRequest>())
+    : QRestRequest(new QEnginioRequestObject)
 {
-    *this = aOther;
+    object()->setSharedInstanceFrom(aOther.object());
 }
 
-QEnginioRequest& QEnginioRequest::operator=(const QEnginioRequest &aOther)
-{
-    setPIMPL(aOther.d<QEnginioRequest>());
-
+QEnginioRequest& QEnginioRequest::operator=(const QEnginioRequest &aOther) {
+    object()->setSharedInstanceFrom(aOther.object());
     return *this;
 }
 
-QtCloudServices::RESTOperation QEnginioRequest::operation() const
-{
-    return d<QEnginioRequest>()->iOperation;
-}
-QString QEnginioRequest::path() const
-{
-    return d<QEnginioRequest>()->iPath;
-}
-
-QEnginioCollection QEnginioRequest::enginioCollection() const
-{
-    return d<QEnginioRequest>()->iEnginioCollection;
-}
-void QEnginioRequest::setEnginioCollection(const QEnginioCollection &aEnginioCollection)
-{
-    d<QEnginioRequest>()->iEnginioCollection = aEnginioCollection;
+QEnginioCollection QEnginioRequest::enginioCollection() const {
+    const QEnginioRequestObject *obj;
+    obj = reinterpret_cast<const QEnginioRequestObject*>(object());
+    if (!obj) {
+        return QEnginioCollection();
+    }
+    return QEnginioCollection(obj->enginioCollection());
 }
 
-QUrlQuery QEnginioRequest::urlQuery() const
-{
-    return d<QEnginioRequest>()->iUrlQuery;
-}
-void QEnginioRequest::setUrlQuery(const QUrlQuery &aUrlQuery)
-{
-    d<QEnginioRequest>()->iUrlQuery = aUrlQuery;
-}
+QEnginioRequest &QEnginioRequest::then(std::function<void(QEnginioOperation)> aCallback) {
+    object()->setCallback([=](QRestOperationObject *aObject) {
+        QEnginioOperationObject *obj;
+        if (!aObject) return;
+        if ((obj=reinterpret_cast<QEnginioOperationObject *>(aObject))==NULL) {
+            delete aObject;
+        } else {
+            aCallback(QEnginioOperation(obj));
+        }
+    });
 
-QJsonObject QEnginioRequest::payload() const
-{
-    return d<QEnginioRequest>()->iPayload;
-}
-void QEnginioRequest::setPayload(const QJsonObject &aPayload)
-{
-    d<QEnginioRequest>()->iPayload = aPayload;
-}
-
-QJsonObject QEnginioRequest::extraHeaders() const
-{
-    return d<QEnginioRequest>()->iExtraHeaders;
-}
-void QEnginioRequest::setExtraHeaders(const QJsonObject &aExtraHeaders)
-{
-    d<QEnginioRequest>()->iExtraHeaders = aExtraHeaders;
-}
-
-QEnginioRequest& QEnginioRequest::then(std::function<void(QEnginioOperation &)> aCallback)
-{
-    d<QEnginioRequest>()->iCallback = aCallback;
     return *this;
 }
 

@@ -43,6 +43,8 @@
 
 #include <QtCloudServices/private/qrestconnectionobject_p.h>
 #include <QtCloudServices/private/qrestconnectionshared_p.h>
+#include <QtCloudServices/private/qrestoperationobject_p.h>
+#include <QtCloudServices/private/qrestrequestobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,9 +52,54 @@ QT_BEGIN_NAMESPACE
 ** Private
 */
 
+// Constructor for valid connection.
+QRestConnectionObjectPrivate::QRestConnectionObjectPrivate(const QRestEndpointObject *aRestEndpointObject) {
+}
+
+QRestConnectionObjectPrivate::~QRestConnectionObjectPrivate() {
+
+}
+
+bool QRestConnectionObjectPrivate::isValid() const {
+    if (!iShared) {
+        return false;
+    }
+
+    return iShared->isValid();
+}
+
+QSharedPointer<QNetworkAccessManager> QRestConnectionObjectPrivate::networkManager() const {
+    return iShared->networkManager();
+}
+
+QRestOperationObject *QRestConnectionObjectPrivate::restRequest(const QRestRequestObject *aRequest) {
+    Q_Q(QRestConnectionObject);
+    QRestRequestObjectPrivate *requestPrv;
+
+    requestPrv = reinterpret_cast<QRestRequestObjectPrivate *>(aRequest->d_ptr);
+
+    aRequest->d_ptr
+    iShared->restRequest()
+
+    QRestOperationObject *op;
+
+    op = new QRestOperationObject(q,aRequest);
+    op->setSharedInstanceFrom();
+
+
+    iShared->restRequest(iShared,requestPrv->sharedInstance())
+}
+
+
 /*
 ** Public
 */
+
+QRestConnectionObject::QRestConnectionObject(QRestConnectionObjectPrivate &dd,QObject *aParent)
+    : QObject(dd,aParent)
+{
+
+}
 
 QRestConnectionObject::QRestConnectionObject(const QRestEndpointObject *aRestEndpointObject,
                                              QObject *aParent)
@@ -62,7 +109,8 @@ QRestConnectionObject::QRestConnectionObject(const QRestEndpointObject *aRestEnd
 }
 
 bool QRestConnectionObject::isValid() const {
-
+    Q_D(const QRestConnectionObject);
+    return d->isValid();
 }
 QSharedPointer<QNetworkAccessManager> QRestConnectionObject::networkManager() const {
     Q_D(const QRestConnectionObject);

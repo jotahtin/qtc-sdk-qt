@@ -42,45 +42,29 @@
 #ifndef QCLOUDSERVICES_QENGINIOCONNECTION_H
 #define QCLOUDSERVICES_QENGINIOCONNECTION_H
 
-#include <QObject>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/qurl.h>
-#include <QtCore/qjsonobject.h>
-
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/QEnginioOperation>
-#include <QtCloudServices/QEnginioRequest>
+#include <QtCloudServices/qrestconnection.h>
+#include <QtCloudServices/qenginiooperation.h>
 
 QT_BEGIN_NAMESPACE
 
+class QEnginioConnectionObject;
 class QTCLOUDSERVICES_EXPORT QEnginioConnection : public QRestConnection {
+    friend class QEnginioDataStorage;
+    friend class QEnginioOperation;
 protected:
-    // Constructor for valid connection.
-    QEnginioConnection(const QEnginioDataStorage &aEnginioDataStorage);
+    QEnginioConnection(QEnginioConnectionObject *aObject);
 public:
     // Constructors
     QEnginioConnection();
     QEnginioConnection(const QEnginioConnection &aOther);
-    ~QEnginioConnection();
 
     // Assignment
     QEnginioConnection& operator=(const QEnginioConnection &aOther);
 
-    // Get implementation object - for binding signals.
-    const QEnginioDataStorageObject* object() const;
-
-    // IsValid
-    bool operator!() const Q_REQUIRED_RESULT;
-    bool isValid() const Q_REQUIRED_RESULT;
-
+    // Operations
     QEnginioOperation customRequest(const QEnginioRequest &aRequest);
 
-
-
-
+    /*
     QEnginioOperation fullTextSearch(const QJsonObject &query);
     QEnginioOperation query(const QJsonObject &query, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
     QEnginioOperation create(const QJsonObject &object, const QtCloudServices::Operation operation = QtCloudServices::ObjectOperation);
@@ -89,6 +73,7 @@ public:
 
     QEnginioOperation uploadFile(const QJsonObject &associatedObject, const QUrl &file);
     QEnginioOperation downloadUrl(const QJsonObject &object);
+    */
 };
 
 QT_END_NAMESPACE

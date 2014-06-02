@@ -41,393 +41,121 @@
 
 #include "stdafx.h"
 
-#include "QtCloudServices/private/qenginioobject_p.h"
-#include "QtCloudServices/private/qcloudservicesconstants_p.h"
+#include "QtCloudServices/qenginioobject.h"
+#include "QtCloudServices/qenginiouser.h"
+
+#include "QtCloudServices/private/qenginioobjectobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-/*
-** Private Implementation
-*/
-
-QEnginioObjectPrivate::QEnginioObjectPrivate()
+QEnginioObject::QEnginioObject(QEnginioObjectObject *aObject)
+    : iObject(aObject)
 {
-
+    Q_ASSERT(iObject);
 }
 
-QEnginioObjectPrivate::QEnginioObjectPrivate(const QJsonObject & aJsonObject)
-    : iJsonObject(aJsonObject)
-{
-}
-
-/*
-QEnginioObjectPrivate::QEnginioObjectPrivate(const QEnginioCollection &aEnginioCollection,
-        const QJsonObject & aJsonObject)
-    : iEnginioCollection(aEnginioCollection), iJsonObject(aJsonObject)
-{
-
-}
-*/
-
-
-bool QEnginioObjectPrivate::isValid() const
-{
-    return true;
-}
-
-bool QEnginioObjectPrivate::isModified() const
-{
-    QJsonObject::const_iterator i;
-
-    for (i = iJsonObject.begin(); i != iJsonObject.end(); ++i) {
-        if (i.key() == QtCloudServicesConstants::id ||
-                i.key() == QtCloudServicesConstants::objectType) {
-            continue;
-        }
-
-        if (!iPersistentJsonObject.contains(i.key())) {
-            return true; // field added
-        }
-
-        if (iPersistentJsonObject.value(i.key()) != i.value()) {
-            return true; // field changed
-        }
-    }
-
-    for (i = iPersistentJsonObject.begin(); i != iPersistentJsonObject.end(); ++i) {
-        if (!iPersistentJsonObject.contains(i.key())) {
-            return true; // field removed
-        }
-    }
-
-    return false;
-}
-
-void QEnginioObjectPrivate::insert(const QString &aKey, const QJsonValue &aValue)
-{
-    iJsonObject.insert(aKey, aValue);
-}
-void QEnginioObjectPrivate::remove(const QString &aKey)
-{
-    iJsonObject.remove(aKey);
-}
-bool QEnginioObjectPrivate::contains(const QString &aKey) const
-{
-    return iJsonObject.contains(aKey);
-}
-QJsonValue QEnginioObjectPrivate::value(const QString &aKey) const
-{
-    return iJsonObject.value(aKey);
-}
-QJsonValueRef QEnginioObjectPrivate::valueRef(const QString &aKey)
-{
-    return iJsonObject[aKey];
-}
-
-const QJsonObject QEnginioObjectPrivate::jsonObject() const
-{
-    return iJsonObject;
-}
-
-const QString QEnginioObjectPrivate::objectId() const
-{
-    return value(QtCloudServicesConstants::id).toString();
-}
-const QString QEnginioObjectPrivate::objectType() const
-{
-    return value(QtCloudServicesConstants::objectType).toString();
-}
-const QTime QEnginioObjectPrivate::createAt() const
-{
-    return iCreatedAt;
-}
-const QEnginioUser QEnginioObjectPrivate::creator() const
-{
-    return iCreator;
-}
-const QTime QEnginioObjectPrivate::updatedAt() const
-{
-    return iUpdatedAt;
-}
-const QEnginioUser QEnginioObjectPrivate::updater() const
-{
-    return iUpdater;
-}
-
-QEnginioOperation QEnginioObjectPrivate::save()
-{
-    if (!isModified()) {
-        return QEnginioOperation();
-    }
-
-    QJsonObject update;
-    QJsonObject::iterator i;
-
-    for (i = iJsonObject.begin(); i != iJsonObject.end(); ++i) {
-        if (i.key() == QtCloudServicesConstants::id ||
-                i.key() == QtCloudServicesConstants::objectType) {
-            update.insert(i.key(), i.value());
-            continue;
-        }
-
-        if (iPersistentJsonObject.contains(i.key()) &&
-                iPersistentJsonObject[i.key()] == i.value()) {
-            continue;
-        }
-
-        update.insert(i.key(), i.value());
-    }
-
-    QEnginioObject::dvar self = getThis<QEnginioObject>();
-    return iEnginioCollection.update(objectId(), update,
-    [ = ](QEnginioOperation & op) {
-        self->saveCompleted(op);
-    });
-}
-
-void QEnginioObjectPrivate::setEnginioCollection(const QEnginioCollection &aEnginioCollection)
-{
-    iEnginioCollection = aEnginioCollection;
-}
-
-void QEnginioObjectPrivate::setUpdatedContent(const QJsonObject &aJsonObject)
-{
-    iJsonObject = aJsonObject;
-    markAsSynced();
-}
-
-void QEnginioObjectPrivate::markAsSynced()
-{
-    iPersistentJsonObject = iJsonObject;
-    emit objectChanged();
-}
-
-void QEnginioObjectPrivate::saveCompleted(QEnginioOperation & op)
-{
-    if (!op) {
-        emit operationFailed(op.errorString());
-    } else {
-        markAsSynced();
-    }
-}
-
-/*
-** Public Interface
-*/
-QEnginioObject::QEnginioObject(QEnginioObject::dvar aPIMPL, QObject *aParent)
-    : QCloudServicesObject(aPIMPL, aParent)
-{
-}
-QEnginioObject::QEnginioObject(QObject *aParent)
-    : QCloudServicesObject(aParent)
+QEnginioObject::QEnginioObject()
+    : iObject(new QEnginioObjectObject)
 {
 
 }
 QEnginioObject::QEnginioObject(const QEnginioObject &aOther)
+    : iObject(new QEnginioObjectObject)
 {
-    if (!aOther.isNull()) {
-        setPIMPL(aOther.d<QEnginioObject>());
-    }
+    object()->setSharedInstanceFrom(aOther.object());
 }
 
 QEnginioObject::QEnginioObject(const QJsonObject &aJsonObject)
-    : QCloudServicesObject(QEnginioObject::dvar(new QEnginioObjectPrivate(aJsonObject)))
+    : iObject(new QEnginioObjectObject(aJsonObject))
 {
+
 }
 
-QEnginioObject & QEnginioObject::operator=(const QEnginioObject &aOther)
+QEnginioObject::~QEnginioObject()
 {
-    if (!aOther.isNull()) {
-        setPIMPL(aOther.d<QEnginioObject>());
-    } else {
-        setPIMPL(QEnginioObject::dvar());
+    if (iObject) {
+        delete iObject;
     }
+}
 
+QEnginioObject& QEnginioObject::operator=(const QEnginioObject &aOther) {
+    object()->setSharedInstanceFrom(aOther.object());
     return *this;
 }
 
-bool QEnginioObject::isValid() const
-{
-    if (isNull()) {
+// IsValid
+bool QEnginioObject::isValid() const {
+    if (!iObject) {
         return false;
     }
 
-    return d<const QEnginioObject>()->isValid();
+    return iObject->isValid();
 }
 
-bool QEnginioObject::isPersistent() const
-{
-    if (!isValid()) {
-        return false;
-    }
-
-    return !objectId().isEmpty();
+// Status
+bool QEnginioObject::isPersistent() const {
+    return iObject->isPersistent();
+}
+bool QEnginioObject::isModified() const {
+    return iObject->isModified();
 }
 
-bool QEnginioObject::isModified() const
-{
-    if (isNull()) {
-        return false;
-    }
-
-    return d<const QEnginioObject>()->isModified();
-}
-
-QEnginioObject & QEnginioObject::insert(const QString &aKey, const QJsonValue &aValue)
-{
-    if (isNull()) {
-        lazyInitialization();
-    }
-
-    d<QEnginioObject>()->insert(aKey, aValue);
+QEnginioObject& QEnginioObject::insert(const QString &aKey, const QJsonValue &aValue) {
+    iObject->insert(aKey,aValue);
     return *this;
 }
-QEnginioObject & QEnginioObject::remove(const QString &aKey)
-{
-    if (!isNull()) {
-        d<QEnginioObject>()->remove(aKey);
-    }
 
+QEnginioObject& QEnginioObject::remove(const QString &aKey) {
+    iObject->remove(aKey);
     return *this;
 }
-bool QEnginioObject::contains(const QString &aKey) const
-{
-    if (isNull()) {
-        return false;
-    }
 
-    return d<const QEnginioObject>()->contains(aKey);
+bool QEnginioObject::contains(const QString &aKey) const {
+    return iObject->contains(aKey);
 }
-QJsonValue QEnginioObject::value(const QString &aKey) const
-{
-    if (isNull()) {
-        return QJsonValue();
-    }
-
-    return d<const QEnginioObject>()->value(aKey);
+QJsonValue QEnginioObject::value(const QString &aKey) const {
+    return iObject->value(aKey);
 }
-QJsonValue QEnginioObject::operator[](const QString &aKey) const
-{
-    if (isNull()) {
-        return QJsonValue();
-    }
-
-    return d<const QEnginioObject>()->value(aKey);
+QJsonValue QEnginioObject::operator[](const QString &aKey) const {
+    return iObject->value(aKey);
 }
-QJsonValueRef QEnginioObject::operator[](const QString &aKey)
-{
-    if (isNull()) {
-        lazyInitialization();
-    }
-
-    return d<QEnginioObject>()->valueRef(aKey);
+QJsonValueRef QEnginioObject::operator[](const QString &aKey) {
+    return iObject->valueRef(aKey);
 }
 
-const QJsonObject QEnginioObject::jsonObject() const
-{
-    if (isNull()) {
-        return QJsonObject();
-    }
-
-    return d<const QEnginioObject>()->jsonObject();
-}
-const QString QEnginioObject::objectId() const
-{
-    if (isNull()) {
-        return QString();
-    }
-
-    return d<const QEnginioObject>()->objectId();
-}
-const QTime QEnginioObject::createAt() const
-{
-    if (isNull()) {
-        return QTime();
-    }
-
-    return d<const QEnginioObject>()->createAt();
-}
-const QEnginioUser QEnginioObject::creator() const
-{
-    if (isNull()) {
-        return QEnginioUser();
-    }
-
-    return d<const QEnginioObject>()->creator();
-}
-const QString QEnginioObject::objectType() const
-{
-    if (isNull()) {
-        return QString();
-    }
-
-    return d<const QEnginioObject>()->objectType();
-}
-const QTime QEnginioObject::updatedAt() const
-{
-    if (isNull()) {
-        return QTime();
-    }
-
-    return d<const QEnginioObject>()->updatedAt();
-}
-const QEnginioUser QEnginioObject::updater() const
-{
-    if (isNull()) {
-        return QEnginioUser();
-    }
-
-    return d<const QEnginioObject>()->updater();
+const QJsonObject QEnginioObject::jsonObject() const {
+    return iObject->jsonObject();
 }
 
-void QEnginioObject::save()
-{
-    if (isNull()) {
-        return;
-    }
-
-    d<const QEnginioObject>()->save();
+const QString QEnginioObject::objectId() const {
+    return iObject->objectId();
+}
+const QString QEnginioObject::objectType() const {
+    return iObject->objectType();
+}
+const QTime QEnginioObject::createAt() const {
+    return iObject->createAt();
+}
+const QEnginioUser QEnginioObject::creator() const {
+    return QEnginioUser(iObject->creator());
+}
+const QTime QEnginioObject::updatedAt() const {
+    return iObject->updatedAt();
+}
+const QEnginioUser QEnginioObject::updater() const {
+    return QEnginioUser(iObject->updater());
 }
 
-void QEnginioObject::lazyInitialization()
-{
-    if (isNull()) {
-        setPIMPL(QEnginioObject::dvar(new QEnginioObjectPrivate));
-    }
-}
-
-void QEnginioObject::setPIMPL(QCloudServicesObject::dvar aPIMPL)
-{
-    QCloudServicesObject::setPIMPL(aPIMPL);
-
-    if (isNull()) {
-        return;
-    }
-#if QCLOUDSERVICES_USE_STD_SHARED_PTR
-    connect(d<QEnginioObject>().get(), SIGNAL(objectChanged()),
-            this, SIGNAL(objectChanged()));
-    connect(d<QEnginioObject>().get(), SIGNAL(operationFailed(QString)),
-            this, SIGNAL(operationFailed(QString)));
-#else
-    connect(d<QEnginioObject>().data(), SIGNAL(objectChanged()),
-            this, SIGNAL(objectChanged()));
-    connect(d<QEnginioObject>().data(), SIGNAL(operationFailed(QString)),
-            this, SIGNAL(operationFailed(QString)));
-#endif
+void QEnginioObject::save() {
+    iObject->save();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug d, QEnginioObject aObject)
-{
-    if (!aObject.isValid()) {
-        d << "QEnginioObject(null)";
-        return d;
-    }
-
+void QEnginioObject::dumpDebugInfo(QDebug &d) const {
     d.nospace();
     d << "QEnginioObject("; // << hex << (void *)aReply << dec;
-    d << "objectId = " << aObject.objectId() << ", ";
-    d << "createAt = " << aObject.createAt(); //  << ", ";
+    d << "objectId = " << objectId() << ", ";
+    d << "createAt = " << createAt(); //  << ", ";
 
     /*
     const QTime createAt() const Q_REQUIRED_RESULT;
@@ -438,7 +166,26 @@ QDebug operator<<(QDebug d, QEnginioObject aObject)
     */
     d << ")";
 
-    return d.space();
+    d.space();
+}
+#endif
+
+const QEnginioObjectObject* QEnginioObject::object() const {
+    return iObject;
+}
+QEnginioObjectObject* QEnginioObject::object() {
+    return iObject;
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug d, const QEnginioObject &aObject)
+{
+    if (!aObject.isValid()) {
+        d << "QEnginioObject(null)";
+    } else {
+        aObject.dumpDebugInfo(d);
+    }
+    return d;
 }
 
 #endif /* QT_NO_DEBUG_STREAM */

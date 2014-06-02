@@ -125,74 +125,7 @@ QEnginioOperationPrivate::~QEnginioOperationPrivate()
     setNetworkReply(NULL);
 }
 
-bool QEnginioOperationPrivate::isValid() const
-{
-    if (!iEnginioConnection) {
-        return false;
-    }
 
-    return true;
-}
-
-bool QEnginioOperationPrivate::isError() const
-{
-    return errorCode() != QNetworkReply::NoError;
-}
-bool QEnginioOperationPrivate::isFinished() const
-{
-    return iNetworkReply->isFinished() && Q_LIKELY(!iDelay);
-}
-
-QNetworkReply::NetworkError QEnginioOperationPrivate::errorCode() const
-{
-    return iNetworkReply->error();
-}
-
-int QEnginioOperationPrivate::backendStatus() const
-{
-    return iNetworkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).value<int>();
-}
-
-QString QEnginioOperationPrivate::requestId() const
-{
-    return QString::fromUtf8(iNetworkReply->request().rawHeader(QtCloudServicesConstants::X_Request_Id));
-}
-
-QString QEnginioOperationPrivate::errorString() const
-{
-    if (errorType() == QtCloudServices::BackendError) {
-        return QString::fromUtf8(resultBytes());
-    }
-
-    return iNetworkReply->errorString();
-}
-
-QtCloudServices::ErrorType QEnginioOperationPrivate::errorType() const
-{
-    if (errorCode() == QNetworkReply::NoError) {
-        return QtCloudServices::NoError;
-    }
-
-    if (resultBytes().isEmpty()) {
-        return QtCloudServices::NetworkError;
-    }
-
-    return QtCloudServices::BackendError;
-}
-
-QJsonObject QEnginioOperationPrivate::result() const
-{
-    return iJsonObject;
-}
-
-QByteArray QEnginioOperationPrivate::resultBytes() const
-{
-    if (iData.isEmpty() && iNetworkReply->isFinished()) {
-        iData = iNetworkReply->readAll();
-    }
-
-    return iData;
-}
 
 
 int QEnginioOperationPrivate::resultObjectCount() const

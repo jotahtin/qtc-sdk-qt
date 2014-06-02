@@ -41,110 +41,62 @@
 
 #include "stdafx.h"
 
-#include "QtCloudServices/private/qenginiouser_p.h"
+#include "QtCloudServices/qenginiouser.h"
+#include "QtCloudServices/private/qenginiouserobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-/*
-** Private Implementation
-*/
-QEnginioUserPrivate::QEnginioUserPrivate()
-{
-
-}
-QEnginioUserPrivate::QEnginioUserPrivate(const QJsonObject &aJsonObject)
-    : QEnginioObjectPrivate(aJsonObject)
+QEnginioUser::QEnginioUser(QEnginioUserObject *aObject)
+    : QEnginioObject(aObject)
 {
 
 }
 
-
-const QString QEnginioUserPrivate::username() const
-{
-    return iUsername;
-}
-
-const QString QEnginioUserPrivate::email() const
-{
-    return iEMail;
-}
-
-const QString QEnginioUserPrivate::firstName() const
-{
-    return iFirstName;
-}
-
-const QString QEnginioUserPrivate::lastName() const
-{
-    return iLastName;
-}
-
-/*
-** Public Interface
-*/
-QEnginioUser::QEnginioUser(QObject *aParent)
-    : QEnginioObject(aParent)
+QEnginioUser::QEnginioUser()
+    : QEnginioObject(new QEnginioUserObject)
 {
 
 }
+
+QEnginioUser::QEnginioUser(const QJsonObject &aJsonObject)
+    : QEnginioObject(new QEnginioUserObject(aJsonObject))
+{
+
+}
+
 QEnginioUser::QEnginioUser(const QEnginioUser &aOther)
-    : QEnginioObject(aOther.d<QEnginioUser>())
+    : QEnginioObject(new QEnginioUserObject)
 {
+    object()->setSharedInstanceFrom(aOther.object());
 }
 
-QEnginioUser::QEnginioUser(const QJsonObject &aJsonObject)
-    : QEnginioObject(QEnginioUser::dvar(new QEnginioUserPrivate(aJsonObject)))
-{
-
-}
-
-QEnginioUser& QEnginioUser::operator=(const QEnginioUser &aOther)
-{
-    setPIMPL(aOther.d<QEnginioUser>());
+QEnginioUser& QEnginioUser::operator=(const QEnginioUser &aOther) {
+    object()->setSharedInstanceFrom(aOther.object());
     return *this;
 }
 
-const QString QEnginioUser::username() const
-{
-    if (isNull()) {
-        return QString();
-    }
-
-    return d<const QEnginioUser>()->username();
+QString QEnginioUser::username() const {
+    const QEnginioUserObject *obj;
+    obj = reinterpret_cast<const QEnginioUserObject *>(object());
+    return obj->username();
 }
 
-const QString QEnginioUser::email() const
-{
-    if (isNull()) {
-        return QString();
-    }
-
-    return d<const QEnginioUser>()->email();
+QString QEnginioUser::email() const {
+    const QEnginioUserObject *obj;
+    obj = reinterpret_cast<const QEnginioUserObject *>(object());
+    return obj->email();
 }
 
-const QString QEnginioUser::firstName() const
-{
-    if (isNull()) {
-        return QString();
-    }
-
-    return d<const QEnginioUser>()->firstName();
+QString QEnginioUser::firstName() const {
+    const QEnginioUserObject *obj;
+    obj = reinterpret_cast<const QEnginioUserObject *>(object());
+    return obj->firstName();
 }
 
-const QString QEnginioUser::lastName() const
-{
-    if (isNull()) {
-        return QString();
-    }
-
-    return d<const QEnginioUser>()->lastName();
-}
-
-void QEnginioUser::lazyInitialization()
-{
-    if (isNull()) {
-        setPIMPL(QEnginioUser::dvar(new QEnginioUserPrivate));
-    }
+QString QEnginioUser::lastName() const {
+    const QEnginioUserObject *obj;
+    obj = reinterpret_cast<const QEnginioUserObject *>(object());
+    return obj->lastName();
 }
 
 QT_END_NAMESPACE

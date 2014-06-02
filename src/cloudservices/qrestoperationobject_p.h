@@ -42,10 +42,9 @@
 #ifndef QCLOUDSERVICES_QRESTOPERATION_OBJECT_P_H
 #define QCLOUDSERVICES_QRESTOPERATION_OBJECT_P_H
 
-
 #include <QtCore/private/qobject_p.h>
 
-#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qrestoperationobject.h>
 
 /*
 #include <functional>
@@ -65,18 +64,19 @@
 
 QT_BEGIN_NAMESPACE
 
+class QRestConnectionShared;
+class QRestRequestShared;
 class QRestOperationShared;
 class QTCLOUDSERVICES_EXPORT QRestOperationObjectPrivate : public QObjectPrivate {
     Q_DECLARE_PUBLIC(QRestOperationObject)
 private:
     Q_DISABLE_COPY(QRestOperationObjectPrivate)
 public:
-    QRestOperationObjectPrivate(const QRestConnectionObject *aEnginioConnection=0,
-                                const QRestRequestObject *aEnginioRequest=0);
+    QRestOperationObjectPrivate();
     ~QRestOperationObjectPrivate();
 
-    QRestConnectionObject *restConnection() const Q_REQUIRED_RESULT;
-    QRestRequestObject *restRequest() const Q_REQUIRED_RESULT;
+    virtual QRestConnectionObject *restConnection() const Q_REQUIRED_RESULT;
+    virtual QRestRequestObject *restRequest() const Q_REQUIRED_RESULT;
 
     bool isValid() const Q_REQUIRED_RESULT;
     bool isError() const Q_REQUIRED_RESULT;
@@ -93,13 +93,13 @@ public:
     void dumpDebugInfo() const;
 #endif
 protected:
-    void init();
-    void deinit();
-
-    QSharedPointer<QEnginioDataStorageShared> sharedInstance() const;
-    void setSharedQRestOperation(const QRestOperationObject *aOther);
+    virtual void init();
+    virtual void deinit();
+public:
+    QSharedPointer<QRestOperationShared> sharedInstance() const;
+    void setSharedInstance(QSharedPointer<QRestOperationShared> aShared);
 private:
-    QSharedPointer<QRestOperationshared> iShared;
+    QSharedPointer<QRestOperationShared> iShared;
 
     QMetaObject::Connection iConnectionDataChanged;
     QMetaObject::Connection iConnectionFinished;

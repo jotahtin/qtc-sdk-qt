@@ -42,24 +42,15 @@
 #ifndef QCLOUDSERVICES_QENGINIOOPERATION_OBJECT_H
 #define QCLOUDSERVICES_QENGINIOOPERATION_OBJECT_H
 
-#include <functional>
-
 #include <QList>
 
-#include <QtCore/qjsonobject.h>
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
-#include <QtNetwork/qnetworkreply.h>
-
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
+#include <QtCloudServices/qrestoperationobject.h>
+#include <QtCloudServices/qenginiorequestobject.h>
 #include <QtCloudServices/qenginioobject.h>
 
 QT_BEGIN_NAMESPACE
 
+class QEnginioConnectionObject;
 class QEnginioOperationObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QEnginioOperationObject : public QRestOperationObject {
     Q_OBJECT
@@ -67,21 +58,24 @@ class QTCLOUDSERVICES_EXPORT QEnginioOperationObject : public QRestOperationObje
 
     Q_PROPERTY(int backendStatus READ backendStatus NOTIFY dataChanged)
     Q_PROPERTY(QString requestId READ requestId CONSTANT)
+    Q_PROPERTY(int resultObjectCount READ resultObjectCount NOTIFY dataChanged)
 private:
-    Q_DISABLE_COPY(QRestOperationObject)
+    Q_DISABLE_COPY(QEnginioOperationObject)
 public:
-    QEnginioOperationObject(const QEnginioConnectionObject *aEnginioConnection,
-                            const QEnginioRequestObject *aEnginioRequest,
+    typedef std::function<void(QEnginioOperationObject *aOperation)> Callback;
+public:
+    QEnginioOperationObject(const QEnginioConnectionObject *aEnginioConnection = 0,
+                            const QEnginioRequestObject *aEnginioRequest = 0,
                             QObject *aParent=0);
+
+    int backendStatus() const Q_REQUIRED_RESULT;
+    QString requestId() const Q_REQUIRED_RESULT;
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
     QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
-
-    QString requestId() const Q_REQUIRED_RESULT;
-    int backendStatus() const Q_REQUIRED_RESULT;
-
-    QEnginioRequestObject *enginioRequest() const Q_REQUIRED_RESULT;
+Q_SIGNALS:
+    void dataChanged();
 };
 
 QT_END_NAMESPACE

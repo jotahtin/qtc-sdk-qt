@@ -45,34 +45,36 @@
 #include <QTime>
 #include <QJsonValueRef>
 
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
+#include <QtCloudServices/qenginioobjectobject.h>
 
 QT_BEGIN_NAMESPACE
 
 class QEnginioUser;
-class QEnginioCollection;
-class QEnginioObjectPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioObject : public QCloudServicesObject {
-    Q_OBJECT
-    Q_PROPERTY(QString objectId READ objectId NOTIFY objectChanged)
-    QTC_DECLARE_PRIVATE(QEnginioObject)
-    friend class QEnginioCollectionPrivate;
+class QEnginioObjectObject;
+class QTCLOUDSERVICES_EXPORT QEnginioObject {
+    friend class QEnginioCollection;
 protected:
-    QEnginioObject(QEnginioObject::dvar aPIMPL, QObject *aParent = 0);
+    QEnginioObject(QEnginioObjectObject *aObject);
 public:
-    QEnginioObject(QObject *aParent = 0);
+    // Constructors
+    QEnginioObject();
     QEnginioObject(const QEnginioObject &aOther);
     QEnginioObject(const QJsonObject &aJsonObject);
+    ~QEnginioObject();
 
+    // Assignment
     QEnginioObject& operator=(const QEnginioObject &aOther);
 
-    virtual bool isValid() const Q_REQUIRED_RESULT;
+    // IsValid
+    bool isValid() const Q_REQUIRED_RESULT;
+
+    // Status
     bool isPersistent() const Q_REQUIRED_RESULT;
     bool isModified() const Q_REQUIRED_RESULT;
 
     QEnginioObject& insert(const QString &aKey, const QJsonValue &aValue);
     QEnginioObject& remove(const QString &aKey);
+
     bool contains(const QString &aKey) const Q_REQUIRED_RESULT;
     QJsonValue value(const QString &aKey) const Q_REQUIRED_RESULT;
     QJsonValue operator[](const QString &aKey) const Q_REQUIRED_RESULT;
@@ -81,29 +83,28 @@ public:
     const QJsonObject jsonObject() const Q_REQUIRED_RESULT;
 
     const QString objectId() const Q_REQUIRED_RESULT;
+    const QString objectType() const Q_REQUIRED_RESULT;
     const QTime createAt() const Q_REQUIRED_RESULT;
     const QEnginioUser creator() const Q_REQUIRED_RESULT;
-    const QString objectType() const Q_REQUIRED_RESULT;
     const QTime updatedAt() const Q_REQUIRED_RESULT;
     const QEnginioUser updater() const Q_REQUIRED_RESULT;
 
     void save();
-protected:
-    virtual void lazyInitialization();
-    virtual void setPIMPL(QCloudServicesObject::dvar aPIMPL);
-Q_SIGNALS:
-    void objectChanged();
-    void operationFailed(QString);
-};
-
-Q_DECLARE_TYPEINFO(QEnginioObject, Q_COMPLEX_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-QTCLOUDSERVICES_EXPORT QDebug operator<<(QDebug d, QEnginioObject aObject);
+    virtual void dumpDebugInfo(QDebug &d) const;
+#endif
+public:
+    const QEnginioObjectObject* object() const;
+    QEnginioObjectObject* object();
+private:
+    QEnginioObjectObject *iObject;
+};
+
+#ifndef QT_NO_DEBUG_STREAM
+QTCLOUDSERVICES_EXPORT QDebug operator<<(QDebug d, const QEnginioObject &aObject);
 #endif
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QEnginioObject);
 
 #endif /* QCLOUDSERVICES_QENGINIOOBJECT_H */

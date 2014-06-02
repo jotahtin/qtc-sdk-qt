@@ -39,62 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QENGINIOCOLLECTION_H
-#define QCLOUDSERVICES_QENGINIOCOLLECTION_H
+#ifndef QCLOUDSERVICES_QENGINIOCOLLECTION_OBJECT_P_H
+#define QCLOUDSERVICES_QENGINIOCOLLECTION_OBJECT_P_H
 
-#include <QObject>
-#include <QSharedPointer>
+#include <QtCore/private/qobject_p.h>
 
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/qenginiooperation.h>
-#include <QtCloudServices/qenginioquery.h>
+#include <QtCloudServices/qenginiocollectionobject.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioDataStorage;
-class QEnginioCollectionPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioCollection : public QCloudServicesObject {
-    Q_OBJECT
-    Q_PROPERTY(QString collectionName READ collectionName)
-    QTC_DECLARE_PRIVATE(QEnginioCollection)
-    friend class QEnginioDataStoragePrivate;
+class QEnginioQueryObject;
+class QEnginioOperationObject;
+class QEnginioOperationShared;
+class QEnginioCollectionShared;
+class QTCLOUDSERVICES_EXPORT QEnginioCollectionObjectPrivate : public QObjectPrivate {
+    Q_DECLARE_PUBLIC(QEnginioCollectionObject)
+private:
+    Q_DISABLE_COPY(QEnginioCollectionObjectPrivate)
+public:
+    QEnginioCollectionObjectPrivate();
+
+    bool isValid() const;
+    QString collectionName() const;
+
+    QEnginioOperationObject *find(const QEnginioQueryObject *aQuery,
+                                  QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *findOne(const QString &aObjectId,
+                                     QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *insert(const QEnginioObjectObject *aObject,
+                                    QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *update(const QString &aObjectId,
+                                    const QJsonObject &aObject,
+                                    QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *remove(const QString &aObjectId,
+                                    QEnginioOperationObject::Callback aCallback);
+
+    QEnginioObjectObject *fromJsonObject(const QJsonObject &aJsonObject);
 
 protected:
-    // Constructor for valid connection.
-    QEnginioCollectionObject(const QEnginioCollectionObject &aOther);
-    QEnginioCollection(QEnginioCollection::dvar aPIMPL);
-    QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
-                       const QString &aCollectionName);
+    virtual void init();
+    virtual void deinit();
 public:
-    QEnginioCollection(QObject *aParent = 0);
-    QEnginioCollection(const QEnginioCollection &aOther, QObject *aParent = 0);
-    QEnginioCollection& operator=(const QEnginioCollection &aOther);
+    QSharedPointer<QEnginioCollectionShared> sharedInstance() const;
+    void setSharedInstance(QSharedPointer<QEnginioCollectionShared> aShared);
 public:
-    bool operator!() const;
+    static void handleCompletedOperation(QSharedPointer<QEnginioOperationShared> aOperation,
+                                         QEnginioOperationObject::Callback aCallback);
 
-    Q_INVOKABLE bool isValid() const;
-    Q_INVOKABLE QString collectionName() const;
-
-     QEnginioOperation find(const QEnginioQuery &aQuery,
-                                       QEnginioOperation::Callback aCallback);
-     QEnginioOperation findOne(const QString &aObjectId,
-                                          QEnginioOperation::Callback aCallback);
-     QEnginioOperation insert(const QEnginioObject &aObject,
-                                         QEnginioOperation::Callback aCallback);
-     QEnginioOperation update(const QString &aObjectId,
-                                         const QJsonObject &aObject,
-                                         QEnginioOperation::Callback aCallback);
-     QEnginioOperation remove(const QString &aObjectId,
-                                         QEnginioOperation::Callback aCallback);
-
-    QEnginioObject fromJsonObject(const QJsonObject &aJsonObject);
+private:
+    QSharedPointer<QEnginioCollectionShared> iShared;
 };
-
-Q_DECLARE_TYPEINFO(QEnginioCollection, Q_COMPLEX_TYPE);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QEnginioCollection)
-
-#endif /* QCLOUDSERVICES_QENGINIOCOLLECTION_H */
+#endif /* QCLOUDSERVICES_QENGINIOCOLLECTION_OBJECT_P_H */
 

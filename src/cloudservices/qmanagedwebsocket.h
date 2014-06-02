@@ -42,31 +42,24 @@
 #ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKET_H
 #define QCLOUDSERVICES_QMANAGEDWEBSOCKET_H
 
-#include <QObject>
-#include <QUrl>
-#include <QString>
-#include <QSharedPointer>
-
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/QEnginioConnection>
-#include <QtCloudServices/QEnginioCollection>
+#include <QtCloudServices/qmanagedwebsocketobject.h>
 
 QT_BEGIN_NAMESPACE
 
-class QManagedWebSocketPrivate;
-class QTCLOUDSERVICES_EXPORT QManagedWebSocket : public QCloudServicesObject {
-    Q_OBJECT
-    QTC_DECLARE_PRIVATE(QManagedWebSocket)
+class QManagedWebSocketObject;
+class QTCLOUDSERVICES_EXPORT QManagedWebSocket {
+protected:
+    QManagedWebSocket(QManagedWebSocketObject *aObject);
 public:
     // Default Constructor
-    QManagedWebSocket(QObject *aParent = 0);
-    QManagedWebSocket(const QUrl &aInstanceAddress, const QString &aGatewayId, QObject *parent = 0);
-    QManagedWebSocket(const QString &aInstanceAddress, const QString &aGatewayId, QObject *parent = 0);
-    QManagedWebSocket(const QManagedWebSocket &aManagedWebSocket);
+    QManagedWebSocket();
+    QManagedWebSocket(const QUrl &aInstanceAddress, const QString &aGatewayId);
+    QManagedWebSocket(const QString &aInstanceAddress, const QString &aGatewayId);
+    QManagedWebSocket(const QManagedWebSocket &aOther);
     ~QManagedWebSocket();
 
     // Assignment
-    QManagedWebSocket& operator=(const QManagedWebSocket &aManagedWebSocket);
+    QManagedWebSocket& operator=(const QManagedWebSocket &aOther);
 
     // IsValid
     bool operator!() const;
@@ -77,17 +70,17 @@ public:
 
     QUrl instanceAddress() const Q_REQUIRED_RESULT;
     void setInstanceAddress(const QUrl &aInstanceAddress);
-    void setInstanceAddressString(const QString &aInstanceAddress);
 
     QString gatewayId() const Q_REQUIRED_RESULT;
     void setGatewayId(const QString &aGatewayId);
-public Q_SLOTS:
+
     void connect();
     void disconnect();
-Q_SIGNALS:
-    void gatewayChanged();
-    void gatewayIdChanged(const QString &backendId);
-    void instanceAddressChanged(const QUrl &instanceAddress);
+public:
+    const QManagedWebSocketObject* object() const;
+    QManagedWebSocketObject* object();
+private:
+    QManagedWebSocketObject *iObject;
 };
 
 QT_END_NAMESPACE

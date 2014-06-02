@@ -43,15 +43,20 @@
 #define QCLOUDSERVICES_QENGINIOOPERATION_H
 
 #include <QtCloudServices/qrestoperation.h>
+#include <QtCloudServices/qenginiorequest.h>
+#include <QtCloudServices/qenginioobject.h>
 
 QT_BEGIN_NAMESPACE
 
+class QEnginioConnection;
 class QEnginioOperationObject;
 class QTCLOUDSERVICES_EXPORT QEnginioOperation : public QRestOperation {
+    friend class QEnginioCollection;
+    friend class QEnginioConnection;
 public:
     typedef std::function<void(QEnginioOperation aEnginioOperation)> Callback;
-protected:
-    QEnginioOperation(QEnginioOperationObject *aEnginioOperationObject);
+public:
+    explicit QEnginioOperation(QEnginioOperationObject *aEnginioOperationObject);
 public:
     // Constructors
     QEnginioOperation();
@@ -61,17 +66,13 @@ public:
     // Assignment
     QEnginioOperation& operator=(const QEnginioOperation &aOther);
 
-    // Get implementation object - for binding signals.
-    const QEnginioOperationObject* enginioOperationObject() const;
-
-    // IsValid
-    virtual bool isValid() const Q_REQUIRED_RESULT;
+    // connection & request
+    QEnginioConnection connection() const Q_REQUIRED_RESULT;
+    QEnginioRequest request() const Q_REQUIRED_RESULT;
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
     QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
-
-    QEnginioRequest enginioRequest() const Q_REQUIRED_RESULT;
 };
 
 QT_END_NAMESPACE

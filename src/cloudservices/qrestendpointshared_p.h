@@ -42,43 +42,42 @@
 #ifndef QCLOUDSERVICES_QRESTENDPOINT_SHARED_P_H
 #define QCLOUDSERVICES_QRESTENDPOINT_SHARED_P_H
 
-#include <QMap>
 #include <QUrl>
+#include <QMutex>
+#include <QVector>
 
-#include <QtCloudServices/qtcloudservices_global.h>
-
+#include <QtCloudServices/private/qrestconnectionshared_p.h>
 #include <QtCloudServices/private/qrestoperationshared_p.h>
 
 QT_BEGIN_NAMESPACE
 
-/*
-** QRestEndpointShared
-*/
 class QRestEndpointShared : public QObject {
     Q_OBJECT
-    friend class QEnginioCollectionPrivate;
+    Q_DISABLE_COPY(QRestEndpointShared)
 public:
+    QRestEndpointShared();
     QRestEndpointShared(const QUrl &aEndpointAddress);
     ~QRestEndpointShared();
 public:
-    bool isValid() const;
+    virtual bool isValid() const;
 
-    QUrl restEndpointAddress() const Q_REQUIRED_RESULT;
+    QUrl endpointAddress() const Q_REQUIRED_RESULT;
 
-    QSharedPointer<QRestConnection> reserveConnection(QSharedPointer<QRestEndpointShared> aSelf) Q_REQUIRED_RESULT;
-    void releaseConnection(QSharedPointer<QRestConnection> aConnection);
+    QSharedPointer<QRestConnectionShared> reserveConnection(QSharedPointer<QRestEndpointShared> aSelf) Q_REQUIRED_RESULT;
+    void releaseConnection(QSharedPointer<QRestConnectionShared> aConnection);
+protected:
+    virtual QSharedPointer<QRestConnectionShared>
+    buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf);
+
 Q_SIGNALS:
     void operationError(QSharedPointer<QRestOperationShared> aOperation);
-protected:
-    QUrl iRestEndpointAddress;
+private:
+    QUrl iEndpointAddress;
 
     // Mutable objects
     QMutex iLock;
 
-    QString iUsername;
-    QString iPassword;
-
-    QVector< QEnginioConnection > iConnectionPool;
+    QVector< QRestConnectionShared > iConnectionPool;
 };
 
 QT_END_NAMESPACE

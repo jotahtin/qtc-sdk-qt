@@ -51,8 +51,11 @@
 
 QT_BEGIN_NAMESPACE
 
+class QRestRequestShared;
+class QRestConnectionShared;
 class QRestOperationShared : public QObject {
     Q_OBJECT
+private:
     Q_DISABLE_COPY(QRestOperationShared)
 public:
     QRestOperationShared(QSharedPointer<QRestConnectionShared> aConnection,
@@ -66,11 +69,18 @@ public:
     QSharedPointer<QRestConnectionShared> connection() const Q_REQUIRED_RESULT;
     QSharedPointer<QRestRequestShared> request() const Q_REQUIRED_RESULT;
 
+    // void setConnection(QSharedPointer<QRestConnectionShared> aConnection);
+    // void setRequest(QSharedPointer<QRestRequestShared> aRequest);
+
+    int backendStatus() const Q_REQUIRED_RESULT;
+    QString requestId() const Q_REQUIRED_RESULT;
+
+    virtual QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
     virtual QNetworkReply::NetworkError errorCode() const Q_REQUIRED_RESULT;
     virtual QString errorString() const Q_REQUIRED_RESULT;
 
-    QJsonObject result() const Q_REQUIRED_RESULT;
-    QByteArray resultBytes() const Q_REQUIRED_RESULT; // pData
+    QJsonObject resultJson() const Q_REQUIRED_RESULT;
+    QByteArray resultBytes() const Q_REQUIRED_RESULT;
 
 #ifndef QT_NO_DEBUG_STREAM
     virtual void dumpDebugInfo(QDebug &d) const;

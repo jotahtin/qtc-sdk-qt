@@ -58,13 +58,15 @@ QT_BEGIN_NAMESPACE
 */
 class QEnginioModel;
 class QEnginioModelNodePrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioModelNode : public QCloudServicesObject {
+class QTCLOUDSERVICES_EXPORT QEnginioModelNode : public QObject {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QEnginioModelNode)
     friend class QEnginioModel;
     friend class QEnginioModelPrivate;
+private:
+    Q_DISABLE_COPY(QEnginioModelNode)
 public:
-    explicit QEnginioModelNode();
-    virtual ~QEnginioModelNode();
+    explicit QEnginioModelNode(QObject *aParent=0);
 public:
     QEnginioModel *model();
     const QEnginioModel *model() const;
@@ -88,8 +90,6 @@ public:
     virtual QVariant data(const QModelIndex &aIndex, int aRole) const;
     virtual bool setData(const QModelIndex &aIndex, const QVariant &aValue, int aRole);
 
-
-
     QEnginioCollection collection() const Q_REQUIRED_RESULT;
     void setCollection(const QEnginioCollection &aCollection);
 
@@ -102,12 +102,10 @@ public:
 
     QEnginioOperation appendEnginioObject(const QEnginioObject &aObject);
     QEnginioOperation removeEnginioObject(int aIndex);
+protected Q_SLOTS:
+    void refreshEnginoObjectDisplay();
 Q_SIGNALS:
     void nodeModified();
-private:
-    Q_DISABLE_COPY(QEnginioModelNode)
-protected:
-    QTC_DECLARE_PRIVATE(QEnginioModelNode)
 public:
     // virtual bool setupContextMenu(QMenu &aMenu);
 };

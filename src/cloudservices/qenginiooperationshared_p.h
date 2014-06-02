@@ -44,25 +44,26 @@
 
 #include <QtCloudServices/private/qrestoperationshared_p.h>
 
-#include <QtCloudServices/private/qenginiocollectionshared_p.h>
+#include <QtCloudServices/QEnginioObject>
 
 QT_BEGIN_NAMESPACE
 
+class QEnginioRequestShared;
+class QEnginioConnectionShared;
 class QEnginioOperationShared : public QRestOperationShared {
     Q_OBJECT
     Q_DISABLE_COPY(QEnginioOperationShared)
 public:
-    QEnginioOperationPrivate();
-    QEnginioOperationPrivate(const QEnginioConnection &aEnginioConnection,
-                             const QEnginioRequest &aRequest);
-    ~QEnginioOperationPrivate();
+    typedef std::function<void(QSharedPointer<QEnginioOperationShared> aOperation)> Callback;
 public:
-    QSharedPointer<QEnginioRequestShared> enginioRequest() const Q_REQUIRED_RESULT;
-
-    int backendStatus() const Q_REQUIRED_RESULT;
-    QString requestId() const Q_REQUIRED_RESULT;
-    QString errorString() const Q_REQUIRED_RESULT;
-    QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
+    QEnginioOperationShared();
+    QEnginioOperationShared(QSharedPointer<QEnginioConnectionShared> aEnginioConnection,
+                            QSharedPointer<QEnginioRequestShared> aRequest);
+    ~QEnginioOperationShared();
+public:
+    // QSharedPointer<QEnginioRequestShared> enginioRequest() const Q_REQUIRED_RESULT;
+    // QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
+    // QString errorString() const Q_REQUIRED_RESULT;
 
     int resultObjectCount() const Q_REQUIRED_RESULT;
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
@@ -72,7 +73,6 @@ public:
     virtual void dumpDebugInfo(QDebug &d) const;
 #endif
 protected:
-    void setEnginioRequest(const QEnginioRequest &aEnginioRequest);
     virtual void operationFinished();
 private:
     QList<QEnginioObject> iResultObjects;

@@ -98,11 +98,13 @@ QSharedPointer<QNetworkAccessManager> QRestConnectionShared::networkManager() co
     return iNetworkManager;
 }
 
-QSharedPointer<QRestOperation> QRestConnectionShared::customRequest(const QEnginioRequest &aRequest)
+QSharedPointer<QRestOperationShared> QRestConnectionShared::customRequest
+(QSharedPointer<QRestConnectionShared> aSelf,
+ QSharedPointer<QRestRequestShared> aRequest)
 {
     QBuffer *buffer = 0;
     QNetworkRequest request;
-    QSharedPointer<QRestOperation> operation;
+    QSharedPointer<QRestOperationShared> operation;
     QByteArray verb;
     QNetworkReply *reply;
 
@@ -132,9 +134,9 @@ QSharedPointer<QRestOperation> QRestConnectionShared::customRequest(const QEngin
         return operation;
     }
 
-    QEnginioOperation operation(*q<QEnginioConnection>(), aRequest);
+    operation = buildOperationInstance(aSelf,aRequest);
 
-    QJsonObject jsonPayload = aRequest.payload();
+    QJsonObject jsonPayload = aRequest->payload();
 
     if (!jsonPayload.empty()) {
         QByteArray payload;
@@ -178,10 +180,18 @@ void QRestConnectionShared::unregisterReply(QNetworkReply *aNetworkReply)
     iReplyOperationMap.remove(aNetworkReply);
 }
 
+QSharedPointer<QRestOperationShared> QRestConnectionShared::buildOperationInstance
+(QSharedPointer<QRestConnectionShared> aSelf,
+ QSharedPointer<QRestRequestShared> aRequest)
+{
+    return QSharedPointer<QRestOperationShared>
+            (new QRestOperationShared(aSelf,aRequest));
+}
+
 bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
-                                                          const QString &aPath,
-                                                        const QUrlQuery &aQuery,
-                                                        const QJsonObject &aExtraHeaders)
+                                           const QString &aPath,
+                                           const QUrlQuery &aQuery,
+                                           const QJsonObject &aExtraHeaders)
 {
     QUrl url, relativeUrl;
     QByteArray requestId;
@@ -191,7 +201,8 @@ bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
     }
 
     relativeUrl.setPath(aPath);
-    url = iEnginioDataStorage.instanceAddress().resolved(relativeUrl);
+
+    url = iRestEndpoint->restEndpointAddress().resolved(relativeUrl);
 
     requestId = QUuid::createUuid().toByteArray();
     // Remove unneeded pretty-formatting.
@@ -208,18 +219,14 @@ bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
         url.setQuery(aQuery);
     }
 
-    request.setUrl(url);
+    aRequest.setUrl(url);
 
-    request.setRawHeader(QtCloudServicesConstants::X_Request_Id, requestId);
-    request.setRawHeader(QtCloudServicesConstants::Host, url.host().toLatin1());
-    request.setRawHeader(QtCloudServicesConstants::Accept_Encoding,
+    aRequest.setRawHeader(QtCloudServicesConstants::X_Request_Id, requestId);
+    aRequest.setRawHeader(QtCloudServicesConstants::Host, url.host().toLatin1());
+    aRequest.setRawHeader(QtCloudServicesConstants::Accept_Encoding,
                          QtCloudServicesConstants::Accept_Encoding_Any);
-    request.setRawHeader(QtCloudServicesConstants::User_Agent,
+    aRequest.setRawHeader(QtCloudServicesConstants::User_Agent,
                          QtCloudServicesConstants::User_Agent_Default);
-
-    //
-    request.setRawHeader(QtCloudServicesConstants::Enginio_Backend_Id,
-                         iEnginioDataStorage.backendId().toLatin1());
 
     if (!aExtraHeaders.empty()) {
         QJsonObject::const_iterator end = aExtraHeaders.constEnd();

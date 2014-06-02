@@ -41,269 +41,300 @@
 
 #include "stdafx.h"
 
-#include <QJsonDocument>
-
-#include <QtCloudServices/qenginiocollection.h>
-#include <QtCloudServices/qenginiodatastorage.h>
-
-#include <QtCloudServices/private/qcloudservicesconstants_p.h>
-#include <QtCloudServices/private/qenginiocollection_p.h>
-#include <QtCloudServices/private/qenginioobject_p.h>
+#include <QtCloudServices/private/qenginiocollectionobject_p.h>
+#include <QtCloudServices/private/qenginiocollectionshared_p.h>
+#include <QtCloudServices/private/qenginioobjectobject_p.h>
+#include <QtCloudServices/private/qenginiooperationobject_p.h>
+#include <QtCloudServices/private/qenginioqueryobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
 /*
-** QEnginioCollectionPrivate
+** Private
 */
-QEnginioCollectionPrivate::QEnginioCollectionPrivate()
-{
+
+QEnginioCollectionObjectPrivate::QEnginioCollectionObjectPrivate() {
 
 }
-QEnginioCollectionPrivate::QEnginioCollectionPrivate(const QEnginioDataStorage &aEnginioDataStorage,
-        const QString &aCollectionName)
-    : iEnginioDataStorage(aEnginioDataStorage), iCollectionName(aCollectionName)
-{
-    qDebug() << "NEW COL: "  << aCollectionName;
-}
 
-bool QEnginioCollectionPrivate::isValid() const
-{
-    if (!iEnginioDataStorage) {
+bool QEnginioCollectionObjectPrivate::isValid() const {
+    if (!iShared)
         return false;
+    return iShared->isValid();
+}
+
+QString QEnginioCollectionObjectPrivate::collectionName() const {
+    return iShared->collectionName();
+}
+
+QEnginioOperationObject *
+QEnginioCollectionObjectPrivate::find(const QEnginioQueryObject *aQuery,
+                                      QEnginioOperationObject::Callback aCallback)
+{
+    QEnginioOperationObject *op;
+    QEnginioOperationObjectPrivate *opPrv;
+    QSharedPointer<QEnginioOperationShared> opShared;
+
+    QEnginioQueryObjectPrivate *queryPrv;
+
+    if (!aQuery) {
+        return NULL;
     }
 
-    if (iCollectionName.isEmpty()) {
-        return false;
+    queryPrv=reinterpret_cast<QEnginioQueryObjectPrivate *>(aQuery->d_ptr);
+    if (!queryPrv) {
+        return NULL;
     }
 
-    return true;
-}
+    opShared = iShared->find(iShared,queryPrv->sharedInstance(),
+                [=](QSharedPointer<QEnginioOperationShared> aOperation) {
+                    handleCompletedOperation(aOperation,aCallback);
+                });
 
-QString QEnginioCollectionPrivate::collectionName() const
-{
-    return iCollectionName;
-}
-
-QEnginioOperation QEnginioCollectionPrivate::find(const QEnginioQuery &aQuery,
-        QEnginioOperation::Callback aCallback)
-{
-    QString path;
-    QEnginioConnection connection;
-    QEnginioCollection::dvar self = getThis<QEnginioCollection>();
-
-    connection = iEnginioDataStorage.reserveConnection();
-
-    path = QtCloudServicesConstants::service_path_objects;
-    path.append(iCollectionName);
-
-    QEnginioRequest request(QtCloudServices::RESTOperationGet, path);
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem("limit", QString("%1").arg(aQuery.limit()));
-    urlQuery.addQueryItem("offset", QString("%1").arg(aQuery.offset()));
-
-    if (!aQuery.query().isEmpty()) {
-        urlQuery.addQueryItem("q",
-                              QString::fromLatin1(QJsonDocument(aQuery.query()).toJson(QJsonDocument::Compact)));
+    if (!opShared) {
+        return NULL;
     }
 
-    request.setEnginioCollection(*q<QEnginioCollection>());
-    request.setUrlQuery(urlQuery);
-    request.then([ = ](QEnginioOperation & op) {
-        self->handleCompletedOperation(op, connection, aCallback);
-    });
+    op=new QEnginioOperationObject;
+    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
+    opPrv->setSharedInstance(opShared);
 
-    return connection.customRequest(request);
+    return op;
 }
 
-QEnginioOperation QEnginioCollectionPrivate::findOne(const QString &aObjectId,
-        QEnginioOperation::Callback aCallback)
+QEnginioOperationObject *
+QEnginioCollectionObjectPrivate::findOne(const QString &aObjectId,
+                                         QEnginioOperationObject::Callback aCallback)
 {
-    QString path;
-    QEnginioConnection connection;
-    QEnginioCollection::dvar self = getThis<QEnginioCollection>();
+    QEnginioOperationObject *op;
+    QEnginioOperationObjectPrivate *opPrv;
+    QSharedPointer<QEnginioOperationShared> opShared;
 
-    connection = iEnginioDataStorage.reserveConnection();
+    if (!aQuery) {
+        return NULL;
+    }
 
-    path = QtCloudServicesConstants::service_path_objects;
-    path.append(iCollectionName);
-    path.append("/");
-    path.append(aObjectId);
+    opShared = iShared->findOne(iShared,aObjectId,
+                [=](QSharedPointer<QEnginioOperationShared> aOperation) {
+                    handleCompletedOperation(aOperation,aCallback);
+                });
 
-    QEnginioRequest request(QtCloudServices::RESTOperationGet, path);
-    request.setEnginioCollection(*q<QEnginioCollection>());
-    request.then([ = ](QEnginioOperation & op) {
-        self->handleCompletedOperation(op, connection, aCallback);
-    });
-    return connection.customRequest(request);
+    if (!opShared) {
+        return NULL;
+    }
+
+    op=new QEnginioOperationObject;
+    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
+    opPrv->setSharedInstance(opShared);
+
+    return op;
 }
 
-QEnginioOperation QEnginioCollectionPrivate::insert(const QEnginioObject &aObject,
-        QEnginioOperation::Callback aCallback)
+QEnginioOperationObject *
+QEnginioCollectionObjectPrivate::insert(const QEnginioObjectObject *aObject,
+                                        QEnginioOperationObject::Callback aCallback)
 {
-    QString path;
-    QEnginioConnection connection;
-    QEnginioCollection::dvar self = getThis<QEnginioCollection>();
+    QEnginioOperationObject *op;
+    QEnginioOperationObjectPrivate *opPrv;
+    QSharedPointer<QEnginioOperationShared> opShared;
 
-    connection = iEnginioDataStorage.reserveConnection();
+    QEnginioObjectObjectPrivate *objPrv;
 
-    path = QtCloudServicesConstants::service_path_objects;
-    path.append(iCollectionName);
+    if (!aObject) {
+        return NULL;
+    }
 
-    QEnginioRequest request(QtCloudServices::RESTOperationPost, path);
-    request.setEnginioCollection(*q<QEnginioCollection>());
-    request.setPayload(aObject.jsonObject());
-    request.then([ = ](QEnginioOperation & op) {
-        self->handleCompletedOperation(op, connection, aCallback);
-    });
+    objPrv=reinterpret_cast<QEnginioOperationObjectPrivate *>(aObject->d_ptr);
+    if (!objPrv) {
+        return NULL;
+    }
 
-    return connection.customRequest(request);
+    opShared = iShared->insert(iShared,objPrv->sharedInstance(),
+                [=](QSharedPointer<QEnginioOperationShared> aOperation) {
+                    handleCompletedOperation(aOperation,aCallback);
+                });
+
+    if (!opShared) {
+        return NULL;
+    }
+
+    op=new QEnginioOperationObject;
+    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
+    opPrv->setSharedInstance(opShared);
+
+    return op;
 }
 
-QEnginioOperation QEnginioCollectionPrivate::update(const QString &aObjectId,
-        const QJsonObject &aObject,
-        QEnginioOperation::Callback aCallback)
+QEnginioOperationObject *
+QEnginioCollectionObjectPrivate::update(const QString &aObjectId,
+                                        const QJsonObject &aObject,
+                                        QEnginioOperationObject::Callback aCallback)
 {
-    QString path;
-    QEnginioConnection connection;
-    QEnginioCollection::dvar self = getThis<QEnginioCollection>();
+    QEnginioOperationObject *op;
+    QEnginioOperationObjectPrivate *opPrv;
+    QSharedPointer<QEnginioOperationShared> opShared;
 
-    connection = iEnginioDataStorage.reserveConnection();
+    opShared = iShared->update(iShared,aObjectId, aObject,
+                [=](QSharedPointer<QEnginioOperationShared> aOperation) {
+                    handleCompletedOperation(aOperation,aCallback);
+                });
 
-    path = QtCloudServicesConstants::service_path_objects;
-    path.append(iCollectionName);
-    path.append("/");
-    path.append(aObjectId);
+    if (!opShared) {
+        return NULL;
+    }
 
-    QEnginioRequest request(QtCloudServices::RESTOperationPut, path);
-    request.setEnginioCollection(*q<QEnginioCollection>());
-    request.setPayload(aObject);
-    request.then([ = ](QEnginioOperation & op) {
-        self->handleCompletedOperation(op, connection, aCallback);
-    });
+    op=new QEnginioOperationObject;
+    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
+    opPrv->setSharedInstance(opShared);
 
-    return connection.customRequest(request);
+    return op;
 }
 
-QEnginioOperation QEnginioCollectionPrivate::remove(const QString &aObjectId,
-        QEnginioOperation::Callback aCallback)
+QEnginioOperationObject *
+QEnginioCollectionObjectPrivate::remove(const QString &aObjectId,
+                                        QEnginioOperationObject::Callback aCallback)
 {
-    QString path;
-    QEnginioConnection connection;
-    QEnginioCollection::dvar self = getThis<QEnginioCollection>();
+    QEnginioOperationObject *op;
+    QEnginioOperationObjectPrivate *opPrv;
+    QSharedPointer<QEnginioOperationShared> opShared;
 
-    connection = iEnginioDataStorage.reserveConnection();
+    opShared = iShared->remove(iShared,aObjectId,
+                [=](QSharedPointer<QEnginioOperationShared> aOperation) {
+                    handleCompletedOperation(aOperation,aCallback);
+                });
 
-    path = QtCloudServicesConstants::service_path_objects;
-    path.append(iCollectionName);
-    path.append("/");
-    path.append(aObjectId);
+    if (!opShared) {
+        return NULL;
+    }
 
-    QEnginioRequest request(QtCloudServices::RESTOperationDelete, path);
-    request.setEnginioCollection(*q<QEnginioCollection>());
-    request.then([ = ](QEnginioOperation & op) {
-        self->handleCompletedOperation(op, connection, aCallback);
-    });
+    op=new QEnginioOperationObject;
+    opPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(op->d_ptr);
+    opPrv->setSharedInstance(opShared);
 
-    return connection.customRequest(request);
+    return op;
 }
 
-QEnginioObject QEnginioCollectionPrivate::fromJsonObject(const QJsonObject &aJsonObject)
-{
-    QEnginioObject obj(aJsonObject);
-    QEnginioCollection col(getThis<QEnginioCollection>());
+QEnginioObjectObject *QEnginioCollectionObjectPrivate::fromJsonObject(const QJsonObject &aJsonObject) {
+    QEnginioObjectObject *obj;
+    QSharedPointer<QEnginioObjectShared> objShared;
 
-    obj.d<QEnginioObject>()->setEnginioCollection(col);
+    objShared = iShared->fromJsonObject();
+    obj = new QEnginioObjectObject();
+
+    reinterpret_cast<QEnginioObjectObjectPrivate *>(obj->d_ptr)->setSharedInstance(objShared);
 
     return obj;
 }
 
-void QEnginioCollectionPrivate::handleCompletedOperation(QEnginioOperation & op,
-        QEnginioConnection aConnection,
-        QEnginioOperation::Callback aCallback)
-{
-    if (op.isValid() && !op.isError()) {
-        iEnginioDataStorage.releaseConnection(aConnection);
+void QEnginioCollectionObjectPrivate::init() {
+
+}
+
+void QEnginioCollectionObjectPrivate::deinit()  {
+
+}
+
+QSharedPointer<QEnginioCollectionShared>
+QEnginioCollectionObjectPrivate::sharedInstance() const {
+    return iShared;
+}
+void QEnginioCollectionObjectPrivate::setSharedInstance(QSharedPointer<QEnginioCollectionShared> aShared) {
+    if (iShared) {
+        deinit();
     }
 
-    aCallback(op);
+    iShared = aShared;
+
+    if (iShared) {
+        init();
+    }
+}
+
+void QEnginioCollectionObjectPrivate::handleCompletedOperation(QSharedPointer<QEnginioOperationShared> aOperation,
+                              QEnginioOperationObject::Callback aCallback)
+{
+    QEnginioOperationObject *obj;
+    QEnginioOperationObjectPrivate *objPrv;
+
+    if (!aCallback) {
+        return;
+    }
+
+    obj = new QEnginioOperationObject();
+    objPrv = reinterpret_cast<QEnginioOperationObjectPrivate *>(obj->d_ptr);
+    objPrv->setSharedInstance(aOperation);
+
+    aCallback(obj);
 }
 
 /*
-** QEnginioCollection
+** Public
 */
-QEnginioCollection::QEnginioCollection(QEnginioCollection::dvar aPIMPL)
+
+QEnginioCollectionObject::QEnginioCollectionObject(QObject *aParent)
+    : QObject(*new QEnginioCollectionObjectPrivate,aParent)
 {
-    setPIMPL(aPIMPL);
-}
-QEnginioCollection::QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
-                                       const QString &aCollectionName)
-    : QCloudServicesObject(QEnginioCollection::dvar(new QEnginioCollectionPrivate(aEnginioDataStorage,
-                           aCollectionName)))
-{
+
 }
 
-QEnginioCollection::QEnginioCollection(QObject *aParent)
-    : QCloudServicesObject(QEnginioCollection::dvar(new QEnginioCollectionPrivate), aParent)
-{
+bool QEnginioCollectionObject::isValid() const {
+    Q_D(const QEnginioCollectionObject);
+    return d->isValid();
+}
+QString QEnginioCollectionObject::collectionName() const {
+    Q_D(const QEnginioCollectionObject);
+    return d->collectionName();
 }
 
-QEnginioCollection::QEnginioCollection(const QEnginioCollection &aOther, QObject *aParent)
-    : QCloudServicesObject(aOther.d<QEnginioCollection>(), aParent)
+QEnginioOperationObject *QEnginioCollectionObject::find(const QEnginioQueryObject *aQuery,
+                                                        QEnginioOperationObject::Callback aCallback)
 {
-}
-QEnginioCollection & QEnginioCollection::operator=(const QEnginioCollection &aOther)
-{
-    setPIMPL(aOther.d<QEnginioCollection>());
-    return *this;
+    Q_D(QEnginioCollectionObject);
+    return d->find(aQuery,aCallback);
 }
 
-bool QEnginioCollection::operator!() const
+QEnginioOperationObject *QEnginioCollectionObject::findOne(const QString &aObjectId,
+                                                           QEnginioOperationObject::Callback aCallback)
 {
-    return !isValid();
+    Q_D(QEnginioCollectionObject);
+    return d->findOne(aObjectId,aCallback);
 }
 
-bool QEnginioCollection::isValid() const
+QEnginioOperationObject *QEnginioCollectionObject::insert(const QEnginioObjectObject *aObject,
+                                                          QEnginioOperationObject::Callback aCallback)
 {
-    return d<const QEnginioCollection>()->isValid();
+    Q_D(QEnginioCollectionObject);
+    return d->insert(aObject,aCallback);
 }
 
-QString QEnginioCollection::collectionName() const
+QEnginioOperationObject *QEnginioCollectionObject::update(const QString &aObjectId,
+                                                          const QJsonObject &aObject,
+                                                          QEnginioOperationObject::Callback aCallback)
 {
-    return d<const QEnginioCollection>()->collectionName();
+    Q_D(QEnginioCollectionObject);
+    return d->update(aObjectId,aObject,aCallback);
 }
 
-QEnginioOperation QEnginioCollection::find(const QEnginioQuery &aQuery,
-        QEnginioOperation::Callback aCallback)
+QEnginioOperationObject *QEnginioCollectionObject::remove(const QString &aObjectId,
+                                                          QEnginioOperationObject::Callback aCallback)
 {
-    return d<QEnginioCollection>()->find(aQuery, aCallback);
+    Q_D(QEnginioCollectionObject);
+    return d->remove(aObjectId,aCallback);
 }
 
-QEnginioOperation QEnginioCollection::findOne(const QString &aObjectId,
-        QEnginioOperation::Callback aCallback)
-{
-    return d<QEnginioCollection>()->findOne(aObjectId, aCallback);
+QEnginioObjectObject *QEnginioCollectionObject::fromJsonObject(const QJsonObject &aJsonObject) {
+    Q_D(QEnginioCollectionObject);
+    return d->fromJsonObject(aJsonObject);
 }
 
-QEnginioOperation QEnginioCollection::insert(const QEnginioObject &aObject,
-        QEnginioOperation::Callback aCallback)
-{
-    return d<QEnginioCollection>()->insert(aObject, aCallback);
-}
-QEnginioOperation QEnginioCollection::update(const QString &aObjectId,
-        const QJsonObject &aObject,
-        QEnginioOperation::Callback aCallback)
-{
-    return d<QEnginioCollection>()->update(aObjectId, aObject, aCallback);
-}
-QEnginioOperation QEnginioCollection::remove(const QString &aObjectId,
-        QEnginioOperation::Callback aCallback)
-{
-    return d<QEnginioCollection>()->remove(aObjectId, aCallback);
-}
+void QEnginioCollectionObject::setSharedInstanceFrom(const QEnginioCollectionObject *aOther) {
+    const QEnginioCollectionObjectPrivate *otherPrivate;
+    Q_D(QEnginioCollectionObject);
 
-QEnginioObject QEnginioCollection::fromJsonObject(const QJsonObject &aJsonObject)
-{
-    return d<QEnginioCollection>()->fromJsonObject(aJsonObject);
+    otherPrivate=reinterpret_cast<QEnginioCollectionObjectPrivate *>(aOther->d_ptr);
+    if (otherPrivate) {
+        d->setSharedInstance(otherPrivate->sharedInstance());
+    }
 }
 
 QT_END_NAMESPACE

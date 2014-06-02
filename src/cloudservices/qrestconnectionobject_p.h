@@ -44,7 +44,7 @@
 
 #include <QtCore/private/qobject_p.h>
 
-#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qrestconnectionobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,8 +64,14 @@ public:
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;
 
     QRestOperationObject *restRequest(const QRestRequestObject *aRequest);
+protected:
+    virtual void init();
+    virtual void deinit();
+public:
+    QSharedPointer<QRestConnectionShared> sharedInstance() const;
+    void setSharedInstance(QSharedPointer<QRestConnectionShared> aShared);
 private:
-    QSharedPointer<QRestOperationShared> iShared;
+    QSharedPointer<QRestConnectionShared> iShared;
 };
 
 QT_END_NAMESPACE

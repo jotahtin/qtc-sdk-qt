@@ -39,62 +39,58 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QENGINIOCOLLECTION_H
-#define QCLOUDSERVICES_QENGINIOCOLLECTION_H
+#ifndef QCLOUDSERVICES_QENGINIOCOLLECTION_SHARED_H
+#define QCLOUDSERVICES_QENGINIOCOLLECTION_SHARED_H
 
-#include <QObject>
-#include <QSharedPointer>
-
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/qenginiooperation.h>
-#include <QtCloudServices/qenginioquery.h>
+#include <QtCloudServices/private/qenginioconnectionshared_p.h>
+#include <QtCloudServices/private/qenginiooperationshared_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEnginioDataStorage;
-class QEnginioCollectionPrivate;
-class QTCLOUDSERVICES_EXPORT QEnginioCollection : public QCloudServicesObject {
+class QEnginioObjectShared;
+class QEnginioQueryShared;
+class QTCLOUDSERVICES_EXPORT QEnginioCollectionShared : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString collectionName READ collectionName)
-    QTC_DECLARE_PRIVATE(QEnginioCollection)
-    friend class QEnginioDataStoragePrivate;
-
-protected:
-    // Constructor for valid connection.
-    QEnginioCollectionObject(const QEnginioCollectionObject &aOther);
-    QEnginioCollection(QEnginioCollection::dvar aPIMPL);
-    QEnginioCollection(const QEnginioDataStorage &aEnginioDataStorage,
-                       const QString &aCollectionName);
+private:
+    Q_DISABLE_COPY(QEnginioCollectionShared)
 public:
-    QEnginioCollection(QObject *aParent = 0);
-    QEnginioCollection(const QEnginioCollection &aOther, QObject *aParent = 0);
-    QEnginioCollection& operator=(const QEnginioCollection &aOther);
+    QEnginioCollectionShared(QSharedPointer<QEnginioDataStorageShared> aEnginioDataStorage,
+                             QString aCollectionName);
 public:
-    bool operator!() const;
+    bool isValid() const;
+    QString collectionName() const;
 
-    Q_INVOKABLE bool isValid() const;
-    Q_INVOKABLE QString collectionName() const;
+    QSharedPointer<QEnginioOperationShared> find(QSharedPointer<QEnginioCollectionShared> aSelf,
+                                                 QSharedPointer<QEnginioQueryShared> aQuery,
+                                                 QEnginioOperationShared::Callback aCallback);
+    QSharedPointer<QEnginioOperationShared> findOne(QSharedPointer<QEnginioCollectionShared> aSelf,
+                                                    const QString &aObjectId,
+                                                    QEnginioOperationShared::Callback aCallback);
+    QSharedPointer<QEnginioOperationShared> insert(QSharedPointer<QEnginioCollectionShared> aSelf,
+                                                   QSharedPointer<QEnginioObjectShared> aObject,
+                                                   QEnginioOperationShared::Callback aCallback);
+    QSharedPointer<QEnginioOperationShared> update(QSharedPointer<QEnginioCollectionShared> aSelf,
+                                                   const QString &aObjectId,
+                                                   const QJsonObject &aObject,
+                                                   QEnginioOperationShared::Callback aCallback);
+    QSharedPointer<QEnginioOperationShared> remove(QSharedPointer<QEnginioCollectionShared> aSelf,
+                                                   const QString &aObjectId,
+                                                   QEnginioOperationShared::Callback aCallback);
 
-     QEnginioOperation find(const QEnginioQuery &aQuery,
-                                       QEnginioOperation::Callback aCallback);
-     QEnginioOperation findOne(const QString &aObjectId,
-                                          QEnginioOperation::Callback aCallback);
-     QEnginioOperation insert(const QEnginioObject &aObject,
-                                         QEnginioOperation::Callback aCallback);
-     QEnginioOperation update(const QString &aObjectId,
-                                         const QJsonObject &aObject,
-                                         QEnginioOperation::Callback aCallback);
-     QEnginioOperation remove(const QString &aObjectId,
-                                         QEnginioOperation::Callback aCallback);
+    QSharedPointer<QEnginioObjectShared> fromJsonObject(QSharedPointer<QEnginioCollectionShared> aSelf,
+                                                        const QJsonObject &aJsonObject);
 
-    QEnginioObject fromJsonObject(const QJsonObject &aJsonObject);
+public:
+    QString resolveBasePath();
+    void handleCompletedOperation(QSharedPointer<QRestOperationObject> aOperation,
+                                  QSharedPointer<QEnginioConnectionShared> aConnection,
+                                  QEnginioOperationShared::Callback aCallback);
+private:
+    QSharedPointer<QEnginioDataStorageShared> iEnginioDataStorage;
+    QString iCollectionName;
 };
-
-Q_DECLARE_TYPEINFO(QEnginioCollection, Q_COMPLEX_TYPE);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QEnginioCollection)
-
-#endif /* QCLOUDSERVICES_QENGINIOCOLLECTION_H */
+#endif /* QCLOUDSERVICES_QENGINIOCOLLECTION_SHARED_H */
 

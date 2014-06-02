@@ -42,38 +42,32 @@
 #include "stdafx.h"
 
 #include <QtCloudServices/qenginiocollection.h>
+#include <QtCloudServices/qenginiooperation.h>
+#include <QtCloudServices/qenginioquery.h>
 #include <QtCloudServices/private/qenginiocollectionobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QEnginioCollection::QEnginioCollection(QEnginioCollectionObject *aEnginioCollectionObject)
-    : iEnginioCollectionObject(aEnginioCollectionObject)
-{
-
-}
 QEnginioCollection::QEnginioCollection()
-    : iEnginioCollectionObject(0)
+    : iObject(new QEnginioCollectionObject)
 {
-
 }
-QEnginioCollectionPrivate::QEnginioCollectionPrivate(const QEnginioCollection &aOther)
-    : iEnginioCollectionObject(0)
+
+QEnginioCollection::QEnginioCollection(const QEnginioCollection &aOther)
+    : iObject(new QEnginioCollectionObject)
 {
-    const QEnginioCollection *other = aOther.enginioCollectionObject();
-    if (other) {
-        iEnginioCollectionObject = new QEnginioCollectionObject(*other);
-    }
+    iObject->setSharedInstanceFrom(aOther.object());
 }
 
 QEnginioCollection::~QEnginioCollection() {
-    if (iEnginioCollectionObject) {
-        delete iEnginioCollectionObject;
+    if (iObject) {
+        delete iObject;
     }
 }
 
 QEnginioCollection & QEnginioCollection::operator=(const QEnginioCollection &aOther)
 {
-    setPIMPL(aOther.d<QEnginioCollection>());
+    iObject->setSharedInstanceFrom(aOther.object());
     return *this;
 }
 
@@ -82,52 +76,72 @@ bool QEnginioCollection::operator!() const
     return !isValid();
 }
 
-bool QEnginioCollectionPrivate::isValid() const
+bool QEnginioCollection::isValid() const
 {
-    if (!iEnginioCollectionObject) {
+    if (!iObject) {
         return false;
     }
 
-    return iEnginioCollectionObject->isValid();
+    return iObject->isValid();
 }
 
 QString QEnginioCollection::collectionName() const
 {
-    return d<const QEnginioCollection>()->collectionName();
+    return iObject->collectionName();
 }
 
 QEnginioOperation QEnginioCollection::find(const QEnginioQuery &aQuery,
         QEnginioOperation::Callback aCallback)
 {
-    return d<QEnginioCollection>()->find(aQuery, aCallback);
+    return QEnginioOperation(iObject->find(aQuery.object(),
+                  [=](QEnginioOperationObject *aObject) {
+                    aCallback(QEnginioOperation(aObject));
+                    }));
 }
 
 QEnginioOperation QEnginioCollection::findOne(const QString &aObjectId,
         QEnginioOperation::Callback aCallback)
 {
-    return d<QEnginioCollection>()->findOne(aObjectId, aCallback);
+    return QEnginioOperation(iObject->findOne(aObjectId,
+                  [=](QEnginioOperationObject *aObject) {
+                    if (aObject) aCallback(QEnginioOperation(aObject));
+                    }));
 }
 
 QEnginioOperation QEnginioCollection::insert(const QEnginioObject &aObject,
         QEnginioOperation::Callback aCallback)
 {
-    return d<QEnginioCollection>()->insert(aObject, aCallback);
+    return QEnginioOperation(iObject->insert(aObject.object(),
+                  [=](QEnginioOperationObject *aObject) {
+                    if (aObject) aCallback(QEnginioOperation(aObject));
+                    }));
 }
 QEnginioOperation QEnginioCollection::update(const QString &aObjectId,
         const QJsonObject &aObject,
         QEnginioOperation::Callback aCallback)
 {
-    return d<QEnginioCollection>()->update(aObjectId, aObject, aCallback);
+    return QEnginioOperation(iObject->update(aObjectId,aObject,
+                  [=](QEnginioOperationObject *aObject) {
+                    if (aObject) aCallback(QEnginioOperation(aObject));
+                    }));
 }
+
 QEnginioOperation QEnginioCollection::remove(const QString &aObjectId,
         QEnginioOperation::Callback aCallback)
 {
-    return d<QEnginioCollection>()->remove(aObjectId, aCallback);
+    return QEnginioOperation(iObject->remove(aObjectId,
+                  [=](QEnginioOperationObject *aObject) {
+                    if (aObject) aCallback(QEnginioOperation(aObject));
+                    }));
 }
 
 QEnginioObject QEnginioCollection::fromJsonObject(const QJsonObject &aJsonObject)
 {
-    return d<QEnginioCollection>()->fromJsonObject(aJsonObject);
+    return QEnginioObject(iObject->fromJsonObject(aJsonObject));
+}
+
+const QEnginioCollectionObject* QEnginioCollection::object() const {
+    return iObject;
 }
 
 QT_END_NAMESPACE

@@ -41,68 +41,62 @@
 
 #include "stdafx.h"
 
-#include "QtCloudServices/private/qenginioquery_p.h"
+#include "QtCloudServices/qenginioquery.h"
+
+#include "QtCloudServices/private/qenginioqueryobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-/*
-** Private Implementation
-*/
-
-QEnginioQueryPrivate::QEnginioQueryPrivate()
-    : iLimit(100), iOffset(0)
+QEnginioQuery::QEnginioQuery()
+    : iObject(new QEnginioQueryObject)
 {
 
 }
 
-/*
-** Public Interface
-*/
-QEnginioQuery::QEnginioQuery(QObject *aParent)
-    : QCloudServicesObject(QEnginioQuery::dvar(new QEnginioQueryPrivate()), aParent)
+QEnginioQuery::QEnginioQuery(const QJsonObject &aQuery)
+    : iObject(new QEnginioQueryObject)
 {
-
-}
-QEnginioQuery::QEnginioQuery(const QJsonObject &aQuery, QObject *aParent)
-    : QCloudServicesObject(QEnginioQuery::dvar(new QEnginioQueryPrivate()), aParent)
-{
-    d<QEnginioQuery>()->iQuery = aQuery;
+    iObject->setQuery(aQuery);
 }
 QEnginioQuery::QEnginioQuery(const QEnginioQuery &aOther)
+    : iObject(new QEnginioQueryObject)
 {
-    setPIMPL(aOther.d<QEnginioQuery>());
+    object()->setSharedInstanceFrom(aOther.object());
 }
 
-QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther)
-{
-    setPIMPL(aOther.d<QEnginioQuery>());
+QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther) {
+    object()->setSharedInstanceFrom(aOther.object());
     return *this;
 }
 
-QEnginioQuery &QEnginioQuery::limit(int aLimit)
-{
-    d<QEnginioQuery>()->iLimit = aLimit;
+QEnginioQuery &QEnginioQuery::limit(int aLimit) {
+    iObject->setLimit(aLimit);
     return *this;
 }
 
-QEnginioQuery &QEnginioQuery::offset(int aOffset)
-{
-    d<QEnginioQuery>()->iOffset = aOffset;
+QEnginioQuery &QEnginioQuery::offset(int aOffset) {
+    iObject->setOffset(aOffset);
     return *this;
 }
 
-const QJsonObject &QEnginioQuery::query() const
-{
-    return d<const QEnginioQuery>()->iQuery;
+const QJsonObject &QEnginioQuery::query() const {
+    return iObject->query();
 }
 
-int QEnginioQuery::limit() const
-{
-    return d<const QEnginioQuery>()->iLimit;
+int QEnginioQuery::limit() const {
+    return iObject->limit();
 }
-int QEnginioQuery::offset() const
-{
-    return d<const QEnginioQuery>()->iOffset;
+
+int QEnginioQuery::offset() const {
+    return iObject->offset();
+}
+
+const QEnginioQueryObject* QEnginioQuery::object() const {
+    return iObject;
+}
+
+QEnginioQueryObject* QEnginioQuery::object() {
+    return iObject;
 }
 
 QT_END_NAMESPACE

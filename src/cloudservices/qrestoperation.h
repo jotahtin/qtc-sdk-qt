@@ -47,71 +47,65 @@
 
 #include <QtCore/qjsonobject.h>
 
-/*
-#include <functional>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qscopedpointer.h>
-#include <QtCore/qtypeinfo.h>
-#include <QtCore/qmetatype.h>
 #include <QtNetwork/qnetworkreply.h>
 
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/qenginioobject.h>
-*/
-
 #include <QtCloudServices/qtcloudservices_global.h>
-#include <QtCloudServices/qtcloudservices.h>
+#include <QtCloudServices/qrestrequest.h>
 
 QT_BEGIN_NAMESPACE
 
+class QRestConnection;
 class QRestOperationObject;
 class QTCLOUDSERVICES_EXPORT QRestOperation {
 public:
     typedef std::function<void(QRestOperation aRestOperation)> Callback;
 protected:
-    QRestOperation(QRestOperationObject *aRestOperationObject);
+    QRestOperation(QRestOperationObject *aObject);
 public:
     // Constructors
     QRestOperation();
-    QRestOperation(const QEnginioOperation &aOther);
+    QRestOperation(const QRestOperation &aOther);
     ~QRestOperation();
 
     // Assignment
     QRestOperation& operator=(const QRestOperation &aOther);
 
-    // Get implementation object
-    const QRestOperationObject* restOperationObject() const;
+    // connection & request
+    QRestConnection connection() const Q_REQUIRED_RESULT;
+    QRestRequest request() const Q_REQUIRED_RESULT;
 
     // IsValid
-    virtual bool operator!() const Q_REQUIRED_RESULT;
-    virtual bool isValid() const Q_REQUIRED_RESULT;
+    bool operator!() const Q_REQUIRED_RESULT;
+    bool isValid() const Q_REQUIRED_RESULT;
 
     // Status
     bool isError() const Q_REQUIRED_RESULT;
     bool isFinished() const Q_REQUIRED_RESULT;
 
-    QJsonObject result() const Q_REQUIRED_RESULT; // data
+    int backendStatus() const Q_REQUIRED_RESULT;
+    QString requestId() const Q_REQUIRED_RESULT;
 
     QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
-    QNetworkReply::NetworkError networkError() const Q_REQUIRED_RESULT;
+    QNetworkReply::NetworkError errorCode() const Q_REQUIRED_RESULT;
     QString errorString() const Q_REQUIRED_RESULT;
-    QString requestId() const Q_REQUIRED_RESULT;
-    int backendStatus() const Q_REQUIRED_RESULT;
 
-    QRestRequest restRequest() const Q_REQUIRED_RESULT;
+    QJsonObject resultJson() const Q_REQUIRED_RESULT;
+    QByteArray resultBytes() const Q_REQUIRED_RESULT;
 
 #ifndef QT_NO_DEBUG_STREAM
     void dumpDebugInfo(QDebug &d) const;
 #endif
+public:
+    // Get implementation object
+    const QRestOperationObject* object() const;
+    QRestOperationObject* object();
 private:
-    QRestOperationObject *oRestOperationObject;
+    QRestOperationObject *iObject;
 };
 
 #ifndef QT_NO_DEBUG_STREAM
 QTCLOUDSERVICES_EXPORT
-QDebug operator<<(QDebug d, const QRestOperation &aReply);
+QDebug operator<<(QDebug d, const QRestOperation &aOperation);
 #endif
 
 QT_END_NAMESPACE

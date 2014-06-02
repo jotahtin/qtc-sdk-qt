@@ -45,12 +45,9 @@
 #include <QMap>
 #include <QUrl>
 
-#include <QtCore/private/qobject_p.h>
-
-#include <QtCloudServices/qtcloudservices_global.h>
 #include <QtCloudServices/qenginiodatastorageobject.h>
-
-#include <QtCloudServices/private/qcloudservicesobject_p.h>
+#include <QtCloudServices/qenginiocollectionobject.h>
+#include <QtCloudServices/private/qrestendpointobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,9 +55,8 @@ QT_BEGIN_NAMESPACE
 ** QEnginioDataStorageObjectPrivate
 */
 class QEnginioDataStorageShared;
-class QTCLOUDSERVICES_EXPORT QEnginioDataStorageObjectPrivate : public QObjectPrivate {
+class QEnginioDataStorageObjectPrivate : public QRestEndpointObjectPrivate {
     Q_DECLARE_PUBLIC(QEnginioDataStorageObject)
-    friend class QEnginioCollection;
 private:
     Q_DISABLE_COPY(QEnginioDataStorageObjectPrivate)
 public:
@@ -74,31 +70,29 @@ public:
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
 
-    QUrl instanceAddress() const Q_REQUIRED_RESULT;
+    void setBackendId(const QString &aBackendId);
+    virtual void setEndpointAddress(const QUrl &aEndpointAddress);
+
     QString backendId() const Q_REQUIRED_RESULT;
+
 
     // Authentication
     QString username() const Q_REQUIRED_RESULT;
     QString password() const Q_REQUIRED_RESULT;
 
     // Get object collection
-    QEnginioCollection collection(const QString &collectionName);
+    QEnginioCollectionObject *collection(const QString &collectionName);
 
     // Get Plain connection
-    QEnginioConnection reserveConnection();
-    void releaseConnection(const QEnginioConnection &aConnection);
+     virtual QRestConnectionObject *reserveConnection() Q_REQUIRED_RESULT;
+     virtual void releaseConnection(const QRestConnectionObject *aConnection);
 
     void setUsername(const QString &aUsername);
     void setPassword(const QString &aPassword);
 protected:
-    void init();
-    void deinit();
-
-    QSharedPointer<QEnginioDataStorageShared> sharedInstance() const;
-    void setSharedInstance(const QEnginioDataStorageObject *aOther);
+    virtual void init();
+    virtual void deinit();
 private:
-    QSharedPointer<QEnginioDataStorageShared> iShared;
-
     QMetaObject::Connection iConnectionUsernameChanged;
     QMetaObject::Connection iConnectionPasswordChanged;
     QMetaObject::Connection iConnectionOperationError;

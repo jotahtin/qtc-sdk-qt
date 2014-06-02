@@ -54,12 +54,12 @@
 #include <QtCore/qmetatype.h>
 #include <QtNetwork/qnetworkreply.h>
 
-#include <QtCloudServices/qtcloudservices.h>
-#include <QtCloudServices/qcloudservicesobject.h>
-#include <QtCloudServices/qenginioobject.h>
+#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qrestrequest.h>
 
 QT_BEGIN_NAMESPACE
 
+class QRestConnectionObject;
 class QRestOperationObjectPrivate;
 class QTCLOUDSERVICES_EXPORT QRestOperationObject : public QObject {
     Q_OBJECT
@@ -87,22 +87,29 @@ public:
                          const QRestRequestObject *aRestRequest=0,
                          QObject *aParent=0);
 
-    QRestConnectionObject *restConnection() const Q_REQUIRED_RESULT;
-    QRestRequestObject *restRequest() const Q_REQUIRED_RESULT;
+    // connection & request
+    QRestConnectionObject *connection() const Q_REQUIRED_RESULT;
+    QRestRequestObject *request() const Q_REQUIRED_RESULT;
 
     bool isValid() const Q_REQUIRED_RESULT;
     bool isError() const Q_REQUIRED_RESULT;
     bool isFinished() const Q_REQUIRED_RESULT;
 
+    int backendStatus() const Q_REQUIRED_RESULT;
+    QString requestId() const Q_REQUIRED_RESULT;
+
     QtCloudServices::ErrorType errorType() const Q_REQUIRED_RESULT;
-    QNetworkReply::NetworkError networkError() const Q_REQUIRED_RESULT;
+    QNetworkReply::NetworkError errorCode() const Q_REQUIRED_RESULT;
     QString errorString() const Q_REQUIRED_RESULT;
 
     QJsonObject resultJson() const Q_REQUIRED_RESULT;
     QByteArray resultBytes() const Q_REQUIRED_RESULT;
-
-public Q_SLOTS:
-    void dumpDebugInfo() const;
+public:
+#ifndef QT_NO_DEBUG_STREAM
+    void dumpDebugInfo(QDebug &d) const;
+#endif
+public:
+    void setSharedInstanceFrom(const QRestOperationObject *aOther);
 Q_SIGNALS:
     void dataChanged();
     void finished(QRestOperation aRestOperation);

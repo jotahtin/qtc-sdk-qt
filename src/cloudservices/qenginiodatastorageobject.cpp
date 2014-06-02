@@ -43,8 +43,8 @@
 
 #include "QtCloudServices/private/qenginiodatastorageobject_p.h"
 #include "QtCloudServices/private/qenginiodatastorageshared_p.h"
-#include "QtCloudServices/private/qenginiocollection_p.h"
-#include "QtCloudServices/private/qenginioconnection_p.h"
+#include "QtCloudServices/private/qenginiocollectionobject_p.h"
+#include "QtCloudServices/private/qenginioconnectionobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -53,78 +53,36 @@ QT_BEGIN_NAMESPACE
 */
 
 QEnginioDataStorageObjectPrivate::QEnginioDataStorageObjectPrivate()
-    : iShared(new QEnginioDataStorageShared)
+    : QRestEndpointObjectPrivate(QSharedPointer<QEnginioDataStorageShared>(new QEnginioDataStorageShared))
 {
+
 }
 
 QEnginioDataStorageObjectPrivate::QEnginioDataStorageObjectPrivate(const QUrl &aInstanceAddress, const QString &aBackendId)
-    : iShared(new QEnginioDataStorageShared(aInstanceAddress,aBackendId))
+    : QRestEndpointObjectPrivate(QSharedPointer<QEnginioDataStorageShared>(new QEnginioDataStorageShared(aInstanceAddress,aBackendId)))
 {
 }
 
 QEnginioDataStorageObjectPrivate::~QEnginioDataStorageObjectPrivate()
 {
-    if (iShared) {
-        deinit();
-    }
 }
 
-void QEnginioDataStorageObjectPrivate::init() {
-    Q_Q(QEnginioDataStorageObject);
-    iConnectionUsernameChanged
-            = QObject::connect(iShared.data(), &QEnginioDataStorageShared::usernameChanged,
-                      q, &QEnginioDataStorageObject::usernameChanged);
-    iConnectionPasswordChanged
-    = QObject::connect(iShared.data(), &QEnginioDataStorageShared::passwordChanged,
-              q, &QEnginioDataStorageObject::passwordChanged);
-    iConnectionOperationError
-    = QObject::connect(iShared.data(), &QEnginioDataStorageShared::operationError,
-              q, &QEnginioDataStorageObject::operationError);
-}
-
-void QEnginioDataStorageObjectPrivate::deinit() {
-    QObject::disconnect(iConnectionUsernameChanged);
-    QObject::disconnect(iConnectionPasswordChanged);
-    QObject::disconnect(iConnectionOperationError);
-}
-
-bool QEnginioDataStorageObjectPrivate::isValid() const
-{
-    if (iShared.isNull()) {
-        return false;
-    }
-
-    return iShared->isValid();
-}
-
-void QEnginioDataStorageObjectPrivate::setSharedInstance(const QEnginioDataStorageObject *aOther) {
-   if (iShared) {
-       deinit();
-   }
-
-   iShared = aOther->d_func()->sharedInstance();
-
-   init();
-}
 
 void QEnginioDataStorageObjectPrivate::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId)
 {
     Q_Q(QEnginioDataStorageObject);
     bool chgAddress, chgId;
 
-    chgAddress = (instanceAddress() != aInstanceAddress);
+    chgAddress = (endpointAddress() != aInstanceAddress);
     chgId = (backendId() != aBackendId);
 
     if (!chgAddress && !chgId) {
         return;
     }
 
-    if (iShared) {
-        deinit();
-    }
-    iShared = QSharedPointer<QEnginioDataStorageShared>
+    QSharedPointer<QEnginioDataStorageShared> shared
             (new QEnginioDataStorageShared(aInstanceAddress,aBackendId));
-    init();
+    setSharedInstance(shared);
 
     if (chgAddress) {
         emit q->instanceAddressChanged(aInstanceAddress);
@@ -137,52 +95,89 @@ void QEnginioDataStorageObjectPrivate::setBackend(const QUrl &aInstanceAddress, 
     emit q->backendChanged();
 }
 
-QUrl QEnginioDataStorageObjectPrivate::instanceAddress() const
-{
-    return iShared->instanceAddress();
+void QEnginioDataStorageObjectPrivate::setBackendId(const QString &aBackendId) {
+    setBackend(endpointAddress(),aBackendId);
+}
+
+void QEnginioDataStorageObjectPrivate::setEndpointAddress(const QUrl &aEndpointAddress) {
+    setBackend(aEndpointAddress,backendId());
 }
 
 QString QEnginioDataStorageObjectPrivate::backendId() const
 {
-    return iShared->backendId();
+    QSharedPointer<const QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    return shared->backendId();
 }
 
 QString QEnginioDataStorageObjectPrivate::username() const
 {
-    return iShared->username();
+    QSharedPointer<const QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    return shared->username();
 }
 
 QString QEnginioDataStorageObjectPrivate::password() const
 {
-    return iShared->password();
+    QSharedPointer<const QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    return shared->password();
 }
 
 void QEnginioDataStorageObjectPrivate::setUsername(const QString &aUsername)
 {
-    iShared->setUsername(aUsername);
+    QSharedPointer<QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<QEnginioDataStorageShared>(sharedInstance());
+    shared->setUsername(aUsername);
 }
 
 void QEnginioDataStorageObjectPrivate::setPassword(const QString &aPassword)
 {
-    iShared->setPassword(aPassword);
+    QSharedPointer<QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<QEnginioDataStorageShared>(sharedInstance());
+    shared->setPassword(aPassword);
 }
 
-QEnginioCollection QEnginioDataStorageObjectPrivate::collection(const QString &aCollectionName)
+QEnginioCollectionObject *QEnginioDataStorageObjectPrivate::collection(const QString &aCollectionName)
 {
-    return iShared->collection(aCollectionName);
+    QEnginioCollectionObject *colObj;
+    QSharedPointer<QEnginioCollectionShared> colShared;
+    QSharedPointer<QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<QEnginioDataStorageShared>(sharedInstance());
+
+    colShared=shared->collection(shared,aCollectionName);
+
+    colObj = new QEnginioCollectionObject();
+    colObj->d_func()->setSharedInstance(colShared);
+
+    return colObj;
 }
 
-QEnginioConnection QEnginioDataStorageObjectPrivate::reserveConnection()
-{
-    return iShared->reserveConnection(iShared);
-}
-void QEnginioDataStorageObjectPrivate::releaseConnection(const QEnginioConnection &aConnection)
-{
-    iShared->releaseConnection(aConnection);
+void QEnginioDataStorageObjectPrivate::init() {
+    Q_Q(QEnginioDataStorageObject);
+
+    QRestEndpointObjectPrivate::init();
+
+    QSharedPointer<QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<QEnginioDataStorageShared>(sharedInstance());
+
+    iConnectionUsernameChanged
+            = QObject::connect(shared.data(), &QEnginioDataStorageShared::usernameChanged,
+                      q, &QEnginioDataStorageObject::usernameChanged);
+    iConnectionPasswordChanged
+    = QObject::connect(shared.data(), &QEnginioDataStorageShared::passwordChanged,
+              q, &QEnginioDataStorageObject::passwordChanged);
+    iConnectionOperationError
+    = QObject::connect(shared.data(), &QEnginioDataStorageShared::operationError,
+              q, &QEnginioDataStorageObject::operationError);
 }
 
-QSharedPointer<QEnginioDataStorageShared> QEnginioDataStorageObjectPrivate::sharedInstance() const {
-    return iShared;
+void QEnginioDataStorageObjectPrivate::deinit() {
+    QObject::disconnect(iConnectionUsernameChanged);
+    QObject::disconnect(iConnectionPasswordChanged);
+    QObject::disconnect(iConnectionOperationError);
+
+    QRestEndpointObjectPrivate::deinit();
 }
 
 
@@ -191,14 +186,14 @@ QSharedPointer<QEnginioDataStorageShared> QEnginioDataStorageObjectPrivate::shar
 */
 
 QEnginioDataStorageObject::QEnginioDataStorageObject(QObject *aParent)
-    : QObject(*new QEnginioDataStorageObjectPrivate(),aParent)
+    : QRestEndpointObject(*new QEnginioDataStorageObjectPrivate(),aParent)
 {
     Q_D(QEnginioDataStorageObject);
     d->init();
 }
 
 QEnginioDataStorageObject::QEnginioDataStorageObject(const QUrl &aInstanceAddress, const QString &aBackendId, QObject *aParent)
-    : QObject(*new QEnginioDataStorageObjectPrivate(aInstanceAddress,aBackendId),aParent)
+    : QRestEndpointObject(*new QEnginioDataStorageObjectPrivate(aInstanceAddress,aBackendId),aParent)
 {
     Q_D(QEnginioDataStorageObject);
     d->init();
@@ -213,24 +208,9 @@ bool QEnginioDataStorageObject::isValid() const {
     return d->isValid();
 }
 
-void QEnginioDataStorageObject::setBackend(const QEnginioDataStorageObject *aOther) {
-    Q_D(QEnginioDataStorageObject);
-    d->setBackend(aOther);
-}
-
 void QEnginioDataStorageObject::setBackend(const QUrl &aInstanceAddress, const QString &aBackendId) {
     Q_D(QEnginioDataStorageObject);
     d->setBackend(aInstanceAddress,aBackendId);
-}
-
-QUrl QEnginioDataStorageObject::instanceAddress() const {
-    Q_D(const QEnginioDataStorageObject);
-    return d->instanceAddress();
-}
-
-void QEnginioDataStorageObject::setInstanceAddress(const QUrl &aInstanceAddress) {
-    Q_D(QEnginioDataStorageObject);
-    d->setBackend(aInstanceAddress, backendId());
 }
 
 QString QEnginioDataStorageObject::backendId() const {
@@ -240,7 +220,7 @@ QString QEnginioDataStorageObject::backendId() const {
 
 void QEnginioDataStorageObject::setBackendId(const QString &aBackendId) {
     Q_D(QEnginioDataStorageObject);
-    d->setBackend(instanceAddress(), aBackendId);
+    d->setBackend(endpointAddress(), aBackendId);
 }
 
 // Authentication
@@ -254,19 +234,9 @@ QString QEnginioDataStorageObject::password() const {
 }
 
 // Get object collection
-QEnginioCollection QEnginioDataStorageObject::collection(const QString &aCollectionName) {
+QEnginioCollectionObject *QEnginioDataStorageObject::collection(const QString &aCollectionName) {
     Q_D(QEnginioDataStorageObject);
     return d->collection(aCollectionName);
-}
-
-QEnginioConnection QEnginioDataStorageObject::reserveConnection() {
-    Q_D(QEnginioDataStorageObject);
-    return d->reserveConnection();
-}
-
-void QEnginioDataStorageObject::releaseConnection(const QEnginioConnection &aConnection) {
-    Q_D(QEnginioDataStorageObject);
-    d->releaseConnection(aConnection);
 }
 
 void QEnginioDataStorageObject::setUsername(const QString &aUsername) {

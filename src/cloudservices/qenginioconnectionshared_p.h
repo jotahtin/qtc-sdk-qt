@@ -49,13 +49,30 @@ QT_BEGIN_NAMESPACE
 /*
 ** QEnginioConnectionPrivate
 */
+class QEnginioRequestShared;
+class QEnginioOperationShared;
 class QEnginioDataStorageShared;
-class QEnginioConnectionShared : public QCloudServicesObjectPrivate {
+class QEnginioConnectionShared : public QRestConnectionShared {
     Q_OBJECT
     Q_DISABLE_COPY(QEnginioConnectionShared)
 public:
-    QEnginioConnectionShared(QShared<QEnginioDataStorageShared> aEnginioDataStorageShared);
+    QEnginioConnectionShared(QSharedPointer<QEnginioDataStorageShared> aEnginioDataStorageShared);
     ~QEnginioConnectionShared();
+
+    QSharedPointer<QEnginioOperationShared> customRequest(QSharedPointer<QEnginioConnectionShared> aSelf,
+                                                          QSharedPointer<QEnginioRequestShared> aRequest);
+
+protected:
+    virtual QSharedPointer<QRestOperationShared> buildOperationInstance
+    (QSharedPointer<QRestConnectionShared> aSelf,
+     QSharedPointer<QRestRequestShared> aRequest);
+
+    virtual bool prepareRequest(QNetworkRequest &aRequest,
+                                const QString &aPath,
+                                const QUrlQuery &aQuery,
+                                const QJsonObject &aExtraHeaders);
+private:
+    QSharedPointer<QEnginioDataStorageShared> iEnginioDataStorageShared;
 };
 
 QT_END_NAMESPACE

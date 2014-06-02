@@ -41,202 +41,97 @@
 
 #include "stdafx.h"
 
-#include "QtCloudServices/private/qmanagedwebsocket_p.h"
-
-/*!
-\class QManagedWebSocket
-\since 5.3
-\inmodule QtCloudServices
-\ingroup QManagedWebSocket
-\target QManagedWebSocket
-\brief QManagedWebSocket handles all communication with the ManagedWebSockets
-
-Plah...
-
-The Enginio server supports several separate "backends" with each account.
-By setting the \l{QEnginioConnection::backendId}{backendId} a backend is chosen.
-After setting the ID interaction with the server is possible.
-The information about the backend is available on the Enginio Dashboard
-after logging in to \l {http://engin.io}{Enginio}.
-\code
-QEnginioConnection *client = new QEnginioConnection(parent);
-client->setBackendId(QByteArrayLiteral("YOUR_BACKEND_ID"));
-\endcode
-
-The basic functions used to interact with the backend are
-\l create(), \l query(), \l remove() and \l update().
-It is possible to do a fulltext search on the server using \l fullTextSearch().
-For file handling \l downloadUrl() and \l uploadFile() are provided.
-The functions are asynchronous, which means that they are not blocking
-and the result of them will be delivered together with QEnginioOperation::finished()
-signal.
-
-\note After the request has finished, it is the responsibility of the
-user to delete the QEnginioOperation object at an appropriate time.
-Do not directly delete it inside the slot connected to finished().
-You can use the \l{QObject::deleteLater()}{deleteLater()} function.
-
-In order to make queries that return an array of data more convenient
-a model is provided by \l {EnginioModelCpp}{EnginioModel}.
-*/
-
+#include "QtCloudServices/qmanagedwebsocket.h"
+#include "QtCloudServices/private/qmanagedwebsocketobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
-/*
-** Private Implementation
-*/
-QManagedWebSocketPrivate::QManagedWebSocketPrivate()
+QManagedWebSocket::QManagedWebSocket(QManagedWebSocketObject *aObject)
+    : iObject(aObject)
+{
+    Q_ASSERT(iObject);
+}
+
+QManagedWebSocket::QManagedWebSocket()
+    : iObject(new QManagedWebSocketObject)
 {
 
 }
-QManagedWebSocketPrivate::QManagedWebSocketPrivate(const QUrl &aInstanceAddress, const QString &aGatewayId,
-        QManagedWebSocketPrivate *aPrevInstance)
-    : QCloudServicesObjectPrivate(),
-      iInstanceAddress(aInstanceAddress), iGatewayId(aGatewayId)
-{
-    Q_UNUSED(aPrevInstance);
-}
-
-
-QManagedWebSocketPrivate::~QManagedWebSocketPrivate()
-{
-}
-
-QUrl QManagedWebSocketPrivate::instanceAddress() const
-{
-    return iInstanceAddress;
-}
-
-QString QManagedWebSocketPrivate::gatewayId() const
-{
-    return iGatewayId;
-}
-
-// https://mws-eu-1.qtc.io/v1/gateways/:mws_gateway_id
-
-void QManagedWebSocketPrivate::connect()
-{
-    QUrl url;
-
-    // iWebSocket.open(url);
-}
-void QManagedWebSocketPrivate::disconnect()
+QManagedWebSocket::QManagedWebSocket(const QUrl &aInstanceAddress, const QString &aGatewayId)
+    : iObject(new QManagedWebSocketObject(aInstanceAddress,aGatewayId))
 {
 
 }
 
-/*
-** Public Interface
-*/
-QManagedWebSocket::QManagedWebSocket(QObject *aParent)
-    : QCloudServicesObject(QManagedWebSocket::dvar(new QManagedWebSocketPrivate), aParent)
+QManagedWebSocket::QManagedWebSocket(const QString &aInstanceAddress, const QString &aGatewayId)
+: iObject(new QManagedWebSocketObject(QUrl(aInstanceAddress),aGatewayId))
 {
+
 }
 
-QManagedWebSocket::QManagedWebSocket(const QUrl &aInstanceAddress, const QString &aGatewayId, QObject *aParent)
-    : QCloudServicesObject(QManagedWebSocket::dvar(new QManagedWebSocketPrivate(aInstanceAddress, aGatewayId)), aParent)
+QManagedWebSocket::QManagedWebSocket(const QManagedWebSocket &aOther)
+    : iObject(new QManagedWebSocketObject)
 {
-}
-
-QManagedWebSocket::QManagedWebSocket(const QString &aInstanceAddress, const QString &aGatewayId, QObject *aParent)
-    : QCloudServicesObject(QManagedWebSocket::dvar(new QManagedWebSocketPrivate(QUrl(aInstanceAddress), aGatewayId)), aParent)
-{
-}
-
-QManagedWebSocket::QManagedWebSocket(const QManagedWebSocket &aManagedWebSocket)
-    : QCloudServicesObject(aManagedWebSocket.d<QManagedWebSocket>())
-{
-
+    object()->setSharedInstanceFrom(aOther.object());
 }
 
 QManagedWebSocket::~QManagedWebSocket()
 {
-
+    if (iObject) {
+        delete iObject;
+    }
 }
 
-QManagedWebSocket& QManagedWebSocket::operator=(const QManagedWebSocket &aManagedWebSocket)
-{
-    setPIMPL(aManagedWebSocket.d<QManagedWebSocket>());
+QManagedWebSocket& QManagedWebSocket::operator=(const QManagedWebSocket &aOther) {
+    object()->setSharedInstanceFrom(aOther.object());
     return *this;
 }
 
-bool QManagedWebSocket::operator!() const
-{
+// IsValid
+bool QManagedWebSocket::operator!() const {
     return !isValid();
 }
-bool QManagedWebSocket::isValid() const
-{
-    if (isNull()) {
+bool QManagedWebSocket::isValid() const {
+    if (!iObject) {
         return false;
     }
 
-    if (instanceAddress().isEmpty() || gatewayId().isEmpty()) {
-        return false;
-    }
-
-    return true;
+    return iObject->isValid();
 }
 
-void QManagedWebSocket::setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId)
-{
-    bool chgAddress, chgId;
-    QManagedWebSocket::dvar impl;
-
-    impl = d<QManagedWebSocket>();
-
-    chgAddress = (impl->instanceAddress() != aInstanceAddress);
-    chgId = (impl->gatewayId() != aGatewayId);
-
-    if (!chgAddress && !chgId) {
-        return;
-    }
-
-    impl = QManagedWebSocket::dvar(new QManagedWebSocketPrivate(aInstanceAddress, aGatewayId));
-    setPIMPL(impl);
-
-    if (chgAddress) {
-        emit instanceAddressChanged(aInstanceAddress);
-    }
-
-    if (chgId) {
-        emit gatewayIdChanged(aGatewayId);
-    }
-
-    emit gatewayChanged();
+// Backend Address & Identification
+void QManagedWebSocket::setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId) {
+    object()->setGateway(aInstanceAddress,aGatewayId);
 }
 
-QUrl QManagedWebSocket::instanceAddress() const
-{
-    return d<const QManagedWebSocket>()->instanceAddress();
-}
-void QManagedWebSocket::setInstanceAddress(const QUrl &aInstanceAddress)
-{
-    setGateway(aInstanceAddress, gatewayId());
-}
-void QManagedWebSocket::setInstanceAddressString(const QString &aInstanceAddress)
-{
-    setInstanceAddress(QUrl(aInstanceAddress));
+QUrl QManagedWebSocket::instanceAddress() const {
+    return object()->instanceAddress();
 }
 
-QString QManagedWebSocket::gatewayId() const
-{
-    return d<const QManagedWebSocket>()->gatewayId();
-}
-void QManagedWebSocket::setGatewayId(const QString &aBackendId)
-{
-    setGateway(instanceAddress(), aBackendId);
+void QManagedWebSocket::setInstanceAddress(const QUrl &aInstanceAddress) {
+    object()->setInstanceAddress(aInstanceAddress);
 }
 
-void QManagedWebSocket::connect()
-{
-    d<const QManagedWebSocket>()->connect();
-
+QString QManagedWebSocket::gatewayId() const {
+    return object()->gatewayId();
 }
-void QManagedWebSocket::disconnect()
-{
-    d<const QManagedWebSocket>()->disconnect();
+void QManagedWebSocket::setGatewayId(const QString &aGatewayId) {
+    object()->setGatewayId(aGatewayId);
+}
 
+void QManagedWebSocket::connect() {
+    return object()->connectSocket();
+}
+
+void QManagedWebSocket::disconnect() {
+    object()->disconnectSocket();
+}
+
+const QManagedWebSocketObject* QManagedWebSocket::object() const {
+    return iObject;
+}
+QManagedWebSocketObject* QManagedWebSocket::object() {
+    return iObject;
 }
 
 QT_END_NAMESPACE

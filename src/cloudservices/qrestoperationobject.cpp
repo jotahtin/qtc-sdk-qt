@@ -209,4 +209,11 @@ void QRestOperationObject::dumpDebugInfo() const {
 }
 #endif
 
+void QRestOperationObject::setSharedInstanceFrom(const QRestOperationObject *aOther) {
+    Q_D(QRestOperationObject);
+    QRestOperationObjectPrivate *otherPrv;
+    otherPrv=reinterpret_cast<QRestOperationObjectPrivate *>(aOther->d_ptr);
+    d->setSharedInstance(otherPrv->sharedInstance());
+}
+
 QT_END_NAMESPACE
