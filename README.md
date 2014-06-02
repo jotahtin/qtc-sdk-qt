@@ -48,15 +48,15 @@ This SDK provides connectivity support to QtCloudServices for both Qt/C++ and Qt
 
 Include QtCloudServices module.
 
-''
+```qml
 import QtQuick 2.2
 import QtCloudServices 1.0
-''
+```
 
 Create QnginioDataStorage instance in some suitable data area in QML, take note to id 'eds' this is used
 later to reference this data storage instance. 
 
-''
+```qml
 Item {
    ...
    Rectangle {
@@ -69,15 +69,15 @@ Item {
        ]
    }
    ...
-''
+```
 
 ##### QEnginioDataStorage.collection
-''
+```qml
         var collection = eds.collection(name)
         
         // for example
         var todos = eds.collection("todos")
-''
+```
 
 Assign collection instance. Arguments:
 
@@ -85,7 +85,7 @@ Assign collection instance. Arguments:
 
 ##### QEnginioDataStorage.collection.find
 
-''
+```qml
     collection.find(query, resultHandler)
 
     // for example
@@ -109,8 +109,7 @@ Assign collection instance. Arguments:
                 "offset":  0
                },
                handleResult)
-
-''
+```
 Query for objects in a collection. Arguments:
 
 * query : Query definition
@@ -122,14 +121,14 @@ Query for objects in a collection. Arguments:
 
 ##### QEnginioDataStorage.collection.findOne
 
-''
+```qml
     collection.find(objectId, resultHandler)
 
     // for example
     var todos = eds.collection("todos")
     todos.findOne("538cebdce5bde532110096c6",
                   handleResult)
-''
+```
 Find an object in collection. Arguments:
 
 * objectId - Object Identifier
@@ -137,7 +136,7 @@ Find an object in collection. Arguments:
 
 ##### QEnginioDataStorage.collection.insert
 
-''
+```qml
     collection.insert(object, resultHandler)
 
     // for example
@@ -147,7 +146,7 @@ Find an object in collection. Arguments:
                 "age": 31,
                 "completed": true
                 },handleResult)
-''
+```
 Insert an object into a collection. Arguments:
 
 * object - Object
@@ -155,7 +154,7 @@ Insert an object into a collection. Arguments:
 
 ##### QEnginioDataStorage.collection.update
 
-''
+```qml
     collection.update(objectId, object, resultHandler)
 
     // for example
@@ -164,7 +163,7 @@ Insert an object into a collection. Arguments:
                 {
                     "title": "Proper title",  
                 },handleResult)
-''
+```
 Update an existing object. Arguments:
 
 * objectId - ObjectId for object to be updated
@@ -173,14 +172,14 @@ Update an existing object. Arguments:
 
 ##### QEnginioDataStorage.collection.remove
 
-''
+```qml
     collection.remove(objectId, resultHandler)
     
     // for example
     var todos = eds.collection("todos")
     todos.remove("538cf0be5a3d8b1a1900db53",
                 handleResult)
-''
+```
 Remove an object from a collection. Arguments:
 
 * objectId - ObjectId for object to be removed
