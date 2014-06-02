@@ -43,6 +43,7 @@
 #define QCLOUDSERVICES_QENGINIOOPERATION_OBJECT_H
 
 #include <QList>
+#include <QJsonObject>
 
 #include <QtCloudServices/qrestoperationobject.h>
 #include <QtCloudServices/qenginiorequestobject.h>
@@ -65,8 +66,9 @@ public:
     typedef std::function<void(QEnginioOperationObject *aOperation)> Callback;
 public:
     QEnginioOperationObject(QObject *aParent=0);
+    ~QEnginioOperationObject();
 
-    int resultObjectCount() const Q_REQUIRED_RESULT;
+    int resultObjectCount() const Q_REQUIRED_RESULT;    
     QEnginioObject resultObject() const Q_REQUIRED_RESULT;
     QList<QEnginioObject> resultObjects() const Q_REQUIRED_RESULT;
 Q_SIGNALS:

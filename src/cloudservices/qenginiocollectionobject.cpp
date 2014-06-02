@@ -41,17 +41,78 @@
 
 #include "stdafx.h"
 
+#include <QtCloudServices/private/qcloudservicesconstants_p.h>
 #include <QtCloudServices/private/qenginiocollectionobject_p.h>
 #include <QtCloudServices/private/qenginiocollectionshared_p.h>
 #include <QtCloudServices/private/qenginioobjectobject_p.h>
 #include <QtCloudServices/private/qenginiooperationobject_p.h>
 #include <QtCloudServices/private/qenginioqueryobject_p.h>
 
+
+// Hm---
+#include "QtQml/qqmlcontext.h"
+#include "QtQml/qqmlengine.h"
+#include "QtQml/qjsengine.h"
+#include "QtQml/private/qjsengine_p.h"
+#include "QtQml/qjsvalue.h"
+#include "QtQml/private/qjsvalue_p.h"
+#include "QtQml/private/qv4value_inl_p.h"
+#include "QtQml/private/qv4object_p.h"
+#include "QtQml/private/qv4functionobject_p.h"
+#include "QtQml/private/qv4dateobject_p.h"
+#include "QtQml/private/qv4runtime_p.h"
+#include "QtQml/private/qv4variantobject_p.h"
+#include "private/qv8engine_p.h"
+#include <private/qv4mm_p.h>
+#include <private/qv4scopedvalue_p.h>
+#include <QtQml/private/qv4qobjectwrapper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*
 ** Private
 */
+
+QEnginioCollectionObjectPrivate::QmlCallbackFunctor::QmlCallbackFunctor(QJSValue aCallback)
+    : iCallback(aCallback)
+{
+
+}
+void QEnginioCollectionObjectPrivate::QmlCallbackFunctor::operator ()(QEnginioOperationObject *aOperation)
+{
+    using namespace QV4;
+
+    if (!aOperation)
+        return;
+
+    if (iCallback.isCallable()) {
+        QJSValuePrivate *prv=QJSValuePrivate::get(iCallback);
+        FunctionObject *f =prv->value.asFunctionObject();
+
+        if (f) {
+            ExecutionEngine *engine = prv->engine;
+            Q_ASSERT(engine);
+
+            Scope scope(engine);
+            ScopedCallData callData(scope, 1); // args.length());
+            callData->thisObject = engine->globalObject->asReturnedValue();
+
+            ScopedValue result(scope);
+            QV4::ExecutionContext *ctx = engine->currentContext();
+
+            callData->args[0] = QObjectWrapper::wrap(engine,aOperation);
+
+            result = f->call(callData);
+            if (scope.hasException()) {
+                result = ctx->catchException();
+            }
+            QJSValue tmp(new QJSValuePrivate(engine, result));
+        }
+    }
+
+    delete aOperation;
+}
+
 
 QEnginioCollectionObjectPrivate::QEnginioCollectionObjectPrivate() {
 
@@ -264,6 +325,92 @@ QString QEnginioCollectionObject::collectionName() const {
     return d->collectionName();
 }
 
+
+QEnginioOperationObject *QEnginioCollectionObject::find(QObject *aQuery,
+                                                        QJSValue aCallback)
+{
+    QEnginioQueryObject *obj=qobject_cast<QEnginioQueryObject *>(aQuery);
+    if (!obj) {
+        return new QEnginioOperationObject;
+    }
+    return find(obj,
+                  QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+
+QEnginioOperationObject *QEnginioCollectionObject::find(QJsonObject aObject,
+                                                        QJSValue aCallback)
+{
+    QEnginioQuery q;
+    qDebug() << "JSON QUERY";
+
+    if (aObject.contains(QtCloudServicesConstants::query_q)) {
+        QJsonValue value=aObject.value(QtCloudServicesConstants::query_q);
+        if (value.isObject()) {
+            q.query(value.toObject());
+        }
+    }
+
+
+    if (aObject.contains(QtCloudServicesConstants::limit)) {
+        QJsonValue value=aObject.value(QtCloudServicesConstants::limit);
+        if (value.isDouble()) {
+            q.limit((int)value.toDouble());
+        }
+    }
+
+    if (aObject.contains(QtCloudServicesConstants::offset)) {
+        QJsonValue value=aObject.value(QtCloudServicesConstants::offset);
+        if (value.isDouble()) {
+            q.offset((int)value.toDouble());
+        }
+    }
+
+    //return new QEnginioOperationObject;
+    return find(q.object(),
+                  QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+
+QEnginioOperationObject *QEnginioCollectionObject::findOne(const QString &aObjectId,
+                                                           QJSValue aCallback)
+{
+    return findOne(aObjectId,
+                   QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+
+
+QEnginioOperationObject *QEnginioCollectionObject::insert(QObject *aObject,QJSValue aCallback) {
+    QEnginioObjectObject *obj=qobject_cast<QEnginioObjectObject *>(aObject);
+    if (!obj) {
+        return new QEnginioOperationObject;
+    }
+    return insert(obj,
+                  QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+QEnginioOperationObject *QEnginioCollectionObject::insert(QJsonObject aObject, QJSValue aCallback) {
+    QEnginioObject obj(aObject);
+    return insert(obj.object(),
+                  QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+
+QEnginioOperationObject *QEnginioCollectionObject::update(const QString &aObjectId,
+                                                          QJsonObject aObject,
+                                                          QJSValue aCallback)
+{
+    return update(aObjectId,aObject,
+                  QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+
+QEnginioOperationObject *QEnginioCollectionObject::remove(const QString &aObjectId,
+                                                          QJSValue aCallback)
+{
+    return remove(aObjectId,
+                  QEnginioCollectionObjectPrivate::QmlCallbackFunctor(aCallback));
+}
+
+
+/*
+** C++
+*/
 QEnginioOperationObject *QEnginioCollectionObject::find(const QEnginioQueryObject *aQuery,
                                                         QEnginioOperationObject::Callback aCallback)
 {

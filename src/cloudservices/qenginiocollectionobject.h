@@ -48,6 +48,8 @@
 #include <QtCloudServices/qenginiooperationobject.h>
 #include <QtCloudServices/qenginioqueryobject.h>
 
+#include <QJSValue>
+
 QT_BEGIN_NAMESPACE
 
 class QEnginioObjectObject;
@@ -68,21 +70,41 @@ public:
     bool isValid() const;
     QString collectionName() const;
 
-    Q_INVOKABLE QEnginioOperationObject *find(const QEnginioQueryObject *aQuery,
-                                       QEnginioOperationObject::Callback aCallback);
+    /* QML */
+    Q_INVOKABLE QEnginioOperationObject *find(QObject *aQuery,
+                                              QJSValue aCallback);
+    Q_INVOKABLE QEnginioOperationObject *find(QJsonObject aQuery,
+                                              QJSValue aCallback);
     Q_INVOKABLE QEnginioOperationObject *findOne(const QString &aObjectId,
-                                          QEnginioOperationObject::Callback aCallback);
-    Q_INVOKABLE QEnginioOperationObject *insert(const QEnginioObjectObject *aObject,
-                                         QEnginioOperationObject::Callback aCallback);
+                                                 QJSValue aCallback);
+    Q_INVOKABLE QEnginioOperationObject *insert(QObject *aObject,
+                                                QJSValue aCallback);
+    Q_INVOKABLE QEnginioOperationObject *insert(QJsonObject aObject,
+                                                QJSValue aCallback);
     Q_INVOKABLE QEnginioOperationObject *update(const QString &aObjectId,
-                                         const QJsonObject &aObject,
-                                         QEnginioOperationObject::Callback aCallback);
+                                                QJsonObject aObject,
+                                                QJSValue aCallback);
     Q_INVOKABLE QEnginioOperationObject *remove(const QString &aObjectId,
-                                         QEnginioOperationObject::Callback aCallback);
+                                                QJSValue aCallback);
+
+    /* C++ */
+    QEnginioOperationObject *find(const QEnginioQueryObject *aQuery,
+                                  QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *findOne(const QString &aObjectId,
+                                     QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *insert(const QEnginioObjectObject *aObject,
+                                    QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *update(const QString &aObjectId,
+                                    const QJsonObject &aObject,
+                                    QEnginioOperationObject::Callback aCallback);
+    QEnginioOperationObject *remove(const QString &aObjectId,
+                                    QEnginioOperationObject::Callback aCallback);
 
     QEnginioObjectObject *fromJsonObject(const QJsonObject &aJsonObject);
 public:
     void setSharedInstanceFrom(const QEnginioCollectionObject *aOther);
+Q_SIGNALS:
+    void myCollectionSignal();
 };
 
 QT_END_NAMESPACE

@@ -95,6 +95,9 @@ QString QEnginioDataStorageObjectPrivate::backendId() const
 {
     QSharedPointer<const QEnginioDataStorageShared> shared;
     shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    if (shared.isNull()) {
+        return QString();
+    }
     return shared->backendId();
 }
 
@@ -102,6 +105,9 @@ QString QEnginioDataStorageObjectPrivate::username() const
 {
     QSharedPointer<const QEnginioDataStorageShared> shared;
     shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    if (shared.isNull()) {
+        return QString();
+    }
     return shared->username();
 }
 
@@ -109,6 +115,9 @@ QString QEnginioDataStorageObjectPrivate::password() const
 {
     QSharedPointer<const QEnginioDataStorageShared> shared;
     shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    if (shared.isNull()) {
+        return QString();
+    }
     return shared->password();
 }
 

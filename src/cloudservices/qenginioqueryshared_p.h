@@ -55,7 +55,7 @@ public:
     QEnginioQueryShared();
 
     QJsonObject query() const;
-    void setQuery(QJsonObject aQuery);
+    void setQuery(const QJsonObject &aQuery);
 
     int limit() const;
     void setLimit(int aLimit);

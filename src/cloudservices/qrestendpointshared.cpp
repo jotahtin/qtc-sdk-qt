@@ -87,6 +87,7 @@ QSharedPointer<QRestConnectionShared> QRestEndpointShared::reserveConnection(QSh
 
     if (!connection) {
         connection = buildConnectionInstance(aSelf);
+        connection->init(connection);
     }
 
     return connection;

@@ -54,7 +54,7 @@ QEnginioQueryShared::QEnginioQueryShared()
 QJsonObject QEnginioQueryShared::query() const {
     return iQuery;
 }
-void QEnginioQueryShared::setQuery(QJsonObject aQuery) {
+void QEnginioQueryShared::setQuery(const QJsonObject &aQuery) {
     if (iQuery == aQuery)
         return;
 

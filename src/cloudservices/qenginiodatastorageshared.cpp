@@ -172,7 +172,8 @@ void QEnginioDataStorageShared::releaseConnection(QSharedPointer<QEnginioConnect
 
 QSharedPointer<QRestConnectionShared>
 QEnginioDataStorageShared::buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf) {
-    return QSharedPointer<QRestConnectionShared>(new QEnginioConnectionShared(qSharedPointerCast<QEnginioDataStorageShared>(aSelf)));
+    QSharedPointer<QRestConnectionShared> shared(new QEnginioConnectionShared(qSharedPointerCast<QEnginioDataStorageShared>(aSelf)));
+    return shared;
 }
 
 QT_END_NAMESPACE

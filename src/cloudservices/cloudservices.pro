@@ -1,5 +1,5 @@
 TARGET   = QtCloudServices
-QT      += network websockets qml core-private
+QT      += network websockets qml core-private qml-private
 QT      -= gui
 DEFINES += QTCLOUDSERVICES_LIBRARY
 MODULE   = cloudservices

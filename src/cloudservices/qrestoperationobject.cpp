@@ -83,6 +83,9 @@ QRestRequestObject *QRestOperationObjectPrivate::request() const {
 }
 
 bool QRestOperationObjectPrivate::isValid() const {
+    if (!iShared) {
+        return false;
+    }
     return iShared->isValid();
 }
 

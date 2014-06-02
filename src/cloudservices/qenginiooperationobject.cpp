@@ -91,7 +91,10 @@ QRestRequestObject *QEnginioOperationObjectPrivate::buildRequestObject() const {
 QEnginioOperationObject::QEnginioOperationObject(QObject *aParent)
     : QRestOperationObject(*new QEnginioOperationObjectPrivate,aParent)
 {
-
+    qDebug() << "QEnginioOperationObject::Constructor::" << this;
+}
+QEnginioOperationObject::~QEnginioOperationObject() {
+    qDebug() << "QEnginioOperationObject::Destructor::" << this;
 }
 
 int QEnginioOperationObject::resultObjectCount() const {

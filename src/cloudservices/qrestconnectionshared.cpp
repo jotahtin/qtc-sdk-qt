@@ -65,6 +65,9 @@ QThreadStorage < QWeakPointer<QNetworkAccessManager> > QRestConnectionShared::gN
 QRestConnectionShared::QRestConnectionShared(QSharedPointer<QRestEndpointShared> aRestEndpointShared)
     : iRestEndpoint(aRestEndpointShared)
 {
+}
+
+void QRestConnectionShared::init(QSharedPointer<QRestConnectionShared> aSelf) {
     iNetworkManager = gNetworkManager.localData().toStrongRef();
 
     if (!iNetworkManager) {
@@ -76,6 +79,10 @@ QRestConnectionShared::QRestConnectionShared(QSharedPointer<QRestEndpointShared>
 #endif
         gNetworkManager.setLocalData(iNetworkManager);
     }
+
+    iNetworkManagerConnection = QObject::connect(iNetworkManager.data(),
+                                                 &QNetworkAccessManager::finished,
+                                                 ReplyFinishedFunctor(aSelf));
 }
 
 QRestConnectionShared::~QRestConnectionShared()
@@ -223,9 +230,9 @@ bool QRestConnectionShared::prepareRequest(QNetworkRequest &aRequest,
     aRequest.setRawHeader(QtCloudServicesConstants::X_Request_Id, requestId);
     aRequest.setRawHeader(QtCloudServicesConstants::Host, url.host().toLatin1());
     aRequest.setRawHeader(QtCloudServicesConstants::Accept_Encoding,
-                         QtCloudServicesConstants::Accept_Encoding_Any);
+                          QtCloudServicesConstants::Accept_Encoding_Any);
     aRequest.setRawHeader(QtCloudServicesConstants::User_Agent,
-                         QtCloudServicesConstants::User_Agent_Default);
+                          QtCloudServicesConstants::User_Agent_Default);
 
     if (!aExtraHeaders.empty()) {
         QJsonObject::const_iterator end = aExtraHeaders.constEnd();

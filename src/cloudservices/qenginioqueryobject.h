@@ -53,13 +53,16 @@ class QTCLOUDSERVICES_EXPORT QEnginioQueryObject : public QObject {
     Q_OBJECT
 public:
     Q_DECLARE_PRIVATE(QEnginioQueryObject)
+    Q_PROPERTY(QJsonObject query READ query WRITE setQuery NOTIFY queryChanged)
+    Q_PROPERTY(int limit READ limit WRITE setLimit NOTIFY limitChanged)
+    Q_PROPERTY(int offset READ offset WRITE setOffset NOTIFY offsetChanged)
 private:
     Q_DISABLE_COPY(QEnginioQueryObject)
 public:
     QEnginioQueryObject(QObject *aParent = 0);
 
     QJsonObject query() const;
-    void setQuery(QJsonObject aQuery);
+    void setQuery(const QJsonObject &aQuery);
 
     int limit() const;
     void setLimit(int aLimit);

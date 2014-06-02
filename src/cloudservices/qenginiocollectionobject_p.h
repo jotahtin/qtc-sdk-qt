@@ -55,7 +55,15 @@ class QEnginioCollectionShared;
 class QTCLOUDSERVICES_EXPORT QEnginioCollectionObjectPrivate : public QObjectPrivate {
     Q_DECLARE_PUBLIC(QEnginioCollectionObject)
 private:
-    Q_DISABLE_COPY(QEnginioCollectionObjectPrivate)
+    Q_DISABLE_COPY(QEnginioCollectionObjectPrivate)    
+public:
+    class QmlCallbackFunctor {
+    public:
+        QmlCallbackFunctor(QJSValue aCallback);
+        void operator ()(QEnginioOperationObject *aOperation);
+    private:
+        QJSValue iCallback;
+    };
 public:
     QEnginioCollectionObjectPrivate();
 

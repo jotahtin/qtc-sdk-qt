@@ -57,6 +57,7 @@ public:
 
     QEnginioQuery& operator=(const QEnginioQuery &aOther);
 
+    QEnginioQuery &query(const QJsonObject &aQuery);
     QEnginioQuery &limit(int aLimit);    
     QEnginioQuery &offset(int aOffset);
 

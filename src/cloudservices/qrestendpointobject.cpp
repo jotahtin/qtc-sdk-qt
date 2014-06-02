@@ -73,6 +73,9 @@ bool QRestEndpointObjectPrivate::isValid() const
 
 QUrl QRestEndpointObjectPrivate::endpointAddress() const
 {
+    if (iShared.isNull()) {
+        return QUrl();
+    }
     return iShared->endpointAddress();
 }
 

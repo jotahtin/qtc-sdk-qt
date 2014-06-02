@@ -82,6 +82,8 @@ public:
     QRestConnectionShared(QSharedPointer<QRestEndpointShared> aRestEndpointShared);
     virtual ~QRestConnectionShared();
 
+    virtual void init(QSharedPointer<QRestConnectionShared> aSelf);
+
     virtual bool isValid() const;
 
     QSharedPointer<QNetworkAccessManager> networkManager() const Q_REQUIRED_RESULT;

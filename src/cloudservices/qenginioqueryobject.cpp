@@ -66,7 +66,7 @@ QEnginioQueryObjectPrivate::~QEnginioQueryObjectPrivate() {
 QJsonObject QEnginioQueryObjectPrivate::query() const {
     return iShared->query();
 }
-void QEnginioQueryObjectPrivate::setQuery(QJsonObject aQuery) {
+void QEnginioQueryObjectPrivate::setQuery(const QJsonObject &aQuery) {
     iShared->setQuery(aQuery);
 }
 
@@ -126,7 +126,9 @@ void QEnginioQueryObjectPrivate::setSharedInstance(QSharedPointer<QEnginioQueryS
 QEnginioQueryObject::QEnginioQueryObject(QObject *aParent)
     : QObject(*new QEnginioQueryObjectPrivate,aParent)
 {
-
+    Q_D(QEnginioQueryObject);
+    QSharedPointer<QEnginioQueryShared> shared(new QEnginioQueryShared);
+    d->setSharedInstance(shared);
 }
 
 QJsonObject QEnginioQueryObject::query() const {
@@ -134,7 +136,7 @@ QJsonObject QEnginioQueryObject::query() const {
     return d->query();
 }
 
-void QEnginioQueryObject::setQuery(QJsonObject aQuery) {
+void QEnginioQueryObject::setQuery(const QJsonObject &aQuery) {
     Q_D(QEnginioQueryObject);
     d->setQuery(aQuery);
 }

@@ -2,7 +2,7 @@ requires(qtHaveModule(quick))
 
 TARGETPATH = QtCloudServices
 
-QT += qml quick network cloudservices cloudservices-private
+QT += qml declarative quick network cloudservices cloudservices-private
 
 CONFIG += release
 

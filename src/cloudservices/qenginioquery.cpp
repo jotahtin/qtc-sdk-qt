@@ -71,6 +71,11 @@ QEnginioQuery& QEnginioQuery::operator=(const QEnginioQuery &aOther) {
     return *this;
 }
 
+QEnginioQuery &QEnginioQuery::query(const QJsonObject &aQuery) {
+    iObject->setQuery(aQuery);
+    return *this;
+}
+
 QEnginioQuery &QEnginioQuery::limit(int aLimit) {
     iObject->setLimit(aLimit);
     return *this;

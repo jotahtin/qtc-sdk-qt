@@ -71,16 +71,16 @@ public:
     // Backend Address & Identification
     void setBackend(const QUrl &aInstanceAddress, const QString &aBackendId);
 
-    Q_INVOKABLE QString backendId() const Q_REQUIRED_RESULT;
-    Q_INVOKABLE void setBackendId(const QString &aBackendId);
+    QString backendId() const Q_REQUIRED_RESULT;
 
     // Authentication
-    Q_INVOKABLE QString username() const Q_REQUIRED_RESULT;
-    Q_INVOKABLE QString password() const Q_REQUIRED_RESULT;
+    QString username() const Q_REQUIRED_RESULT;
+    QString password() const Q_REQUIRED_RESULT;
 
     // Get object collection
     Q_INVOKABLE QEnginioCollectionObject *collection(const QString &aCollectionName);
 public Q_SLOTS:
+    void setBackendId(const QString &aBackendId);
     void setUsername(const QString &aUsername);
     void setPassword(const QString &aPassword);
 Q_SIGNALS:
@@ -94,10 +94,6 @@ Q_SIGNALS:
     void operationError(QEnginioOperation aOperation);
 };
 
-// Q_DECLARE_TYPEINFO(QEnginioDataStorageObject, Q_COMPLEX_TYPE);
-
 QT_END_NAMESPACE
-
-// Q_DECLARE_METATYPE(QEnginioDataStorageObject)
 
 #endif /* QCLOUDSERVICES_QENGINIODATASTORAGE_OBJECT_H */
