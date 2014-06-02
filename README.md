@@ -42,11 +42,128 @@ This SDK provides connectivity support to QtCloudServices for both Qt/C++ and Qt
 
 #### Qt/C++
 
+Include QEnginioDataStorage
+
+```cpp
+#include <QtCloudServices/QEnginioDataStorage>
+
+QEnginioDataStorage eds("https://api.engin.io", "123456789abcdef123456789")
+```
+
+##### QEnginioDataStorage.collection
+```cpp
+        eds.collection(name)
+        
+        // for example
+        QEnginioCollection todos;
+        todos = eds.collection("todos");
+```
+
+Assign collection instance. Arguments:
+
+* name - A name of the collection
+
+##### QEnginioDataStorage.collection.find
+
+```cpp
+    collection.find(query, resultHandler)
+
+    // for example
+    
+    // result handle can be lambda/function/functor/etc..
+    std::function<void(QEnginioOperation)> resultHandle 
+
+    QEnginioCollection todos;
+    todos = eds.collection("todos");
+
+    todos.find(QEnginioQuery([query filter json/aux constructors])
+               .limit(5)
+               .offset(0)
+               .sort(...)
+               ,resultHandle);
+```
+Query for objects in a collection. Arguments:
+
+* query : Query definition
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.findOne
+
+```cpp
+    collection.find(objectId, resultHandler)
+
+    // for example
+    QEnginioCollection todos;
+    todos = eds.collection("todos");
+    todos.findOne("538cebdce5bde532110096c6",
+                  handleResult);
+```
+Find an object in collection. Arguments:
+
+* objectId - Object Identifier
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.insert
+
+```cpp
+    collection.insert(object, resultHandler)
+
+    // for example
+    QEnginioCollection todos;
+    todos = eds.collection("todos");
+
+    QJsonObject object;
+    object["name"] = "John Doe"
+    object["age"] = 31;
+    object["completed"] = true;
+    todos.insert(object,
+                 handleResult);
+```
+Insert an object into a collection. Arguments:
+
+* object - Object
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.update
+
+```cpp
+    collection.update(objectId, object, resultHandler)
+
+    // for example
+    QEnginioCollection todos;
+    todos = eds.collection("todos");
+
+    QJsonObject object;
+    object["title"] = "Proper title"
+    todos.update("538cf0be5a3d8b1a1900db53", object,
+                 handleResult)
+```
+Update an existing object. Arguments:
+
+* objectId - ObjectId for object to be updated
+* object - Object with field that are to be reassigned.
+* resultHandler - Callback for handling results/errors
+
+##### QEnginioDataStorage.collection.remove
+
+```cpp
+    collection.remove(objectId, resultHandler)
+    
+    // for example
+    QEnginioCollection todos;
+    todos = eds.collection("todos");
+    todos.remove("538cf0be5a3d8b1a1900db53",
+                 handleResult);
+```
+Remove an object from a collection. Arguments:
+
+* objectId - ObjectId for object to be removed
+* resultHandler - Callback for handling results/errors
 
 
 #### Qt/QML
 
-Include QtCloudServices module.
+Import QtCloudServices module.
 
 ```qml
 import QtQuick 2.2
@@ -187,6 +304,7 @@ Remove an object from a collection. Arguments:
 
 ### Managed Web Sockets
 
+TODO
 
 ## SDK API References
 
