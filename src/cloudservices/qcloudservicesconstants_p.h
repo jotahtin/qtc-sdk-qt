@@ -121,7 +121,9 @@
 	F(RESTOperationPost, "POST") \
 	F(RESTOperationPut, "PUT") \
 	F(RESTOperationDelete, "DELETE") \
-	\
+    F(Authorization, "Authorization")\
+    F(Bearer, "Bearer ")\
+    \
     F(Requested_object_operation_requires_non_empty_objectType_value, "Requested object operation requires non empty \'objectType\' value")\
     F(Requested_object_acl_operation_requires_non_empty_objectType_value, "Requested object acl operation requires non empty \'objectType\' value")\
     F(Requested_object_acl_operation_requires_non_empty_id_value, "Requested object acl operation requires non empty \'id\' value")\
@@ -150,8 +152,6 @@
     F(Content_Type, "Content-Type")\
     F(Get, "GET")\
     F(Accept, "Accept")\
-    F(Bearer_, "Bearer ")\
-    F(Authorization, "Authorization")\
  
 
 struct QTCLOUDSERVICES_EXPORT QtCloudServicesConstants {

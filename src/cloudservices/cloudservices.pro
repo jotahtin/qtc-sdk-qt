@@ -57,7 +57,10 @@ SOURCES += \
     qenginiouserobject.cpp \
     qenginiousershared.cpp \
     qmanagedwebsocketobject.cpp \
-    qmanagedwebsocketshared.cpp
+    qmanagedwebsocketshared.cpp \
+    qmanagedwebsocketconnectionshared.cpp \
+    qmanagedwebsocketconnectionobject.cpp \
+    qcloudservicessharedobject.cpp
 
 HEADERS += \
     stdafx.h \
@@ -120,4 +123,8 @@ HEADERS += \
     qenginiouserobject_p.h \
     qmanagedwebsocketobject.h \
     qmanagedwebsocketobject_p.h \
-    qmanagedwebsocketshared_p.h
+    qmanagedwebsocketshared_p.h \
+    qmanagedwebsocketconnectionshared_p.h \
+    qmanagedwebsocketconnectionobject.h \
+    qmanagedwebsocketconnectionobject_p.h \
+    qcloudservicessharedobject.h

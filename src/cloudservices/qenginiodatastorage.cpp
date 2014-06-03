@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 \inmodule QtCloudServices
 \ingroup EnginioDataStorage
 \target QEnginioDataStorage
-\brief QEnginioDataStorage handles all communication with the Enginio server
+\brief QEnginioDataStorage Provides primitive database operations for Enginio Data Storage
 
 Plah...
 
@@ -152,6 +152,17 @@ void QEnginioDataStorage::setBackendId(const QString &aBackendId) {
     QEnginioDataStorageObject *obj;
     obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
     obj->setBackendId(aBackendId);
+}
+
+QString QEnginioDataStorage::secret() const {
+    const QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<const QEnginioDataStorageObject *>(object());
+    return obj->secret();
+}
+void QEnginioDataStorage::setSecret(const QString &aSecret) {
+    QEnginioDataStorageObject *obj;
+    obj=reinterpret_cast<QEnginioDataStorageObject *>(object());
+    obj->setSecret(aSecret);
 }
 
 QString QEnginioDataStorage::username() const {

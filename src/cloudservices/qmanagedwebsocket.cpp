@@ -47,39 +47,35 @@
 QT_BEGIN_NAMESPACE
 
 QManagedWebSocket::QManagedWebSocket(QManagedWebSocketObject *aObject)
-    : iObject(aObject)
+    : QRestEndpoint(aObject)
 {
-    Q_ASSERT(iObject);
 }
 
 QManagedWebSocket::QManagedWebSocket()
-    : iObject(new QManagedWebSocketObject)
+    : QRestEndpoint(new QManagedWebSocketObject)
 {
 
 }
 QManagedWebSocket::QManagedWebSocket(const QUrl &aInstanceAddress, const QString &aGatewayId)
-    : iObject(new QManagedWebSocketObject(aInstanceAddress,aGatewayId))
+    : QRestEndpoint(new QManagedWebSocketObject(aInstanceAddress,aGatewayId))
 {
 
 }
 
 QManagedWebSocket::QManagedWebSocket(const QString &aInstanceAddress, const QString &aGatewayId)
-: iObject(new QManagedWebSocketObject(QUrl(aInstanceAddress),aGatewayId))
+: QRestEndpoint(new QManagedWebSocketObject(QUrl(aInstanceAddress),aGatewayId))
 {
 
 }
 
 QManagedWebSocket::QManagedWebSocket(const QManagedWebSocket &aOther)
-    : iObject(new QManagedWebSocketObject)
+    : QRestEndpoint(new QManagedWebSocketObject)
 {
     object()->setSharedInstanceFrom(aOther.object());
 }
 
 QManagedWebSocket::~QManagedWebSocket()
 {
-    if (iObject) {
-        delete iObject;
-    }
 }
 
 QManagedWebSocket& QManagedWebSocket::operator=(const QManagedWebSocket &aOther) {
@@ -87,51 +83,50 @@ QManagedWebSocket& QManagedWebSocket::operator=(const QManagedWebSocket &aOther)
     return *this;
 }
 
-// IsValid
-bool QManagedWebSocket::operator!() const {
-    return !isValid();
-}
-bool QManagedWebSocket::isValid() const {
-    if (!iObject) {
-        return false;
-    }
-
-    return iObject->isValid();
-}
-
 // Backend Address & Identification
 void QManagedWebSocket::setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId) {
-    object()->setGateway(aInstanceAddress,aGatewayId);
-}
-
-QUrl QManagedWebSocket::instanceAddress() const {
-    return object()->instanceAddress();
-}
-
-void QManagedWebSocket::setInstanceAddress(const QUrl &aInstanceAddress) {
-    object()->setInstanceAddress(aInstanceAddress);
+    QManagedWebSocketObject *obj;
+    obj=reinterpret_cast<QManagedWebSocketObject *>(object());
+    obj->setGateway(aInstanceAddress,aGatewayId);
 }
 
 QString QManagedWebSocket::gatewayId() const {
-    return object()->gatewayId();
+    const QManagedWebSocketObject *obj;
+    obj=reinterpret_cast<const QManagedWebSocketObject *>(object());
+    return obj->gatewayId();
 }
 void QManagedWebSocket::setGatewayId(const QString &aGatewayId) {
-    object()->setGatewayId(aGatewayId);
+    QManagedWebSocketObject *obj;
+    obj=reinterpret_cast<QManagedWebSocketObject *>(object());
+    obj->setGatewayId(aGatewayId);
 }
 
-void QManagedWebSocket::connect() {
+// Authentication
+QString QManagedWebSocket::secret() const {
+    const QManagedWebSocketObject *obj;
+    obj=reinterpret_cast<const QManagedWebSocketObject *>(object());
+    return obj->secret();
+}
+void QManagedWebSocket::setSecret(const QString &aSecret) {
+    QManagedWebSocketObject *obj;
+    obj=reinterpret_cast<QManagedWebSocketObject *>(object());
+    obj->setSecret(aSecret);
+}
+
+// Operations
+void QManagedWebSocket::connectSocket() {
     return object()->connectSocket();
 }
 
-void QManagedWebSocket::disconnect() {
+void QManagedWebSocket::disconnectSocket() {
     object()->disconnectSocket();
 }
 
 const QManagedWebSocketObject* QManagedWebSocket::object() const {
-    return iObject;
+    return reinterpret_cast<const QManagedWebSocketObject*>(QRestEndpoint::object());
 }
 QManagedWebSocketObject* QManagedWebSocket::object() {
-    return iObject;
+    return reinterpret_cast<QManagedWebSocketObject*>(QRestEndpoint::object());
 }
 
 QT_END_NAMESPACE

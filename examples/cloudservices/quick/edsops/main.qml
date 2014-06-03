@@ -26,7 +26,12 @@ Item {
                     "limit":   5,
                     "offset":  0
                    },
-                   handleResult)
+                   // handleResult
+                   function handleResult(op) {
+                       console.log("jeah")
+                   }
+                    )
+
     }
 
     function example_findOne() {
@@ -77,7 +82,7 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: example_remove()
+                onClicked: example_find()
             }
 
             data: [
@@ -90,6 +95,9 @@ Item {
                     id: eds
                     backendId: "5379dea0698b3c1dc00cdf57"
                     endpointAddress: "https://api.engin.io"
+                    //username: "foo"
+                    //password: "bar"
+                    //secret: "1234"
                 }
             ]
         }

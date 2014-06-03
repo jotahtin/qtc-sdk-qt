@@ -47,40 +47,43 @@
 #include <QString>
 #include <QSharedPointer>
 
-#include <QtCloudServices/qtcloudservices_global.h>
+#include <QtCloudServices/qrestendpointobject.h>
 
 QT_BEGIN_NAMESPACE
 
 class QManagedWebSocketObjectPrivate;
-class QTCLOUDSERVICES_EXPORT QManagedWebSocketObject : public QObject {
+class QTCLOUDSERVICES_EXPORT QManagedWebSocketObject : public QRestEndpointObject {
     Q_OBJECT
+public:
     Q_DECLARE_PRIVATE(QManagedWebSocketObject)
+    Q_PROPERTY(QString gatewayId READ gatewayId WRITE setGatewayId NOTIFY gatewayIdChanged)
+    Q_PROPERTY(QString secret READ secret WRITE setSecret NOTIFY secretChanged)
 private:
     Q_DISABLE_COPY(QManagedWebSocketObject)
 public:
     QManagedWebSocketObject(QObject *aParent = 0);
     QManagedWebSocketObject(const QUrl &aInstanceAddress, const QString &aGatewayId, QObject *parent = 0);
 
-    // IsValid
-    bool isValid() const;
-
     // Backend Address & Identification
     void setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId);
 
-    QUrl instanceAddress() const Q_REQUIRED_RESULT;
-    void setInstanceAddress(const QUrl &aInstanceAddress);
-
     QString gatewayId() const Q_REQUIRED_RESULT;
-    void setGatewayId(const QString &aGatewayId);
+
+    QString secret() const Q_REQUIRED_RESULT;
 public Q_SLOTS:
+    void setGatewayId(const QString &aGatewayId);
+    void setSecret(const QString &aSecret);
+
     void connectSocket();
     void disconnectSocket();
-public:
-    void setSharedInstanceFrom(const QManagedWebSocketObject *aOther);
 Q_SIGNALS:
     void gatewayChanged();
     void gatewayIdChanged(const QString &backendId);
     void instanceAddressChanged(const QUrl &instanceAddress);
+
+    void secretChanged(const QString &aSecret);
+
+    void operationError(QRestOperation aOperation);
 };
 
 QT_END_NAMESPACE

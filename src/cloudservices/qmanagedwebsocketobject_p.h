@@ -45,41 +45,42 @@
 #include <QtCore/private/qobject_p.h>
 
 #include <QtCloudServices/qmanagedwebsocketobject.h>
+#include <QtCloudServices/private/qrestendpointobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QManagedWebSocketShared;
-class QManagedWebSocketObjectPrivate : public QObjectPrivate {
+class QManagedWebSocketObjectPrivate : public QRestEndpointObjectPrivate {
     Q_DECLARE_PUBLIC(QManagedWebSocketObject)
 private:
     Q_DISABLE_COPY(QManagedWebSocketObjectPrivate)
 public:
     // Default Constructor
     QManagedWebSocketObjectPrivate();
-    ~QManagedWebSocketObjectPrivate();
-
-    // IsValid
-    virtual bool isValid() const;
 
     // Backend Address & Identification
     void setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId);
 
-    QUrl instanceAddress() const Q_REQUIRED_RESULT;
-    void setInstanceAddress(const QUrl &aInstanceAddress);
+    void setGatewayId(const QString &aGatewayId);
+    virtual void setEndpointAddress(const QUrl &aEndpointAddress);
 
     QString gatewayId() const Q_REQUIRED_RESULT;
-    void setGatewayId(const QString &aGatewayId);
 
+    // Authentication
+    QString secret() const Q_REQUIRED_RESULT;
+    void setSecret(const QString &aSecret);
+
+    // Operations
     void connectSocket();
-    void disconnectSocket();
+    void disconnectSocket();       
+protected:
+    virtual QRestConnectionObject* buildConnectionObject() const;
 public:
     virtual void init();
     virtual void deinit();
-
-    QSharedPointer<QManagedWebSocketShared> sharedInstance() const;
-    void setSharedInstance(QSharedPointer<QManagedWebSocketShared> aShared);
 private:
-    QSharedPointer<QManagedWebSocketShared> iShared;
+    QMetaObject::Connection iConnectionSecretChanged;
+    QMetaObject::Connection iConnectionOperationError;
 };
 
 QT_END_NAMESPACE

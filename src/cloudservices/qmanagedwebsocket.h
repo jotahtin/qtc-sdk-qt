@@ -42,12 +42,13 @@
 #ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKET_H
 #define QCLOUDSERVICES_QMANAGEDWEBSOCKET_H
 
+#include <QtCloudServices/qrestendpoint.h>
 #include <QtCloudServices/qmanagedwebsocketobject.h>
 
 QT_BEGIN_NAMESPACE
 
 class QManagedWebSocketObject;
-class QTCLOUDSERVICES_EXPORT QManagedWebSocket {
+class QTCLOUDSERVICES_EXPORT QManagedWebSocket : public QRestEndpoint {
 protected:
     QManagedWebSocket(QManagedWebSocketObject *aObject);
 public:
@@ -61,26 +62,22 @@ public:
     // Assignment
     QManagedWebSocket& operator=(const QManagedWebSocket &aOther);
 
-    // IsValid
-    bool operator!() const;
-    virtual bool isValid() const;
-
     // Backend Address & Identification
     void setGateway(const QUrl &aInstanceAddress, const QString &aGatewayId);
-
-    QUrl instanceAddress() const Q_REQUIRED_RESULT;
-    void setInstanceAddress(const QUrl &aInstanceAddress);
 
     QString gatewayId() const Q_REQUIRED_RESULT;
     void setGatewayId(const QString &aGatewayId);
 
-    void connect();
-    void disconnect();
+    // Authentication
+    QString secret() const Q_REQUIRED_RESULT;
+    void setSecret(const QString &aSecret);
+
+    // Operations
+    void connectSocket();
+    void disconnectSocket();
 public:
     const QManagedWebSocketObject* object() const;
     QManagedWebSocketObject* object();
-private:
-    QManagedWebSocketObject *iObject;
 };
 
 QT_END_NAMESPACE

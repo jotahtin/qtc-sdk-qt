@@ -106,6 +106,19 @@ QString QEnginioDataStorageShared::backendId() const
     return iBackendId;
 }
 
+QString QEnginioDataStorageShared::secret() const {
+    return iSecret;
+}
+void QEnginioDataStorageShared::setSecret(const QString &aSecret) {
+    if (iSecret == aSecret) {
+        return;
+    }
+
+    iSecret = aSecret;
+
+    emit secretChanged(iSecret);
+}
+
 QString QEnginioDataStorageShared::username() const
 {
     return iUsername;
@@ -119,7 +132,7 @@ void QEnginioDataStorageShared::setUsername(const QString &aUsername)
 
     iUsername = aUsername;
 
-    emit usernameChanged(aUsername);
+    emit usernameChanged(iUsername);
 }
 
 QString QEnginioDataStorageShared::password() const
@@ -135,7 +148,7 @@ void QEnginioDataStorageShared::setPassword(const QString &aPassword)
 
     iPassword = aPassword;
 
-    emit passwordChanged(aPassword);
+    emit passwordChanged(iPassword);
 }
 
 QSharedPointer<QEnginioCollectionShared>

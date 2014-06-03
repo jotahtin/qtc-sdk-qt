@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtEnginio module of the Qt Toolkit.
@@ -39,61 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H
-#define QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H
+#ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKETCONNECTION_SHARED_P_H
+#define QCLOUDSERVICES_QMANAGEDWEBSOCKETCONNECTION_SHARED_P_H
 
-#include <QWebSocket>
-
-#include <QtCloudServices/qtcloudservices_global.h>
-#include <QtCloudServices/qrestoperation.h>
-#include <QtCloudServices/private/qrestendpointshared_p.h>
-#include <QtCloudServices/private/qmanagedwebsocketconnectionshared_p.h>
+#include <QtCloudServices/private/qrestconnectionshared_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QManagedWebSocketShared : public QRestEndpointShared {
+/*
+** QEnginioConnectionPrivate
+*/
+class QManagedWebSocketShared;
+class QManagedWebSocketConnectionShared : public QRestConnectionShared {
     Q_OBJECT
 private:
-    Q_DISABLE_COPY(QManagedWebSocketShared)
+    Q_DISABLE_COPY(QManagedWebSocketConnectionShared)
 public:
-    QManagedWebSocketShared();
-    QManagedWebSocketShared(const QUrl &aInstanceAddress, const QString &aGatewayId,
-                            QManagedWebSocketShared *aPrevInstance = 0);
-    ~QManagedWebSocketShared();
-public:
-    bool isValid() const;
-
-    QUrl instanceAddress() const;
-    QString gatewayId() const;
-
-    QString secret() const Q_REQUIRED_RESULT;
-    void setSecret(const QString &aSecret);
-
-    void connectSocket();
-    void disconnectSocket();
-
-
-    void getSocketAddress();
-
-
-public:
-    QSharedPointer<QManagedWebSocketConnectionShared> reserveConnection(QSharedPointer<QManagedWebSocketShared> aSelf) Q_REQUIRED_RESULT;
-    void releaseConnection(QSharedPointer<QManagedWebSocketConnectionShared> aConnection);
+    QManagedWebSocketConnectionShared(QSharedPointer<QManagedWebSocketShared> aManagedWebSocketShared);
+    ~QManagedWebSocketConnectionShared();
 protected:
-    virtual QSharedPointer<QRestConnectionShared>
-    buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf);
-Q_SIGNALS:
-    void secretChanged(const QString &aSecret);
-
-    void operationError(QRestOperation aOperation);
-protected:
-    QUrl iInstanceAddress;
-    QString iGatewayId;
-    QString iSecret;
-
-    QWebSocket iWebSocket;
+    virtual bool prepareRequest(QNetworkRequest &aRequest,
+                                const QString &aPath,
+                                const QUrlQuery &aQuery,
+                                const QJsonObject &aExtraHeaders);
+private:
+    QSharedPointer<QManagedWebSocketShared> iManagedWebSocketShared;
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H */
+#endif /* QCLOUDSERVICES_QMANAGEDWEBSOCKETCONNECTION_SHARED_P_H */

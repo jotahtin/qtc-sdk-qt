@@ -60,6 +60,7 @@ class QTCLOUDSERVICES_EXPORT QEnginioDataStorageObject : public QRestEndpointObj
 public:
     Q_DECLARE_PRIVATE(QEnginioDataStorageObject)
     Q_PROPERTY(QString backendId READ backendId WRITE setBackendId NOTIFY backendIdChanged)
+    Q_PROPERTY(QString secret READ secret WRITE setSecret NOTIFY secretChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged)
 private:
@@ -74,6 +75,7 @@ public:
     QString backendId() const Q_REQUIRED_RESULT;
 
     // Authentication
+    QString secret() const Q_REQUIRED_RESULT;
     QString username() const Q_REQUIRED_RESULT;
     QString password() const Q_REQUIRED_RESULT;
 
@@ -81,6 +83,7 @@ public:
     Q_INVOKABLE QEnginioCollectionObject *collection(const QString &aCollectionName);
 public Q_SLOTS:
     void setBackendId(const QString &aBackendId);
+    void setSecret(const QString &aSecret);
     void setUsername(const QString &aUsername);
     void setPassword(const QString &aPassword);
 Q_SIGNALS:
@@ -88,6 +91,7 @@ Q_SIGNALS:
     void instanceAddressChanged(QUrl instanceAddress);
     void backendChanged();
 
+    void secretChanged(QString aSecret);
     void usernameChanged(QString aUsername);
     void passwordChanged(QString aPassword);
 

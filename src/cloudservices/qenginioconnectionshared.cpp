@@ -97,6 +97,13 @@ bool QEnginioConnectionShared::prepareRequest(QNetworkRequest &aRequest,
     aRequest.setRawHeader(QtCloudServicesConstants::Enginio_Backend_Id,
                           iEnginioDataStorageShared->backendId().toLatin1());
 
+    if (!iEnginioDataStorageShared->secret().isEmpty()) {
+        QByteArray bearer = QtCloudServicesConstants::Bearer;
+        bearer += iEnginioDataStorageShared->secret().toUtf8();
+        aRequest.setRawHeader(QtCloudServicesConstants::Authorization,bearer);
+    }
+
+
     return true;
 }
 

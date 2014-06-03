@@ -101,6 +101,15 @@ QString QEnginioDataStorageObjectPrivate::backendId() const
     return shared->backendId();
 }
 
+QString QEnginioDataStorageObjectPrivate::secret() const {
+    QSharedPointer<const QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<const QEnginioDataStorageShared>(sharedInstance());
+    if (shared.isNull()) {
+        return QString();
+    }
+    return shared->secret();
+}
+
 QString QEnginioDataStorageObjectPrivate::username() const
 {
     QSharedPointer<const QEnginioDataStorageShared> shared;
@@ -119,6 +128,13 @@ QString QEnginioDataStorageObjectPrivate::password() const
         return QString();
     }
     return shared->password();
+}
+
+void QEnginioDataStorageObjectPrivate::setSecret(const QString &aSecret)
+{
+    QSharedPointer<QEnginioDataStorageShared> shared;
+    shared = qSharedPointerCast<QEnginioDataStorageShared>(sharedInstance());
+    shared->setSecret(aSecret);
 }
 
 void QEnginioDataStorageObjectPrivate::setUsername(const QString &aUsername)
@@ -162,6 +178,9 @@ void QEnginioDataStorageObjectPrivate::init() {
     QSharedPointer<QEnginioDataStorageShared> shared;
     shared = qSharedPointerCast<QEnginioDataStorageShared>(sharedInstance());
 
+    iConnectionSecretChanged
+            = QObject::connect(shared.data(), &QEnginioDataStorageShared::secretChanged,
+                      q, &QEnginioDataStorageObject::secretChanged);
     iConnectionUsernameChanged
             = QObject::connect(shared.data(), &QEnginioDataStorageShared::usernameChanged,
                       q, &QEnginioDataStorageObject::usernameChanged);
@@ -174,6 +193,7 @@ void QEnginioDataStorageObjectPrivate::init() {
 }
 
 void QEnginioDataStorageObjectPrivate::deinit() {
+    QObject::disconnect(iConnectionSecretChanged);
     QObject::disconnect(iConnectionUsernameChanged);
     QObject::disconnect(iConnectionPasswordChanged);
     QObject::disconnect(iConnectionOperationError);
@@ -216,6 +236,10 @@ void QEnginioDataStorageObject::setBackendId(const QString &aBackendId) {
 }
 
 // Authentication
+QString QEnginioDataStorageObject::secret() const {
+    Q_D(const QEnginioDataStorageObject);
+    return d->secret();
+}
 QString QEnginioDataStorageObject::username() const {
     Q_D(const QEnginioDataStorageObject);
     return d->username();
@@ -229,6 +253,11 @@ QString QEnginioDataStorageObject::password() const {
 QEnginioCollectionObject *QEnginioDataStorageObject::collection(const QString &aCollectionName) {
     Q_D(QEnginioDataStorageObject);
     return d->collection(aCollectionName);
+}
+
+void QEnginioDataStorageObject::setSecret(const QString &aSecret) {
+    Q_D(QEnginioDataStorageObject);
+    d->setSecret(aSecret);
 }
 
 void QEnginioDataStorageObject::setUsername(const QString &aUsername) {

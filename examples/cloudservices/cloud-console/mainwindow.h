@@ -16,9 +16,11 @@ public:
 
 public slots:
     void doSwitchToEds();
-    void doExecute();
+    void doEdsExecute();
 
     void doSwitchToMws();
+    void doMwsConnect();
+    void doMwsExecute();
 public:
     void handleOperationReply(QEnginioOperation op);
 private:

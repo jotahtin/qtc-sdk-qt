@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 */
 class QEnginioDataStorageShared : public QRestEndpointShared {
     Q_OBJECT
+private:
     Q_DISABLE_COPY(QEnginioDataStorageShared)
 public:
     QEnginioDataStorageShared();
@@ -69,6 +70,9 @@ public:
 
     QUrl instanceAddress() const Q_REQUIRED_RESULT;
     QString backendId() const Q_REQUIRED_RESULT;
+
+    QString secret() const Q_REQUIRED_RESULT;
+    void setSecret(const QString &aSecret);
 
     QString username() const Q_REQUIRED_RESULT;
     void setUsername(const QString &aUsername);
@@ -86,6 +90,7 @@ protected:
     virtual QSharedPointer<QRestConnectionShared>
     buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf);
 Q_SIGNALS:
+    void secretChanged(const QString &aSecret);
     void usernameChanged(const QString &aUsername);
     void passwordChanged(const QString &aPassword);
 
@@ -96,6 +101,7 @@ private:
     // Mutable objects
     QMutex iLock;
 
+    QString iSecret;   // Access Token
     QString iUsername;
     QString iPassword;
 

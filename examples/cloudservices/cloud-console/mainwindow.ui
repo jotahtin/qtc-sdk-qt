@@ -95,7 +95,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -480,7 +480,7 @@
      <x>0</x>
      <y>0</y>
      <width>811</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -522,14 +522,14 @@
  </resources>
  <connections>
   <connection>
-   <sender>action_Quit</sender>
-   <signal>triggered()</signal>
+   <sender>pushButtonMwsConnectOrDisconnect</sender>
+   <signal>clicked()</signal>
    <receiver>MainWindowClass</receiver>
-   <slot>close()</slot>
+   <slot>doMwsConnect()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
+     <x>750</x>
+     <y>158</y>
     </hint>
     <hint type="destinationlabel">
      <x>299</x>
@@ -541,7 +541,7 @@
    <sender>pushButtonExecute</sender>
    <signal>clicked()</signal>
    <receiver>MainWindowClass</receiver>
-   <slot>doExecute()</slot>
+   <slot>doEdsExecute()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>755</x>
@@ -585,9 +585,41 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButtonMwsExecute</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindowClass</receiver>
+   <slot>doMwsExecute()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>750</x>
+     <y>386</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>405</x>
+     <y>351</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Quit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindowClass</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>405</x>
+     <y>351</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <slot>doExecute()</slot>
+  <slot>doEdsExecute()</slot>
   <slot>doMwsConnect()</slot>
   <slot>doMwsExecute()</slot>
   <slot>doSwitchToEds()</slot>

@@ -11,7 +11,8 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      iEnginioDataStorage("https://api.engin.io", "5379dea0698b3c1dc00cdf57")
+      iEnginioDataStorage("https://api.engin.io", "5379dea0698b3c1dc00cdf57"),
+      iManagedWebSocket("https://mws-eu-1.qtc.io", "5386110b1ba00f02f2000002")
 {
     ui.setupUi(this);
 
@@ -39,7 +40,7 @@ void MainWindow::doSwitchToEds()
 {
     ui.stackedWidget->setCurrentIndex(0);
 }
-void MainWindow::doExecute()
+void MainWindow::doEdsExecute()
 {
     QEnginioCollection collection;
     collection = iEnginioDataStorage.collection(ui.lineEditCollection->text());
@@ -145,11 +146,6 @@ void MainWindow::doExecute()
     }
 }
 
-void MainWindow::doSwitchToMws()
-{
-    ui.stackedWidget->setCurrentIndex(1);
-}
-
 void MainWindow::handleOperationReply(QEnginioOperation op)
 {
     if (!op) {
@@ -185,3 +181,18 @@ void MainWindow::handleOperationReply(QEnginioOperation op)
         }
     }
 }
+
+void MainWindow::doSwitchToMws()
+{
+    ui.stackedWidget->setCurrentIndex(1);
+}
+
+void MainWindow::doMwsConnect() {
+    qDebug() << "MWS C";
+    iManagedWebSocket.connectSocket();
+}
+
+void MainWindow::doMwsExecute() {
+    qDebug() << "MWS E";
+}
+

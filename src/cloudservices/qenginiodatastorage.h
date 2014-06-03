@@ -71,6 +71,9 @@ public:
     void setBackendId(const QString &aBackendId);
 
     // Authentication
+    QString secret() const Q_REQUIRED_RESULT;
+    void setSecret(const QString &aSecret);
+
     QString username() const Q_REQUIRED_RESULT;
     void setUsername(const QString &aUsername);
 

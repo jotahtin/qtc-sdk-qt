@@ -39,61 +39,25 @@
 **
 ****************************************************************************/
 
-#ifndef QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H
-#define QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H
+#ifndef QCLOUDSERVICES_QCLOUDSERVICESSHAREDOBJECT_H
+#define QCLOUDSERVICES_QCLOUDSERVICESSHAREDOBJECT_H
 
-#include <QWebSocket>
-
-#include <QtCloudServices/qtcloudservices_global.h>
-#include <QtCloudServices/qrestoperation.h>
-#include <QtCloudServices/private/qrestendpointshared_p.h>
-#include <QtCloudServices/private/qmanagedwebsocketconnectionshared_p.h>
+#include <QObject>
+#include <QSharedPointer>
 
 QT_BEGIN_NAMESPACE
 
-class QManagedWebSocketShared : public QRestEndpointShared {
+class QCloudServicesSharedObject : public QObject
+{
     Q_OBJECT
+public:
+    explicit QCloudServicesSharedObject(QObject *parent = 0);
+
+public slots:
 private:
-    Q_DISABLE_COPY(QManagedWebSocketShared)
-public:
-    QManagedWebSocketShared();
-    QManagedWebSocketShared(const QUrl &aInstanceAddress, const QString &aGatewayId,
-                            QManagedWebSocketShared *aPrevInstance = 0);
-    ~QManagedWebSocketShared();
-public:
-    bool isValid() const;
-
-    QUrl instanceAddress() const;
-    QString gatewayId() const;
-
-    QString secret() const Q_REQUIRED_RESULT;
-    void setSecret(const QString &aSecret);
-
-    void connectSocket();
-    void disconnectSocket();
-
-
-    void getSocketAddress();
-
-
-public:
-    QSharedPointer<QManagedWebSocketConnectionShared> reserveConnection(QSharedPointer<QManagedWebSocketShared> aSelf) Q_REQUIRED_RESULT;
-    void releaseConnection(QSharedPointer<QManagedWebSocketConnectionShared> aConnection);
-protected:
-    virtual QSharedPointer<QRestConnectionShared>
-    buildConnectionInstance(QSharedPointer<QRestEndpointShared> aSelf);
-Q_SIGNALS:
-    void secretChanged(const QString &aSecret);
-
-    void operationError(QRestOperation aOperation);
-protected:
-    QUrl iInstanceAddress;
-    QString iGatewayId;
-    QString iSecret;
-
-    QWebSocket iWebSocket;
+    QWeakPointer<QCloudServicesSharedObject> iSelf;
 };
 
 QT_END_NAMESPACE
 
-#endif /* QCLOUDSERVICES_QMANAGEDWEBSOCKET_SHARED_H */
+#endif /* QCLOUDSERVICES_QCLOUDSERVICESSHAREDOBJECT_H */

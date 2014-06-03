@@ -71,12 +71,14 @@ public:
     QString backendId() const Q_REQUIRED_RESULT;
 
     // Authentication
+    QString secret() const Q_REQUIRED_RESULT;
     QString username() const Q_REQUIRED_RESULT;
     QString password() const Q_REQUIRED_RESULT;
 
     // Get object collection
     QEnginioCollectionObject *collection(const QString &collectionName);
 
+    void setSecret(const QString &aSecret);
     void setUsername(const QString &aUsername);
     void setPassword(const QString &aPassword);
 protected:
@@ -85,6 +87,7 @@ protected:
     virtual void init();
     virtual void deinit();
 private:
+    QMetaObject::Connection iConnectionSecretChanged;
     QMetaObject::Connection iConnectionUsernameChanged;
     QMetaObject::Connection iConnectionPasswordChanged;
     QMetaObject::Connection iConnectionOperationError;
