@@ -48,6 +48,12 @@ Include QEnginioDataStorage
 #include <QtCloudServices/QEnginioDataStorage>
 
 QEnginioDataStorage eds("https://api.engin.io", "123456789abcdef123456789")
+
+// optional authorization
+//  eds.setSecret(<security token>)
+// or
+//  eds.setUsername(<username>)
+//  eds.setPassword(<password>)
 ```
 
 ##### QEnginioDataStorage.collection
@@ -182,6 +188,13 @@ Item {
                id: eds
                backendId: "123456789abcdef123456789"     // backend id
                endpointAddress: "https://api.engin.io"   // instance addres
+
+               // optional authorization
+               //  secret: <security token>
+               // or
+               //  username: <username>
+               //  password: <password>
+
            }
        ]
    }
